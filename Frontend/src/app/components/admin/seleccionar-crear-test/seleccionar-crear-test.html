@@ -1,0 +1,19 @@
+<div class="space-y-2">
+  <label class="block text-sm font-bold text-gray-700 ml-1">{{ label }}</label>
+  <div class="relative">
+    <i [class]="iconClass + ' absolute left-4 top-1/2 -translate-y-1/2 text-gray-400'"></i>
+    <select 
+      [ngModel]="modelValue" 
+      (ngModelChange)="onModelChange($event)"
+      [disabled]="disabled"
+      class="input-sena appearance-none cursor-pointer disabled:opacity-50 disabled:bg-gray-100">
+      <option [ngValue]="null" disabled selected>{{ placeholder }}</option>
+      <option *ngFor="let item of options" [value]="item[bindValue]">
+        <ng-container *ngIf="bindSecondaryLabel">
+          {{ item[bindSecondaryLabel] }} - 
+        </ng-container>
+        {{ item[bindLabel] }}
+      </option>
+    </select>
+  </div>
+</div>

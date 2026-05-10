@@ -23,6 +23,7 @@ authService = inject(LoginService);
   readonly menuOptions: MenuOption[] = [
     // --- ROL: ADMIN (5) ---
     { label: 'Importar Excel', icon: 'upload', route: '/dashboard/importar', roles: [5] },
+    { label: 'Test iniciales', icon: 'sparkles', route: '/dashboard/test', roles: [5] },
     { label: 'Gestión Usuarios', icon: 'users', route: '/dashboard/usuarios', roles: [5] },
     { label: 'Configuracion', icon: 'cog', route: '/dashboard/configuracion', roles: [5] },
 

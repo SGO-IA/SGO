@@ -41,6 +41,12 @@ CREATE TABLE IF NOT EXISTS fases_proyecto (
     nombre_fase VARCHAR(50) NOT NULL
 ) ENGINE=InnoDB;
 
+INSERT INTO fases_proyecto (sigla, nombre_fase) VALUES 
+('A', 'Análisis'),
+('P', 'Planeación'),
+('E', 'Ejecución'),
+('EV', 'Evaluación');
+
 -- ==========================================
 -- 2. SEGURIDAD Y USUARIOS (Nivel 1)
 -- ==========================================
@@ -242,4 +248,29 @@ CREATE TABLE IF NOT EXISTS tests_ia (
     ponderacion DECIMAL(5,2), 
     preguntas_json JSON, 
     CONSTRAINT fk_test_seccion FOREIGN KEY (seccion_id) REFERENCES ciclo_secciones(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS tests_diagnosticos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    competencia_id INT NOT NULL,
+    nombre_test VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    preguntas_json JSON NOT NULL,
+    activo BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_test_diag_competencia FOREIGN KEY (competencia_id) 
+        REFERENCES competencias(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS resultados_diagnosticos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    test_diagnostico_id INT NOT NULL,
+    aprendiz_id INT NOT NULL,
+    puntaje DECIMAL(5,2),
+    nivel_sugerido ENUM('bajo', 'medio', 'alto') DEFAULT 'bajo',
+    fecha_presentacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_res_diag_test FOREIGN KEY (test_diagnostico_id) 
+        REFERENCES tests_diagnosticos(id) ON DELETE CASCADE,
+    CONSTRAINT fk_res_diag_aprendiz FOREIGN KEY (aprendiz_id) 
+        REFERENCES usuarios(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;

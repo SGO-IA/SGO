@@ -35,6 +35,12 @@ export const routes: Routes = [
         data: { roles: [5] }
       },
       {
+        path: 'test',
+        loadComponent: () => import('./pages/admin/test/test').then(m => m.Test),
+        title: 'S.G.O - Test iniciales',
+        data: { roles: [5] }
+      },
+      {
         path: 'usuarios',
         loadComponent: () => import('./pages/admin/usuarios/usuarios').then(m => m.Usuarios),
         title: 'S.G.O - Gestión de Usuarios',
