@@ -20,42 +20,65 @@ export const iaService = {
         };
     },
 
-// En iaService.js
-generarTestTecnico: async (payload) => {
-    // 1. Extraemos con seguridad
-    const { competenciaId, ...configuracionIA } = payload;
+    generarTestTecnico: async (payload) => {
+        // 1. Extraemos con seguridad
+        const { competenciaId, ...configuracionIA } = payload;
 
-    // 2. CORRECCIÓN AQUÍ: Llamamos directamente al modelo para obtener los RAPs
-    // ya que obtenerDetalleParaIA es una función de ESTE mismo service.
-    const raps = await iaModel.getEstructuraPedagogica(competenciaId ?? null);
-    
-    // 3. Construimos el objeto 'detalle' manualmente para el prompt
-    const detalle = {
-        competenciaId,
-        totalRaps: raps.length,
-        estructura: raps
-    };
+        // 2. CORRECCIÓN AQUÍ: Llamamos directamente al modelo para obtener los RAPs
+        const raps = await iaModel.getEstructuraPedagogica(competenciaId ?? null);
 
-    // 4. Extracción y construcción del prompt
-    const { system, user } = IA_PROMPTS.GENERAR_TEST;
-    const promptDinamico = user(detalle, configuracionIA);
+        // Barajear los raps para que la IA no siempre genere lo mismo
+        const rapsBarajados = raps.sort(() => Math.random() - 0.5);
+        
+        // 3. Construimos el objeto 'detalle' manualmente para el prompt
+        const datosCurriculares = rapsBarajados.map(r => ({
+            id: r.codigo_rap,
+            // Limpiamos espacios múltiples y saltos de línea en el título
+            tema: r.rap_nombre.replace(/\s+/g, ' ').trim(),
+            
+            // Limpiamos los arrays de saberes y procesos
+            conocimientos: r.saberes.map(s => 
+                s.replace(/[*]/g, '')     // Elimina asteriscos decorativos
+                .replace(/\n/g, ' ')      // Cambia saltos de línea por espacios
+                .replace(/\s+/g, ' ')     // Colapsa espacios múltiples
+                .trim()
+            ),
+            procesos: r.procesos.map(p => 
+                p.replace(/[*]/g, '')
+                .replace(/\n/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim()
+            )
+        }));
 
-    // 5. Ejecución de la IA
-    const resultadoIA = await claudeProvider.ask(promptDinamico, system);
+        const detalle = {
+            competenciaId,
+            totalRaps: raps.length,
+            estructura: datosCurriculares
+        };
 
-    // 6. LIMPIEZA DE SEGURIDAD
-    if (resultadoIA.ok && resultadoIA.data) {
-        const jsonMatch = resultadoIA.data.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            resultadoIA.data = jsonMatch[0];
+        console.log("DEBUG - Estructura enviada a la IA:", JSON.stringify(detalle.estructura, null, 2));
+
+        // 4. Extracción y construcción del prompt
+        const { system, user } = IA_PROMPTS.GENERAR_TEST;
+        const promptDinamico = user(detalle, configuracionIA);
+
+        // 5. Ejecución de la IA
+        const resultadoIA = await claudeProvider.ask(promptDinamico, system);
+
+        // 6. LIMPIEZA DE SEGURIDAD
+        if (resultadoIA.ok && resultadoIA.data) {
+            const jsonMatch = resultadoIA.data.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                resultadoIA.data = jsonMatch[0];
+            }
         }
-    }
 
-    return {
-        ...resultadoIA,
-        competenciaId
-    };
-},
+        return {
+            ...resultadoIA,
+            competenciaId
+        };
+    },
 
     verificarExistenciaTest: async (competenciaId) => {
         const test = await iaModel.obtenerTestPorCompetencia(competenciaId);

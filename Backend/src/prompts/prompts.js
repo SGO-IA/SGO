@@ -1,31 +1,45 @@
 export const IA_PROMPTS = {
     GENERAR_TEST: {
-        system: "Eres un experto en diseño curricular del SENA. Tu salida debe ser exclusivamente JSON puro, sin bloques de código markdown ni texto adicional.",
-        user: (estructura, config) => `
-        Genera un examen técnico basado en: ${JSON.stringify(estructura.estructura).substring(0, 2000)}.
+        system: "You are a high-level technical assessment generator. Your sole source of truth is the provided 'Curricular Structure'. You must rotate the evaluated topics to ensure every test is unique. You must respond in Spanish, but your output must be strictly valid JSON.",
+        
+        user: (estructura, config) => {
+            const datosCurriculares = estructura.estructura;
 
-        ESQUEMA OBLIGATORIO DE RESPUESTA:
-        {
-          "nombre_test": "${config.nombre_test}",
-          "descripcion": "${config.descripcion}",
-          "preguntas": [
+            return `
+            CURRICULAR STRUCTURE (REAL DATA):
+            ${JSON.stringify(datosCurriculares)}
+
+            VARIABILITY INSTRUCTIONS:
+            1. RANDOMNESS RULE: Do not focus only on the first topics. Randomly select from technical knowledge points (e.g., W3C, JS Frameworks, Testing Tools, Coding Standards, NoSQL, etc.).
+            2. ROTATION: For a ${config.cantidad_preguntas}-question test, each question MUST belong to a different sub-topic from the curricular structure. Do not repeat topics if others are available.
+            3. DIFFICULTY: The level is ${config.dificultad}. Adjust the technical complexity of the distractors accordingly.
+            4. LANGUAGE: The 'enunciado', 'opciones', and 'justificacion' MUST BE IN SPANISH.
+
+            TECHNICAL RULES:
+            - Strictly forbidden to mention SENA, RAPs, or pedagogical methodology. Evaluate pure technical knowledge.
+            - Incorrect options must be 'plausible distractors' (technically related but incorrect).
+            - Avoid repetitive questions.
+
+            ADDITIONAL CONTEXT: ${config.instrucciones_adicionales || 'None'}
+
+            OBLIGATORY JSON SCHEMA:
             {
-              "enunciado": "Pregunta técnica clara",
-              "opciones": [
-                { "texto": "Opción 1", "es_correcta": false },
-                { "texto": "Opción 2", "es_correcta": true },
-                { "texto": "Opción 3", "es_correcta": false },
-                { "texto": "Opción 4", "es_correcta": false }
-              ],
-              "justificacion": "Explicación breve de por qué es la respuesta correcta"
+              "nombre_test": "${config.nombre_test}",
+              "descripcion": "${config.descripcion}",
+              "preguntas": [
+                {
+                  "enunciado": "...",
+                  "opciones": [
+                    { "texto": "...", "es_correcta": false },
+                    { "texto": "...", "es_correcta": true },
+                    { "texto": "...", "es_correcta": false },
+                    { "texto": "...", "es_correcta": false }
+                  ],
+                  "justificacion": "Detailed technical explanation in Spanish based on the provided structure."
+                }
+              ]
             }
-          ]
+            `;
         }
-
-        RESTRICCIONES:
-        - Cantidad de preguntas: ${config.cantidad_preguntas}
-        - Dificultad: ${config.dificultad}
-        - No incluyas caracteres especiales que rompan el JSON.
-        `
     }
 };

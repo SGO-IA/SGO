@@ -44,16 +44,13 @@ export const iaController = {
     generarNuevoTest: async (req, res) => {
         try {
             const { competenciaId } = req.body;
-            console.log("📥 Body recibido:", req.body);
+            console.log("📥 Body recibido en Controller:", req.body);
+
             if (!competenciaId) {
-                return res.status(400).json({ 
-                    ok: false, 
-                    mensaje: 'La competenciaId es requerida en el cuerpo de la petición.' 
-                });
+                return res.status(400).json({ ok: false, mensaje: 'ID requerido' });
             }
 
-            // Llamamos al service que orquestra el prompt y la IA
-            const resultado = await iaService.generarTestTecnico(competenciaId);
+            const resultado = await iaService.generarTestTecnico(req.body);
 
             if (!resultado.ok) {
                 return res.status(500).json({ 
