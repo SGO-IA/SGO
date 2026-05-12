@@ -1,21 +1,7 @@
 <div class="min-h-screen bg-[var(--color-sena-gray-light)] font-sans">
-  <nav class="bg-white border-b border-gray-100 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between h-20 items-center">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-sena rounded-lg flex items-center justify-center">
-            <i class="pi pi-bolt text-white text-xl"></i>
-          </div>
-          <span class="text-2xl font-black text-sena-black tracking-tight">SGO</span>
-        </div>
-        <button (click)="irAlLogin()" class="btn-sena shadow-lg shadow-sena-alpha">
-          <i class="pi pi-sign-in"></i>
-          Iniciar Sesión
-        </button>
-      </div>
-    </div>
-  </nav>
 
+  <app-navbar></app-navbar>
+  
   <main>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-24">
       <div class="grid lg:grid-cols-2 gap-12 items-center">
@@ -90,10 +76,6 @@
     </div>
   </main>
 
-  <footer class="bg-sena-black text-white py-12">
-    <div class="max-w-7xl mx-auto px-4 text-center">
-      <p class="text-gray-400">© 2026 SGO - Servicio Nacional de Aprendizaje SENA</p>
-      <p class="text-sm mt-2 font-light italic">Palmira, Valle del Cauca - Node.js + Angular + IA</p>
-    </div>
-  </footer>
+  <app-footer></app-footer>
+
 </div>
