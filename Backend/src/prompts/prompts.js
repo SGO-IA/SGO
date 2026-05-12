@@ -45,7 +45,6 @@ export const IA_PROMPTS = {
                     { "texto": "...", "es_correcta": false },
                     { "texto": "...", "es_correcta": false }
                   ],
-                  "justificacion": "Detailed technical explanation in Spanish based on the provided structure."
                 }
               ]
             }
