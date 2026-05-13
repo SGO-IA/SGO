@@ -13,7 +13,6 @@
 </header>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-end bg-white p-6 rounded-[var(--radius-sena)] shadow-sm border border-gray-100">
-  
   <app-seleccionar-crear-test
     label="Programa Académico"
     iconClass="pi pi-bookmark"
@@ -36,48 +35,74 @@
     bindLabel="nombre"
     bindSecondaryLabel="codigo_norma"
     [placeholder]="!programaSeleccionado ? 'Primero elija un programa' : 'Seleccione la competencia...'"
-    (valueChange)="competenciaSeleccionada = $event">
-  </app-seleccionar-crear-test>
-
+    (valueChange)="onCompetenciaChange($event)"> </app-seleccionar-crear-test>
 </div>
 
 <div *ngIf="competenciaSeleccionada" class="mt-8">
-  
-  <div *ngIf="buscandoTest" class="flex items-center gap-3 p-6 bg-gray-50 rounded-[var(--radius-sena)] animate-pulse">
-    <i class="pi pi-spin pi-spinner text-sena text-xl"></i>
-    <span class="text-gray-600 font-medium">Validando evaluación técnica...</span>
+
+  <div *ngIf="buscandoTest" class="p-10 flex flex-col items-center justify-center bg-gray-50 rounded-[var(--radius-sena)] border border-dashed border-gray-200 animate-pulse">
+    <i class="pi pi-spin pi-spinner text-sena text-4xl mb-4"></i>
+    <p class="text-gray-500 font-bold tracking-tight italic">Consultando repositorio de pruebas...</p>
   </div>
 
   <div *ngIf="!buscandoTest && testActual" 
-       class="flex flex-col md:flex-row justify-between items-center p-6 bg-white border-l-4 border-sena rounded-r-[var(--radius-sena)] shadow-md">
-    <div class="flex items-center gap-4">
-      <div class="bg-sena-alpha p-3 rounded-full text-sena">
-        <i class="pi pi-file-check text-2xl"></i>
+       class="bg-white rounded-[var(--radius-sena)] shadow-xl border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-300 group">
+    
+    <div class="absolute left-0 top-0 h-full w-2 bg-sena"></div>
+
+    <div class="p-8 flex flex-col lg:flex-row justify-between items-center gap-8">
+      <div class="flex items-center gap-6">
+        <div class="bg-sena-alpha p-5 rounded-2xl text-sena shadow-inner group-hover:scale-105 transition-transform">
+          <i class="pi pi-file-check text-4xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2.5 py-0.5 bg-sena-alpha text-sena text-[10px] font-black uppercase rounded-md">Evaluación Técnica</span>
+            <span class="px-2.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-md border border-blue-100">
+              <i class="pi pi-tag mr-1"></i> {{ testActual.ciclo_nombre }}
+            </span>
+          </div>
+          <h3 class="text-2xl font-black text-sena-black">{{ testActual.nombre_test }}</h3>
+          <div class="flex gap-5 mt-3">
+             <span class="text-sm text-gray-500"><i class="pi pi-chart-bar mr-1 text-sena"></i> Ponderación: <b class="text-sena-black">{{ testActual.ponderacion }}%</b></span>
+             <span class="text-sm text-gray-500"><i class="pi pi-list mr-1 text-sena"></i> Preguntas: <b class="text-sena-black">{{ testActual.preguntas_json?.length || 0 }}</b></span>
+          </div>
+        </div>
       </div>
-      <div>
-        <h3 class="text-xl font-bold text-sena-black">{{ testActual.nombre_test }}</h3>
-        <p class="text-gray-500">Ponderación: <span class="font-bold text-sena">{{ testActual.ponderacion }}%</span></p>
+
+      <div class="flex gap-3 w-full lg:w-auto">
+        <button class="flex-1 lg:flex-none px-6 py-3 text-gray-400 font-bold hover:text-sena transition-colors flex items-center justify-center gap-2">
+          <i class="pi pi-eye"></i> Previsualizar
+        </button>
+        <button class="flex-1 lg:flex-none btn-sena shadow-lg shadow-sena/20 px-10 py-3 flex items-center justify-center gap-2 active:scale-95 transition-transform">
+          <i class="pi pi-pencil"></i> Editar Test
+        </button>
       </div>
     </div>
-    <button class="btn-sena mt-4 md:mt-0">
-      <i class="pi pi-pencil"></i> Editar Test
-    </button>
+    
+    <div class="bg-gray-50/80 px-8 py-3 border-t border-gray-100 flex justify-between items-center">
+      <span class="text-[10px] font-bold text-gray-400 tracking-widest">REF: #SGO-{{ testActual.test_id }}</span>
+    </div>
   </div>
 
   <div *ngIf="!buscandoTest && !testActual" 
-       class="p-10 border-2 border-dashed border-gray-200 bg-gray-50/30 rounded-[var(--radius-sena)] flex flex-col items-center text-center">
-    <div class="bg-amber-100 p-4 rounded-full mb-4">
-      <i class="pi pi-sparkles text-amber-600 text-3xl"></i>
+       class="p-12 border-2 border-dashed border-gray-200 bg-gray-50/40 rounded-[var(--radius-sena)] flex flex-col items-center text-center animate-in fade-in duration-500">
+    <div class="bg-amber-100 p-6 rounded-full mb-6 relative">
+      <i class="pi pi-sparkles text-amber-600 text-4xl"></i>
+      <span class="absolute top-0 right-0 flex h-3 w-3">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+      </span>
     </div>
-    <h3 class="text-xl font-bold text-sena-black mb-2">No se encontró una evaluación</h3>
-    <p class="text-gray-500 max-w-md mb-6">
-      Esta competencia no tiene un test configurado. Puedes generar uno automáticamente utilizando los resultados de aprendizaje (RAP).
+    <h3 class="text-2xl font-black text-sena-black mb-3 italic">Sin evaluación activa</h3>
+    <p class="text-gray-500 max-w-lg mb-8 leading-relaxed">
+      Esta competencia no tiene un test configurado. Puedes generar uno automáticamente utilizando inteligencia artificial basada en los RAP.
     </p>
-    <button (click)="prepararContexto()" class="btn-sena bg-sena-black hover:bg-black">
-      <i class="pi pi-bolt"></i> Generar con IA
+    <button (click)="prepararContexto()" class="btn-sena bg-sena-black hover:bg-black scale-110 shadow-2xl px-12 py-4 flex items-center gap-3 active:scale-95 transition-all">
+      <i class="pi pi-bolt text-amber-400 text-xl"></i>
+      <span class="text-lg">GENERAR CON IA</span>
     </button>
   </div>
-
 </div>
 
 <app-generartest-modal

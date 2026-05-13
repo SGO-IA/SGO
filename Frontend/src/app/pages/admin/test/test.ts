@@ -62,45 +62,43 @@ export class Test {
   prepararContexto() {
     if (!this.competenciaSeleccionada) return;
     
-    // Buscamos el nombre de la competencia para pasarlo al modal
     const comp = this.competenciasFiltradas.find(c => c.id === this.competenciaSeleccionada);
     this.nombreCompetenciaElegida = comp ? comp.nombre : '';
-
-    // Abrimos el modal directamente
     this.mostrarModalGenerar = true;
 
-    // La lógica de iaService.obtenerEstructuraCompetencia la moveremos 
-    // dentro del modal más adelante para que el modal gestione su propia carga.
   }
 
-  onCompetenciaChange(id: any) {
-  this.competenciaSeleccionada = id;
-  this.testActual = null; // Limpiar test anterior
-  this.estructura = null;
+onCompetenciaChange(id: any) {
+    this.competenciaSeleccionada = id;
+    this.testActual = null;
+    if (!id) return;
 
-  if (!id) return;
+    this.buscandoTest = true;
 
-  this.buscandoTest = true;
-
-  this.iaService.consultarTestPorCompetencia(id).subscribe({
-    next: (res) => {
-      this.buscandoTest = false;
-      if (res.existe) {
-        this.testActual = res.data;
-      }
-    },
-    error: () => {
-      this.buscandoTest = false;
-      console.error('Error al verificar el test');
-    }
-  });
+    this.iaService.consultarTestPorCompetencia(id).subscribe({
+        next: (res) => {
+            this.buscandoTest = false;
+            console.log("Respuesta completa:", res); // MIRA ESTO EN LA CONSOLA
+            
+            if (res && res.existe) {
+                // Asignamos la data interna
+                this.testActual = res.data;
+            } else {
+                this.testActual = null;
+            }
+        },
+        error: (err) => {
+            this.buscandoTest = false;
+            console.error('Error:', err);
+        }
+    });
 }
 
 procesarGeneracion(configuracionIA: any) {
   if (!this.competenciaSeleccionada) return;
 
   this.analizandoCompetencia = true; 
-  this.dataIA_ParaModal = null; // Limpiar previo
+  this.dataIA_ParaModal = null;
 
   const payload = {
     competenciaId: this.competenciaSeleccionada,
@@ -156,19 +154,12 @@ confirmarYGuardar(evento: any) {
         confirmButtonText: 'Aceptar'
       }).then((result) => {
         if (result.isConfirmed) {
-          // --- LIMPIEZA TOTAL DE MODALES Y VISTAS ---
-          
-          // 1. Cerramos el modal de la IA
+
           this.mostrarModalGenerar = false;
           this.dataIA_ParaModal = null;
 
-          // 2. IMPORTANTE: Forzamos la recarga de la competencia.
-          // Al llamar a onCompetenciaChange, el servicio buscará el test que acabamos de guardar.
-          // Como ahora 'res.existe' será TRUE, la UI ocultará automáticamente el 
-          // componente de "Crear Test" y mostrará la tabla del test guardado.
           this.onCompetenciaChange(this.competenciaSeleccionada);
           
-          // 3. Resetear flags de UI por si acaso
           this.estructura = null; 
         }
       });

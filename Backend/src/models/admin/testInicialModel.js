@@ -54,24 +54,21 @@ getEstructuraPedagogica: async (competenciaId) => {
     }));
 },
 
-    obtenerTestPorCompetencia: async (competenciaId) => {
-        const consulta = `
-            SELECT 
-                t.id AS test_id,
-                t.nombre_test,
-                t.preguntas_json,
-                t.ponderacion,
-                s.tipo_seccion,
-                c.titulo AS ciclo_nombre
-            FROM competencias comp
-            INNER JOIN ovas o ON o.competencia_id = comp.id
-            INNER JOIN ciclos_didacticos c ON c.ova_id = o.id
-            INNER JOIN ciclo_secciones s ON s.ciclo_id = c.id
-            INNER JOIN tests_ia t ON t.seccion_id = s.id
-            WHERE comp.id = ?
-            LIMIT 1;
-        `;
-        const [filas] = await db.execute(consulta, [competenciaId]);
-        return filas[0] || null;
-    }
+obtenerTestPorCompetencia: async (competenciaId) => {
+    const consulta = `
+        SELECT 
+            id AS test_id,
+            nombre_test,
+            preguntas_json,
+            -- Como esta tabla no tiene ponderación, ponemos 100 por defecto o el campo que prefieras
+            100 AS ponderacion, 
+            'General' AS tipo_seccion,
+            'Test Diagnóstico' AS ciclo_nombre
+        FROM tests_diagnosticos
+        WHERE competencia_id = ? AND activo = 1
+        LIMIT 1;
+    `;
+    const [filas] = await db.execute(consulta, [competenciaId]);
+    return filas[0] || null;
+}
 };
