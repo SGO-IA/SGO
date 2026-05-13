@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, signal } from '@angular/core';
-import { CrearSemillaComponent } from '../../../components/coordinador/crear-semilla-component/crear-semilla-component';
+import { CrearSemillaComponent } from '../../../components/coordinador/crear-semilla-components/crear-semilla-components';
 
 @Component({
   selector: 'app-semillas',

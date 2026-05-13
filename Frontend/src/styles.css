@@ -53,6 +53,32 @@
   .drop-zone-sena {
     @apply relative border-2 border-dashed rounded-xl p-12 transition-all duration-200 text-center;
   }
+
+  .select-multiple-sena {
+    @apply w-full p-2 rounded-[var(--radius-sena)] border border-gray-200 
+           bg-gray-50/50 text-sena-black font-sans outline-none
+           transition-all duration-[var(--animate-fast)]
+           focus:bg-white focus:border-sena focus:ring-4 focus:ring-sena-alpha;
+  }
+
+  /* Estilo para las opciones */
+  .select-multiple-sena option {
+    @apply px-4 py-3 rounded-lg mb-1 transition-all cursor-pointer border-l-4 border-transparent;
+  }
+
+  /* El truco para quitar el verde potente del navegador */
+  .select-multiple-sena option:checked {
+    background-color: #f0fdf4 !important; /* Un verde casi blanco (emerald-50) */
+    color: var(--color-sena-dark) !important;
+    border-left-color: var(--color-sena); /* Solo una línea verde a la izquierda */
+    font-weight: 600;
+  }
+
+  .select-multiple-sena option:hover {
+    @apply bg-gray-100;
+  }
+
+  
 }
 
 /* Asegura que el body no haga scroll, el scroll lo maneja el Main Content */

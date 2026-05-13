@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CrearSemillaComponent } from './crear-semilla-component';
+import { CrearSemillaComponents } from './crear-semilla-components';
 
-describe('CrearSemillaComponent', () => {
-  let component: CrearSemillaComponent;
-  let fixture: ComponentFixture<CrearSemillaComponent>;
+describe('CrearSemillaComponents', () => {
+  let component: CrearSemillaComponents;
+  let fixture: ComponentFixture<CrearSemillaComponents>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CrearSemillaComponent]
+      imports: [CrearSemillaComponents]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(CrearSemillaComponent);
+    fixture = TestBed.createComponent(CrearSemillaComponents);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

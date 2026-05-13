@@ -1,0 +1,173 @@
+<div class="p-8">
+  <div class="flex items-center gap-4 mb-8">
+    <div class="bg-sena-alpha/10 p-3 rounded-2xl">
+      <i [class]="mostrarExpertos() ? 'pi pi-users text-sena' : 'pi pi-database text-sena'" class="text-2xl"></i>
+    </div>
+    <div>
+      <h2 class="text-2xl font-bold text-sena-black font-sans">
+        {{ mostrarExpertos() ? 'Asignar Expertos Temáticos' : 'Configurar Nueva Semilla' }}
+      </h2>
+      <p class="text-gray-500 text-sm font-sans">
+        {{ mostrarExpertos() ? 'Selecciona los profesionales que construirán el contenido.' : 'Selecciona un programa para heredar su estructura pedagógica.' }}
+      </p>
+    </div>
+  </div>
+
+  <form class="space-y-6" (submit)="$event.preventDefault()">
+    
+    <ng-container *ngIf="!mostrarExpertos()">
+      <div class="space-y-2">
+        <div class="flex justify-between items-center">
+          <label class="text-sm font-semibold text-sena-black">Programa de Formación</label>
+          <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
+            * Solo programas con diseño curricular completo
+          </span>
+        </div>
+        
+        <div class="relative group">
+          <select (change)="onProgramaChange($event)" class="input-sena appearance-none pr-10">
+            <option value="" disabled selected>Seleccione un programa...</option>
+            <option *ngFor="let p of programas()" 
+                    [value]="p.programa_id" 
+                    [disabled]="!p.es_completo"
+                    [class.text-gray-400]="!p.es_completo"
+                    class="py-2">
+              {{p.nombre}} ({{p.codigo}}) - V{{p.version}} 
+              {{ !p.es_completo ? '⚠️ (Incompleto)' : '' }}
+            </option>
+          </select>
+          <i class="pi pi-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sena transition-colors pointer-events-none"></i>
+        </div>
+
+        <div *ngIf="loading()" class="flex items-center gap-2 text-sena text-xs mt-2 animate-pulse">
+          <i class="pi pi-spin pi-spinner"></i>
+          <span>Consultando estructura pedagógica...</span>
+        </div>
+      </div>
+
+      <div *ngIf="estructuraSeleccionada()" 
+           class="bg-sena-alpha/10 border border-sena/20 rounded-[var(--radius-sena)] p-5 animate-in slide-in-from-top-2 duration-300">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-sena-dark flex items-center gap-2 text-sm">
+            <i class="pi pi-verified"></i> Estructura Pedagógica Detectada
+          </h3>
+          <span class="text-[10px] bg-sena text-white px-2 py-0.5 rounded font-bold">LISTO PARA SEMILLA</span>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-white/60 p-3 rounded-lg border border-sena/10">
+            <p class="text-[10px] uppercase text-gray-400 font-bold mb-1">Competencias</p>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-list text-sena text-xs"></i>
+              <span class="text-lg font-bold text-sena-black">{{ estructuraSeleccionada().length }}</span>
+            </div>
+          </div>
+          
+          <div class="bg-white/60 p-3 rounded-lg border border-sena/10">
+            <p class="text-[10px] uppercase text-gray-400 font-bold mb-1">Resultados (RAPs)</p>
+            <div class="flex items-center gap-2">
+              <i class="pi pi-check-square text-sena text-xs"></i>
+              <span class="text-lg font-bold text-sena-black">{{ getTotalRaps() }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+<ng-container *ngIf="mostrarExpertos()">
+  <div class="space-y-4 animate-in fade-in zoom-in duration-300">
+    
+    <div class="bg-sena-alpha border-l-4 border-sena p-4 rounded-r-lg">
+      <div class="flex items-center">
+        <i class="pi pi-info-circle text-sena mr-2"></i>
+        <p class="text-[11px] text-sena-black leading-tight">
+          Selecciona los expertos temáticos que participarán en la construcción de esta semilla.
+        </p>
+      </div>
+    </div>
+
+    <div class="space-y-2">
+      <label class="text-sm font-semibold text-sena-black ml-1 flex items-center gap-2">
+        <i class="pi pi-users text-sena"></i>
+        Expertos Temáticos Disponibles
+      </label>
+      
+      <div class="select-multiple-sena min-h-[220px] max-h-[300px] overflow-y-auto custom-scrollbar border-2 p-2 space-y-1">
+        
+        <div *ngFor="let exp of expertos()" 
+             (click)="toggleExperto(exp.id)"
+             [class.bg-sena-alpha]="isSelected(exp.id)"
+             [class.border-sena]="isSelected(exp.id)"
+             class="flex items-center justify-between p-3 rounded-lg cursor-pointer border-l-4 border-transparent hover:bg-gray-100 transition-all group">
+          
+          <div class="flex flex-col">
+            <span class="text-sm font-medium" [class.text-sena-dark]="isSelected(exp.id)">
+              {{ exp.nombre }}
+            </span>
+            <span class="text-[10px] text-gray-400 group-hover:text-gray-500">
+              {{ exp.correo }}
+            </span>
+          </div>
+
+          <i class="pi transition-all duration-200" 
+             [class.pi-check-circle]="isSelected(exp.id)" 
+             [class.text-sena]="isSelected(exp.id)"
+             [class.scale-110]="isSelected(exp.id)"
+             [class.pi-circle]="!isSelected(exp.id)"
+             [class.text-gray-300]="!isSelected(exp.id)">
+          </i>
+        </div>
+
+        <div *ngIf="expertos().length === 0" class="text-center py-10">
+          <i class="pi pi-user-minus text-gray-300 text-2xl mb-2"></i>
+          <p class="text-xs text-gray-400">No se encontraron expertos disponibles.</p>
+        </div>
+
+      </div>
+
+      <div class="flex justify-between items-center px-2 py-2 bg-gray-50/80 rounded-lg border border-gray-100">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-tag text-[10px] text-sena"></i>
+          <span class="text-[10px] text-gray-500 uppercase font-bold tracking-tight">
+            {{ expertosSeleccionados().length }} Seleccionados
+          </span>
+        </div>
+        
+        <button type="button" 
+                *ngIf="expertosSeleccionados().length > 0"
+                (click)="expertosSeleccionados.set([])"
+                class="text-[10px] text-gray-400 hover:text-red-500 transition-colors font-bold flex items-center gap-1 uppercase">
+          <i class="pi pi-trash text-[9px]"></i>
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+    <div class="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">
+      
+      <button *ngIf="mostrarExpertos()" 
+              type="button" 
+              (click)="mostrarExpertos.set(false)" 
+              class="px-6 py-2.5 text-gray-500 font-semibold hover:bg-gray-50 rounded-md transition-colors">
+        Atrás
+      </button>
+
+      <button *ngIf="!mostrarExpertos()" 
+              type="button" 
+              (click)="cancelar()" 
+              class="px-6 py-2.5 text-gray-500 font-semibold hover:bg-gray-50 rounded-md transition-colors">
+        Cancelar
+      </button>
+
+      <button type="button" 
+              (click)="mostrarExpertos() ? confirmarCreacion() : irAExpertos()"
+              [disabled]="(!estructuraSeleccionada() && !mostrarExpertos()) || (mostrarExpertos() && expertosSeleccionados().length === 0) || loading()"
+              class="btn-sena disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-sena-alpha">
+        <span>{{ mostrarExpertos() ? 'Crear Semilla' : 'Confirmar y Continuar' }}</span>
+        <i [class]="mostrarExpertos() ? 'pi pi-check-circle' : 'pi pi-arrow-right'" class="text-sm"></i>
+      </button>
+    </div>
+  </form>
+</div>
