@@ -17,6 +17,11 @@ export const routes: Routes = [
     title: 'S.G.O - Ayuda'
   },
   {
+    path: 'privacidad',
+    loadComponent: () => import('./pages/public/privacidad/privacidad').then(m => m.Privacidad),
+    title: 'S.G.O - Privacidad'
+  },
+  {
     path: 'login',
     loadComponent: () => import('./pages/public/login/login').then(m => m.Login),
     title: 'S.G.O - Iniciar Sesión'

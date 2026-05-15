@@ -1,0 +1,134 @@
+<div class="min-h-screen bg-white font-sans selection:bg-[#39A900] selection:text-white flex flex-col">
+  
+  <app-navbar></app-navbar>
+
+  <main class="flex-grow">
+    <header class="py-20 bg-gray-50 text-center px-6 relative overflow-hidden">
+      <div class="absolute -top-24 -right-24 w-96 h-96 bg-[#39A900]/10 rounded-full blur-[100px] opacity-30 pointer-events-none"></div>
+      
+      <div class="max-w-4xl mx-auto relative z-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white text-[#39A900] text-[10px] font-black uppercase tracking-widest border border-gray-100 mb-6 shadow-sm">
+          <i class="pi pi-shield"></i>
+          Compromiso de Seguridad
+        </div>
+        <h1 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4">
+          Tu privacidad es nuestra <span class="text-[#39A900]">prioridad</span>
+        </h1>
+        <p class="text-gray-500 font-medium max-w-xl mx-auto text-sm md:text-base">
+          En SGO nos tomamos en serio la protección de tus datos personales y académicos bajo la normativa colombiana vigente.
+        </p>
+      </div>
+    </header>
+
+    <article class="max-w-4xl mx-auto px-6 py-20 w-full space-y-20">
+      
+      <section class="grid md:grid-cols-[200px_1fr] gap-8">
+        <aside>
+          <h2 class="text-gray-900 font-black uppercase tracking-widest text-xs mt-1">
+            01. Recolección
+          </h2>
+        </aside>
+        <div class="space-y-6">
+          <h3 class="text-2xl font-black text-gray-900 tracking-tight">¿Qué información procesamos?</h3>
+          <p class="text-gray-500 leading-relaxed text-sm">
+            Para garantizar el acceso seguro y el funcionamiento del SGO, procesamos datos específicos mediante servicios institucionales y protocolos de autorización segura:
+          </p>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-[#39A900]/20 transition-all duration-300 group">
+              <i class="pi pi-google text-[#4285F4] text-lg mt-1 transition-transform group-hover:scale-110"></i>
+              <div>
+                <span class="block text-[10px] font-black text-gray-400 uppercase tracking-tighter">Autenticación</span>
+                <span class="text-xs font-bold text-gray-700">OAuth 2.0 Google Cloud</span>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-[#39A900]/20 transition-all duration-300 group">
+              <i class="pi pi-user text-[#39A900] text-lg mt-1 transition-transform group-hover:scale-110"></i>
+              <div>
+                <span class="block text-[10px] font-black text-gray-400 uppercase tracking-tighter">Identidad</span>
+                <span class="text-xs font-bold text-gray-700">Correo y Fotografía</span>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-[#39A900]/20 transition-all duration-300 group">
+              <i class="pi pi-sync text-[#39A900] text-lg mt-1 transition-transform group-hover:scale-110"></i>
+              <div>
+                <span class="block text-[10px] font-black text-gray-400 uppercase tracking-tighter">Actividad</span>
+                <span class="text-xs font-bold text-gray-700">Interacciones con el OVA</span>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:border-[#39A900]/20 transition-all duration-300 group">
+              <i class="pi pi-chart-line text-[#39A900] text-lg mt-1 transition-transform group-hover:scale-110"></i>
+              <div>
+                <span class="block text-[10px] font-black text-gray-400 uppercase tracking-tighter">Rendimiento</span>
+                <span class="text-xs font-bold text-gray-700">Resultados Académicos</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-[10px] text-gray-400 font-medium italic mt-4 bg-gray-50 p-3 rounded-lg inline-block border border-gray-100">
+            * La fotografía y el correo son obtenidos exclusivamente para la personalización del dashboard y la comunicación de alertas institucionales.
+          </p>
+        </div>
+      </section>
+
+      <section class="grid md:grid-cols-[200px_1fr] gap-8 p-8 md:p-12 rounded-[3rem] bg-[#D77655]/5 border border-[#D77655]/10 relative overflow-hidden">
+        <aside>
+          <h2 class="text-[#D77655] font-black uppercase tracking-widest text-xs mt-1">
+            02. Claude IA
+          </h2>
+        </aside>
+        <div class="space-y-6 relative z-10">
+          <h3 class="text-2xl font-black text-gray-900 tracking-tight text-center md:text-left">Tratamiento con Inteligencia Artificial</h3>
+          <p class="text-gray-600 leading-relaxed text-sm">
+            El SGO utiliza modelos de <strong>Anthropic Claude</strong> para el análisis de datos pedagógicos. Garantizamos que:
+          </p>
+          <div class="grid gap-4">
+            <div class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-[#D77655]/20 shadow-sm flex items-start gap-4">
+              <i class="pi pi-lock text-[#D77655] mt-1"></i>
+              <p class="text-xs font-medium text-gray-600 italic">
+                "Los datos personales no se utilizan para entrenar modelos públicos de IA. Toda interacción es privada y temporal."
+              </p>
+            </div>
+            <div class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-[#D77655]/20 shadow-sm flex items-start gap-4">
+              <i class="pi pi-shield text-[#D77655] mt-1"></i>
+              <p class="text-xs font-medium text-gray-600 italic">
+                "El procesamiento se realiza mediante API segura con cifrado de extremo a extremo."
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid md:grid-cols-[200px_1fr] gap-8 pb-10">
+        <aside>
+          <h2 class="text-gray-900 font-black uppercase tracking-widest text-xs mt-1">
+            03. Tus Derechos
+          </h2>
+        </aside>
+        <div class="space-y-4">
+          <h3 class="text-2xl font-black text-gray-900 tracking-tight text-center md:text-left">Ley 1581 de 2012</h3>
+          <p class="text-gray-500 leading-relaxed text-sm">
+            Como titular de la información en el ecosistema SENA, tienes derecho a conocer, actualizar y rectificar tus datos personales frente a los responsables del tratamiento de la información.
+          </p>
+          <div class="pt-6">
+            <button class="px-8 py-4 bg-gray-900 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-full hover:bg-[#39A900] transition-all duration-300 shadow-lg shadow-gray-200">
+              Gestionar mi información
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </article>
+
+    <footer class="py-12 border-t border-gray-100 text-center bg-gray-50/50">
+      <p class="text-[10px] text-gray-400 font-black uppercase tracking-[0.4em]">
+        SGO V.2.0 • Actualizado Mayo 2026 • CBI Palmira
+      </p>
+    </footer>
+  </main>
+
+  <app-footer></app-footer>
+</div>
