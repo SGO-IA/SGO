@@ -12,6 +12,11 @@ export const routes: Routes = [
     title: 'S.G.O - Inicio'
   },
   {
+    path: 'ayuda',
+    loadComponent: () => import('./pages/public/ayuda/ayuda').then(m => m.Ayuda),
+    title: 'S.G.O - Ayuda'
+  },
+  {
     path: 'login',
     loadComponent: () => import('./pages/public/login/login').then(m => m.Login),
     title: 'S.G.O - Iniciar Sesión'

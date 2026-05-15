@@ -1,0 +1,85 @@
+<div class="min-h-screen bg-[var(--color-sena-gray-light)] font-sans selection:bg-sena selection:text-white flex flex-col">
+  
+  <app-navbar></app-navbar>
+
+  <header class="relative overflow-hidden py-20 flex flex-col items-center justify-center text-center px-6">
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sena-alpha rounded-full blur-[120px] -z-10 opacity-30"></div>
+    
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white text-sena text-[10px] font-black uppercase tracking-widest border border-sena/10 mb-6 shadow-sm">
+      <i class="pi pi-question-circle"></i>
+      Centro de Soporte SGO
+    </div>
+    
+    <h1 class="text-4xl md:text-6xl font-black text-sena-black tracking-tight mb-6">
+      ¿Cómo podemos <span class="text-sena">ayudarte</span> hoy?
+    </h1>
+    
+    <div class="w-full max-w-2xl relative group">
+      <i class="pi pi-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sena transition-colors"></i>
+      <input type="text" placeholder="Busca tutoriales, guías o soluciones..." 
+        class="w-full pl-14 pr-6 py-5 rounded-3xl border border-gray-100 bg-white shadow-xl shadow-sena-alpha/5 focus:outline-none focus:ring-2 focus:ring-sena/20 transition-all font-medium text-gray-600">
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 pb-24 w-full">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+      
+      <div class="p-8 rounded-[2.5rem] bg-white border border-gray-100 hover:border-sena/30 hover:shadow-xl transition-all group cursor-pointer">
+        <div class="w-12 h-12 bg-sena-alpha rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+          <i class="pi pi-book text-sena text-xl"></i>
+        </div>
+        <h3 class="text-xl font-black text-sena-black mb-2">Manuales de Uso</h3>
+        <p class="text-gray-400 text-sm leading-relaxed">Aprende a navegar por el sistema, desde la carga de guías hasta la gestión de remisiones.</p>
+      </div>
+
+      <div class="p-8 rounded-[2.5rem] bg-white border border-gray-100 hover:border-sena/30 hover:shadow-xl transition-all group cursor-pointer">
+        <div class="w-12 h-12 bg-[#D77655]/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+          <svg width="24" height="24" viewBox="0 0 512 509" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#D77655" d="M115 0h281c63 0 116 52 116 116v278c0 64-53 116-116 116H115C52 510 0 458 0 394V116C0 52 52 0 115 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-black text-sena-black mb-2">Sobre Claude IA</h3>
+        <p class="text-gray-400 text-sm leading-relaxed">Preguntas frecuentes sobre cómo la IA procesa tus datos y genera los OVAs con precisión.</p>
+      </div>
+
+      <div class="p-8 rounded-[2.5rem] bg-white border border-gray-100 hover:border-sena/30 hover:shadow-xl transition-all group cursor-pointer">
+        <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+          <i class="pi pi-discord text-blue-500 text-xl"></i>
+        </div>
+        <h3 class="text-xl font-black text-sena-black mb-2">Comunidad ADSO</h3>
+        <p class="text-gray-400 text-sm leading-relaxed">Conéctate con los desarrolladores del proyecto para reportar bugs o sugerir mejoras.</p>
+      </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-2xl font-black text-sena-black mb-8 flex items-center gap-3">
+        <span class="w-8 h-1 bg-sena rounded-full"></span>
+        Preguntas Populares
+      </h2>
+
+      <div class="space-y-4">
+        <details class="group bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all">
+          <summary class="flex items-center justify-between p-6 cursor-pointer list-none outline-none">
+            <span class="font-bold text-sena-black group-open:text-sena transition-colors">¿Cómo subo una guía de aprendizaje para procesar con IA?</span>
+            <i class="pi pi-chevron-down group-open:rotate-180 transition-transform text-gray-300"></i>
+          </summary>
+          <div class="px-6 pb-6 text-sm text-gray-500 leading-relaxed">
+            Para procesar una guía, ve al módulo "Mis OVAs", haz clic en "Nuevo" y sube tu archivo en formato PDF o Word. Claude analizará el contenido automáticamente y te sugerirá las competencias y el banco de preguntas.
+          </div>
+        </details>
+
+        <details class="group bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all">
+          <summary class="flex items-center justify-between p-6 cursor-pointer list-none outline-none">
+            <span class="font-bold text-sena-black group-open:text-sena transition-colors">¿Quién puede ver los reportes de riesgo de deserción?</span>
+            <i class="pi pi-chevron-down group-open:rotate-180 transition-transform text-gray-300"></i>
+          </summary>
+          <div class="px-6 pb-6 text-sm text-gray-500 leading-relaxed">
+            Los reportes son confidenciales y solo son visibles para el Instructor de la ficha, el Coordinador Académico y el equipo de Bienestar al Aprendiz encargado del seguimiento.
+          </div>
+        </details>
+      </div>
+    </div>
+</main>
+
+  <app-footer></app-footer>
+</div>
