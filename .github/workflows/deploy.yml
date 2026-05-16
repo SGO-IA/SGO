@@ -6,17 +6,14 @@ on:
       - main
 
 jobs:
-  # JOB 1: VALIDACIÓN (Asegura la sintaxis antes de tocar producción)
   validate-code:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
-      
       - name: Verify syntax (Dry Run)
-        run: echo "Validando que el código no tenga errores críticos antes de saltar al túnel..."
+        run: echo "Validando sintaxis..."
 
-  # JOB 2: DESPLIEGUE (Solo corre si el de arriba pasa a verde)
   deploy:
     runs-on: ubuntu-latest
     needs: validate-code
@@ -24,32 +21,30 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      # 1. Instalar el binario de cloudflared en la máquina temporal de GitHub
+      # 1. Instalar cloudflared en la máquina de GitHub
       - name: Install Cloudflare Tunnel Client
         run: |
           curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
           sudo dpkg -i cloudflared.deb
           rm cloudflared.deb
 
-      # 2. Configurar el SSH nativo del runner para usar el ProxyCommand hacia tu dominio
-      - name: Setup SSH Config for Cloudflare Tunnel
+      # 2. Levantar un proxy local en el runner apuntando a tu túnel
+      # Esto abre el puerto local 2222 del runner y lo conecta de forma segura a tu servidor
+      - name: Start Cloudflare SSH Proxy
         run: |
-          mkdir -p ~/.ssh
-          echo "Host ${{ secrets.SSH_HOST }}" >> ~/.ssh/config
-          echo "    ProxyCommand cloudflared access ssh --hostname %h" >> ~/.ssh/config
-          chmod 600 ~/.ssh/config
+          cloudflared access tcp --hostname ${{ secrets.SSH_HOST }} --listener 127.0.0.1:2222 &
+          sleep 5 # Esperamos unos segundos a que el túnel se enganche de forma estable
 
-      # 3. Conexión segura e inyección del .env en la subcarpeta correspondiente
+      # 3. Conectarse al puerto local del proxy (que redirige al servidor real)
       - name: Executing remote SSH commands over Tunnel
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: 127.0.0.1                     # 🚀 Nos conectamos localmente porque el túnel ya está abierto aquí
+          port: 2222                          # Usamos el puerto del listener de arriba
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
           script: |
             set -e
-            # Cambia esta ruta a la ubicación exacta de este monorepo en el VPS
             cd /home/sena/proyectos/sgo-ia
             
             git fetch origin main
