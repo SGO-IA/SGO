@@ -25,7 +25,7 @@ services:
   # 3. Servidor de la lógica de negocio (Express)
   sgo-backend:
     build:
-      context: ./backend
+      context: ./Backend
       dockerfile: Dockerfile
     container_name: sgo-backend
     restart: always
@@ -63,7 +63,7 @@ services:
   # 4. Interfaz del usuario (Angular + Nginx)
   sgo-frontend:
     build:
-      context: ./frontend
+      context: ./Frontend
       dockerfile: Dockerfile
     container_name: sgo-frontend
     restart: always
