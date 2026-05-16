@@ -49,7 +49,8 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 2222 ${{ secrets.SSH_USER }}@127.0.0.1 << 'EOF'
             set -e
             
-            # 📁 Entramos directo a la ruta que acabas de crear en tu Home
+            # 📁 Creamos la ruta por si acaso y nos paramos en ella
+            mkdir -p /home/${{ secrets.SSH_USER }}/var/www/SGO
             cd /home/${{ secrets.SSH_USER }}/var/www/SGO
             
             # 🔄 Si la carpeta está vacía (no hay un repositorio git), clonamos por primera vez
@@ -58,15 +59,19 @@ jobs:
               git clone https://github.com/SGO-IA/SGO.git .
             fi
             
+            # Aseguramos estar parados en la raíz del proyecto antes de actualizarlo
+            cd /home/${{ secrets.SSH_USER }}/var/www/SGO
+            
             # Traemos los cambios del push actual
             git fetch origin main
             git reset --hard origin/main
             
             # 📝 ESCRITURA DEL .ENV CORRECTO DIRECTAMENTE EN LA CARPETA BACKEND
-            cat <<EOT > backend/.env
+            # Usamos EOF_ENV completamente aislado para evitar confusiones de Bash
+            cat << 'EOF_ENV' > backend/.env
             NODE_ENV=production
             PORT=3000
-            DB_HOST=sgo
+            DB_HOST=sgo-db
             DB_USER=root
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_NAME=${{ secrets.DB_NAME }}
@@ -82,7 +87,7 @@ jobs:
             FRONTEND_URL=${{ secrets.FRONTEND_URL }}
             REDIS_HOST=sgo-redis
             REDIS_PORT=6379
-            EOT
+            EOF_ENV
             
             # Orquestación de infraestructura con Docker
             docker compose down
