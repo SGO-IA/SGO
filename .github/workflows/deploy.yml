@@ -43,51 +43,47 @@ jobs:
           cloudflared access tcp --hostname ${{ secrets.SSH_HOST }} --listener 127.0.0.1:2222 &
           sleep 5 # Tiempo prudente para que el túnel sincronice
 
-      # 4. Despliegue nativo usando la ruta exacta de tu Home
+      # 4. Despliegue nativo usando echo directo (Inmune a errores de indentación)
       - name: Deploy to Server via Native SSH Over Tunnel
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 2222 ${{ secrets.SSH_USER }}@127.0.0.1 << 'EOF'
             set -e
             
-            # 📁 Creamos la ruta por si acaso y nos paramos en ella
-            mkdir -p /home/${{ secrets.SSH_USER }}/var/www/SGO
+            # 📁 Nos paramos firmes en la ruta física de tu Home
             cd /home/${{ secrets.SSH_USER }}/var/www/SGO
             
-            # 🔄 Si la carpeta está vacía (no hay un repositorio git), clonamos por primera vez
+            # 🔄 Si la carpeta está vacía por alguna razón, clonamos
             if [ ! -d ".git" ]; then
               echo "Clonando el repositorio SGO por primera vez..."
               git clone https://github.com/SGO-IA/SGO.git .
+              cd /home/${{ secrets.SSH_USER }}/var/www/SGO
             fi
             
-            # Aseguramos estar parados en la raíz del proyecto antes de actualizarlo
-            cd /home/${{ secrets.SSH_USER }}/var/www/SGO
-            
-            # Traemos los cambios del push actual
+            # Actualizamos el repositorio con las últimas directrices de main
             git fetch origin main
             git reset --hard origin/main
             
-            # 📝 ESCRITURA DEL .ENV CORRECTO DIRECTAMENTE EN LA CARPETA BACKEND
-            # Usamos EOF_ENV completamente aislado para evitar confusiones de Bash
-            cat << 'EOF_ENV' > backend/.env
-            NODE_ENV=production
-            PORT=3000
-            DB_HOST=sgo-db
-            DB_USER=root
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            DB_NAME=${{ secrets.DB_NAME }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            SESSION_SECRET=${{ secrets.SESSION_SECRET }}
-            RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
-            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-            GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
-            ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
-            ANTHROPIC_MODEL=${{ secrets.ANTHROPIC_MODEL }}
-            ANTHROPIC_MAX_TOKENS=${{ secrets.ANTHROPIC_MAX_TOKENS }}
-            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
-            REDIS_HOST=sgo-redis
-            REDIS_PORT=6379
-            EOF_ENV
+            # 📝 ESCRITURA DEL .ENV USANDO ECHO (Línea por línea, sin heredar bloqueos)
+            echo "NODE_ENV=production" > backend/.env
+            echo "PORT=3000" >> backend/.env
+            echo "DB_HOST=sgo-db" >> backend/ .env
+            echo "DB_USER=root" >> backend/.env
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> backend/.env
+            echo "DB_NAME=${{ secrets.DB_NAME }}" >> backend/.env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> backend/.env
+            echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> backend/.env
+            echo "RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}" >> backend/.env
+            echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> backend/.env
+            echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> backend/.env
+            echo "GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}" >> backend/.env
+            echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> backend/.env
+            echo "ANTHROPIC_MODEL=${{ secrets.ANTHROPIC_MODEL }}" >> backend/.env
+            echo "ANTHROPIC_MAX_TOKENS=${{ secrets.ANTHROPIC_MAX_TOKENS }}" >> backend/.env
+            echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> backend/.env
+            echo "REDIS_HOST=sgo-redis" >> backend/.env
+            echo "REDIS_PORT=6379" >> backend/.env
+            
+            echo "Archivo .env de backend creado con éxito."
             
             # Orquestación de infraestructura con Docker
             docker compose down
