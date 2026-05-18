@@ -89,3 +89,5 @@ jobs:
             # Limpieza preventiva de almacenamiento
             docker image prune -f
           EOF
+
+          #s
