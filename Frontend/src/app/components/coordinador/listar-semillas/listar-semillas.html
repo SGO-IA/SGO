@@ -1,0 +1,80 @@
+<div class="p-6 max-w-7xl mx-auto space-y-6 font-sans">
+
+  <div class="flex flex-wrap items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-200/60 mb-6">
+    <button (click)="filtroActivo.set('todas')"
+            [class]="filtroActivo() === 'todas' ? 'bg-sena text-white font-bold' : 'text-gray-600 hover:bg-gray-100'"
+            class="px-4 py-2 text-xs rounded-lg transition-all cursor-pointer font-medium">
+      Todas
+    </button>
+    <button (click)="filtroActivo.set('en_construccion')"
+            [class]="filtroActivo() === 'en_construccion' ? 'bg-amber-500 text-white font-bold' : 'text-gray-600 hover:bg-gray-100'"
+            class="px-4 py-2 text-xs rounded-lg transition-all cursor-pointer font-medium">
+      🛠️ En Construcción
+    </button>
+    <button (click)="filtroActivo.set('pendiente_rector')"
+            [class]="filtroActivo() === 'pendiente_rector' ? 'bg-blue-500 text-white font-bold' : 'text-gray-600 hover:bg-gray-100'"
+            class="px-4 py-2 text-xs rounded-lg transition-all cursor-pointer font-medium">
+      ⏳ Pendiente Aprobación
+    </button>
+    <button (click)="filtroActivo.set('aprobada')"
+            [class]="filtroActivo() === 'aprobada' ? 'bg-emerald-600 text-white font-bold' : 'text-gray-600 hover:bg-gray-100'"
+            class="px-4 py-2 text-xs rounded-lg transition-all cursor-pointer font-medium">
+      ✅ Aprobadas
+    </button>
+    <button (click)="filtroActivo.set('rechazada')"
+            [class]="filtroActivo() === 'rechazada' ? 'bg-rose-600 text-white font-bold' : 'text-gray-600 hover:bg-gray-100'"
+            class="px-4 py-2 text-xs rounded-lg transition-all cursor-pointer font-medium">
+      ❌ Rechazadas
+    </button>
+  </div>
+
+  <div *ngIf="loading()" class="flex flex-col items-center justify-center py-20 text-sena animate-pulse">
+    <i class="pi pi-spin pi-spinner text-4xl mb-3"></i>
+    <span class="text-sm font-semibold">Sincronizando con el storage SGO...</span>
+  </div>
+
+  <div *ngIf="!loading() && semillasFiltradas().length === 0" class="text-center py-20 bg-white border border-dashed border-gray-200 rounded-2xl">
+    <i class="pi pi-inbox text-gray-300 text-5xl mb-4"></i>
+    <h3 class="text-base font-bold text-gray-700">No se encontraron registros</h3>
+    <p class="text-gray-400 text-xs mt-1">No hay registros cargados para el filtro seleccionado.</p>
+  </div>
+
+  <div *ngIf="!loading() && semillasFiltradas().length > 0" 
+       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-in fade-in duration-300">
+    
+    <div *ngFor="let semilla of semillasFiltradas()" 
+         class="bg-white border border-gray-100 rounded-2xl p-5 shadow-xs hover:shadow-md hover:border-gray-200 transition-all flex flex-col justify-between group relative overflow-hidden">
+      
+      <div>
+        <div class="flex items-start justify-between gap-2 mb-3">
+          <span class="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded font-bold uppercase tracking-wider">
+            CÓD: {{ semilla.programa_codigo }}
+          </span>
+          
+          <span [ngSwitch]="semilla.estado">
+            <span *ngSwitchCase="'en_construccion'" class="text-[9px] bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-full font-bold">🛠️ EN CONSTRUCCIÓN</span>
+            <span *ngSwitchCase="'pendiente_rector'" class="text-[9px] bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full font-bold">⏳ PENDIENTE</span>
+            <span *ngSwitchCase="'aprobada'" class="text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">✅ APROBADA</span>
+            <span *ngSwitchCase="'rechazada'" class="text-[9px] bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded-full font-bold">❌ RECHAZADA</span>
+          </span>
+        </div>
+
+        <h3 class="text-base font-bold text-sena-black font-sans leading-snug group-hover:text-sena transition-colors mb-2 uppercase line-clamp-2" 
+            [title]="semilla.programa_nombre">
+          Semilla - {{ semilla.programa_nombre }}
+        </h3>
+      </div>
+
+      <div class="mt-5 pt-4 border-t border-gray-50 flex items-center justify-between text-gray-400">
+        <span class="text-[11px] font-semibold flex items-center gap-1">
+          <i class="pi pi-sliders-h text-xs"></i> Versión {{ semilla.programa_version }}
+        </span>
+        
+        <button class="text-xs font-bold text-sena-dark hover:text-sena flex items-center gap-1 transition-colors cursor-pointer">
+          <span>Gestionar</span>
+          <i class="pi pi-arrow-right text-[10px]"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

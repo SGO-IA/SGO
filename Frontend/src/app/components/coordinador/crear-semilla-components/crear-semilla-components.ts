@@ -1,8 +1,23 @@
-import { Component, EventEmitter, inject, Output, signal, OnInit } from '@angular/core';
-import { ProgramasService } from '../../../services/coordinador/programas';
+import { Component, EventEmitter, inject, Output, signal, OnInit, computed } from '@angular/core';
+import { CrearSemillaPayload, ProgramasService } from '../../../services/coordinador/programas';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Necesario para el selector de expertos
+import { FormsModule } from '@angular/forms';
 import { ExpertoService } from '../../../services/coordinador/experto-service';
+
+interface Competencia {
+  id: number;
+  programa_id: number;
+  codigo_norma: string;
+  nombre: string;
+  raps?: any[];
+}
+
+interface Experto {
+  id: number;
+  nombre: string;
+  correo: string;
+  rol: string;
+}
 
 @Component({
   selector: 'app-crear-semilla-component',
@@ -20,15 +35,20 @@ export class CrearSemillaComponent implements OnInit {
   
   // Signals de Datos
   programas = signal<any[]>([]);
-  expertos = signal<any[]>([]);
-  estructuraSeleccionada = signal<any>(null);
+  expertos = signal<Experto[]>([]);
+  estructuraSeleccionada = signal<Competencia[] | null>(null);
   
   // Signals de UI/Estado
   loading = signal<boolean>(false);
   mostrarExpertos = signal<boolean>(false);
+  showCompetenciasModal = signal<boolean>(false);
+  expertoEnEdicion = signal<Experto | null>(null);
   
-  // Datos del formulario
-  expertosSeleccionados = signal<number[]>([]);
+  // 🔥 AQUÍ ESTÁ LA MAGIA: Guardamos las asignaciones de forma estructurada
+  asignacionesExpertos = signal<{ [key: number]: number[] }>({});
+
+  // 🔥 EL ARREGLO QUE DESBLOQUEA EL BOTÓN: Es reactivo y se calcula solo basado en las asignaciones
+  expertosSeleccionados = computed(() => Object.keys(this.asignacionesExpertos()).map(Number));
 
   ngOnInit() {
     this.cargarProgramas();
@@ -66,32 +86,86 @@ export class CrearSemillaComponent implements OnInit {
     });
   }
 
-  // Lógica para el botón "Continuar"
   irAExpertos() {
     if (this.estructuraSeleccionada()) {
       this.mostrarExpertos.set(true);
     }
   }
 
-  // Guardado final en la base de datos
-  confirmarCreacion() {
-    if (this.expertosSeleccionados().length === 0) return;
+  // --- LÓGICA DEL SUB-MODAL DE COMPETENCIAS ---
+  abrirAsignacionCompetencias(experto: Experto): void {
+    this.expertoEnEdicion.set(experto);
+    
+    if (!this.asignacionesExpertos()[experto.id]) {
+      this.asignacionesExpertos.update(prev => ({ ...prev, [experto.id]: [] }));
+    }
+    
+    this.showCompetenciasModal.set(true);
+  }
 
-    const payload = {
-      programa_id: this.estructuraSeleccionada()[0].programa_id, // Ajusta según tu respuesta del backend
-      expertos: this.expertosSeleccionados(),
-      nombre_semilla: `Semilla - ${this.estructuraSeleccionada()[0].nombre_programa || 'Nueva'}`
+  toggleCompetenciaEnExperto(competenciaId: number): void {
+    const expId = this.expertoEnEdicion()?.id;
+    if (!expId) return;
+
+    this.asignacionesExpertos.update(prev => {
+      const actuales = prev[expId] ? [...prev[expId]] : [];
+      const index = actuales.indexOf(competenciaId);
+      
+      if (index > -1) {
+        actuales.splice(index, 1); 
+      } else {
+        actuales.push(competenciaId); 
+      }
+
+      const copia = { ...prev, [expId]: actuales };
+      
+      if (actuales.length === 0) {
+        delete copia[expId];
+      }
+      
+      return copia;
+    });
+  }
+
+  isCompetenciaChecked(competenciaId: number): boolean {
+    const expId = this.expertoEnEdicion()?.id;
+    if (!expId) return false;
+    return this.asignacionesExpertos()[expId]?.includes(competenciaId) || false;
+  }
+
+  isExpertoAsignado(expertoId: number): boolean {
+    return !!this.asignacionesExpertos()[expertoId] && this.asignacionesExpertos()[expertoId].length > 0;
+  }
+
+  getContadorCompetencias(expertoId: number): number {
+    return this.asignacionesExpertos()[expertoId]?.length || 0;
+  }
+
+  limpiarAsignaciones(): void {
+    this.asignacionesExpertos.set({});
+  }
+
+  // --- GUARDADO FINAL ---
+  confirmarCreacion() {
+    const estructura = this.estructuraSeleccionada();
+    if (!estructura || estructura.length === 0 || this.expertosSeleccionados().length === 0) return;
+
+    const payload: CrearSemillaPayload = {
+      programa_id: estructura[0].programa_id, 
+      nombre_semilla: `Semilla - ${estructura[0].nombre || 'Nueva Plantilla'}`,
+      expertos: this.asignacionesExpertos() 
     };
 
     this.loading.set(true);
-    this.expertoService.crearSemilla(payload).subscribe({
+    
+    this.programaService.crearSemillaCompleta(payload).subscribe({
       next: (res) => {
-        console.log('Semilla creada con éxito:', res);
+        console.log('Semilla y mapeo de expertos guardados en el SGO:', res);
         this.loading.set(false);
         this.close.emit();
       },
       error: (err) => {
-        console.error('Error al crear semilla:', err);
+        console.error('Error al crear la semilla:', err);
         this.loading.set(false);
       }
     });
@@ -99,22 +173,8 @@ export class CrearSemillaComponent implements OnInit {
 
   getTotalRaps(): number {
     if (!this.estructuraSeleccionada()) return 0;
-    return this.estructuraSeleccionada().reduce((acc: number, comp: any) => acc + (comp.raps?.length || 0), 0);
+    return this.estructuraSeleccionada()!.reduce((acc: number, comp: any) => acc + (comp.raps?.length || 0), 0);
   }
-
-  // En tu CrearSemillaComponent
-toggleExperto(id: number) {
-  const actuales = this.expertosSeleccionados();
-  if (actuales.includes(id)) {
-    this.expertosSeleccionados.set(actuales.filter(itemId => itemId !== id));
-  } else {
-    this.expertosSeleccionados.set([...actuales, id]);
-  }
-}
-
-isSelected(id: number): boolean {
-  return this.expertosSeleccionados().includes(id);
-}
 
   cancelar() {
     this.close.emit();

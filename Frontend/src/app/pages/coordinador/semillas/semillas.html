@@ -12,6 +12,8 @@
     </button>
   </header>
 
+  <app-listar-semillas></app-listar-semillas>
+
   <div *ngIf="showModal()" 
        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sena-black/20 backdrop-blur-sm animate-in fade-in duration-200">
     
@@ -22,7 +24,7 @@
         <i class="pi pi-times text-xl"></i>
       </button>
 
-      <app-crear-semilla-component (close)="showModal.set(false)"></app-crear-semilla-component>
+      <app-crear-semilla-component (close)="onModalClosed()"></app-crear-semilla-component>
       
     </div>
   </div>

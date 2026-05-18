@@ -33,31 +33,39 @@ async listarProgramas() {
 },
 
     // Obtener el programa con TODA su estructura pedagógica
-    async obtenerEstructuraCompleta(programaId) {
-        // 1. Obtener Competencias
-        const [competencias] = await db.execute(
-            `SELECT id, codigo_norma, nombre FROM competencias WHERE programa_id = ?`,
-            [programaId]
-        );
+async obtenerEstructuraCompleta(programaId) {
+    const query = `
+        SELECT 
+            c.id,
+            c.programa_id,
+            c.codigo_norma,
+            c.nombre,
+            COALESCE(
+                (
+                    SELECT JSON_ARRAYAGG(
+                        JSON_OBJECT(
+                            'id', r.id,
+                            'codigo_rap', r.codigo_rap,
+                            'denominacion', r.denominacion,
+                            'saberes', COALESCE((SELECT JSON_ARRAYAGG(JSON_OBJECT('descripcion', s.descripcion)) FROM conocimientos_saber s WHERE s.rap_id = r.id), JSON_ARRAY()),
+                            'criterios', COALESCE((SELECT JSON_ARRAYAGG(JSON_OBJECT('descripcion', ce.descripcion)) FROM criterios_evaluacion ce WHERE ce.rap_id = r.id), JSON_ARRAY())
+                        )
+                    )
+                    FROM resultados_aprendizaje r
+                    WHERE r.competencia_id = c.id
+                ), 
+                JSON_ARRAY()
+            ) AS raps
+        FROM competencias c
+        WHERE c.programa_id = ?;
+    `;
 
-        // 2. Por cada competencia, traer sus RAPs y detalles
-        // Nota: En un entorno de alto tráfico, esto se optimiza con un JOIN complejo
-        for (let comp of competencias) {
-            const [raps] = await db.execute(
-                `SELECT id, codigo_rap, denominacion FROM resultados_aprendizaje WHERE competencia_id = ?`,
-                [comp.id]
-            );
-            
-            for (let rap of raps) {
-                const [saberes] = await db.execute(`SELECT descripcion FROM conocimientos_saber WHERE rap_id = ?`, [rap.id]);
-                const [criterios] = await db.execute(`SELECT descripcion FROM criterios_evaluacion WHERE rap_id = ?`, [rap.id]);
-                
-                rap.saberes = saberes;
-                rap.criterios = criterios;
-            }
-            comp.raps = raps;
-        }
-
-        return competencias;
-    }
+    const [rows] = await db.execute(query, [programaId]);
+    
+    // MySQL devuelve las columnas JSON como strings, las parseamos automáticamente
+    return rows.map(row => ({
+        ...row,
+        raps: typeof row.raps === 'string' ? JSON.parse(row.raps) : row.raps
+    }));
+}
 };
