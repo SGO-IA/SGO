@@ -1,6 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core'; // Añadimos OnInit
+import { Component, inject, OnInit } from '@angular/core';
 import { SemillasService } from '../../../services/expertoTematico/semillas';
-import { LoginService } from '../../../services/public/login-service'; // Importa tu servicio de login
+import { LoginService } from '../../../services/public/login-service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -11,17 +11,17 @@ import { CommonModule } from '@angular/common';
   styleUrl: './semillas.css',
 })
 export class SemillasComponent implements OnInit {
-  // Inyectamos ambos servicios
   public semillaService = inject(SemillasService);
   private loginService = inject(LoginService);
 
   ngOnInit(): void {
-    // Validamos perfil para asegurar que el backend reconozca la sesión de Passport
     this.loginService.getProfile().subscribe({
       next: (res) => {
         if (res && res.autenticado) {
-          // Solo si estamos autenticados, pedimos las semillas
-          this.semillaService.obtenerMisSemillas().subscribe();
+          // Ejecuta la petición. Al dispararse, el 'tap' del servicio actualizará los Signals de forma transparente
+          this.semillaService.obtenerMisSemillas().subscribe({
+            error: (err) => console.error('Error al descargar semillas:', err)
+          });
         }
       },
       error: (err) => {
