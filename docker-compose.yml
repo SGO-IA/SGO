@@ -10,8 +10,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD} # Usa la contraseña segura de tus Secrets de GitHub
       MYSQL_DATABASE: ${DB_NAME}
     volumes:
-      - mysql_production_data:/var/lib/mysql # 🚨 EL BLINDAJE: Los datos se guardan en el disco real del servidor
-
+      - /home/sena/data/mysql:/var/lib/mysql
   # 2. Base de datos en caché para sesiones (Redis)
   sgo-redis:
     image: redis:7-alpine

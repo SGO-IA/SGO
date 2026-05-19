@@ -83,7 +83,7 @@ jobs:
             
             # 🚀 Orquestación de infraestructura forzando a Docker a leer el .env del Backend
             # El flag -v limpia el volumen corrupto de MySQL por esta única vez
-            docker compose --env-file Backend/.env down -v
+            docker compose --env-file Backend/.env down
             docker compose --env-file Backend/.env build --no-cache
             docker compose --env-file Backend/.env up -d --force-recreate
             
