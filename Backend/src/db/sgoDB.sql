@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
 --
 -- Host: localhost    Database: sgo
 -- ------------------------------------------------------
@@ -172,7 +172,7 @@ CREATE TABLE `conocimientos_proceso` (
   PRIMARY KEY (`id`),
   KEY `fk_proc_rap` (`rap_id`),
   CONSTRAINT `fk_proc_rap` FOREIGN KEY (`rap_id`) REFERENCES `resultados_aprendizaje` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -181,7 +181,7 @@ CREATE TABLE `conocimientos_proceso` (
 
 LOCK TABLES `conocimientos_proceso` WRITE;
 /*!40000 ALTER TABLE `conocimientos_proceso` DISABLE KEYS */;
-INSERT INTO `conocimientos_proceso` VALUES (27,50,'Prueba'),(28,51,'Prueba'),(30,48,'Prueba'),(31,52,'Prueba'),(36,49,'Prueba');
+INSERT INTO `conocimientos_proceso` VALUES (27,50,'Prueba'),(28,51,'Prueba'),(31,52,'Prueba'),(36,49,'Prueba'),(37,48,'Prueba');
 /*!40000 ALTER TABLE `conocimientos_proceso` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -199,7 +199,7 @@ CREATE TABLE `conocimientos_saber` (
   PRIMARY KEY (`id`),
   KEY `fk_saber_rap` (`rap_id`),
   CONSTRAINT `fk_saber_rap` FOREIGN KEY (`rap_id`) REFERENCES `resultados_aprendizaje` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -208,7 +208,7 @@ CREATE TABLE `conocimientos_saber` (
 
 LOCK TABLES `conocimientos_saber` WRITE;
 /*!40000 ALTER TABLE `conocimientos_saber` DISABLE KEYS */;
-INSERT INTO `conocimientos_saber` VALUES (10,50,'Prueba'),(11,51,'Prueba'),(13,48,'Prueba'),(14,52,'Prueba'),(18,49,'Prueba');
+INSERT INTO `conocimientos_saber` VALUES (10,50,'Prueba'),(11,51,'Prueba'),(14,52,'Prueba'),(18,49,'Prueba'),(19,48,'Prueba');
 /*!40000 ALTER TABLE `conocimientos_saber` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -226,7 +226,7 @@ CREATE TABLE `criterios_evaluacion` (
   PRIMARY KEY (`id`),
   KEY `fk_crit_rap` (`rap_id`),
   CONSTRAINT `fk_crit_rap` FOREIGN KEY (`rap_id`) REFERENCES `resultados_aprendizaje` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -235,7 +235,7 @@ CREATE TABLE `criterios_evaluacion` (
 
 LOCK TABLES `criterios_evaluacion` WRITE;
 /*!40000 ALTER TABLE `criterios_evaluacion` DISABLE KEYS */;
-INSERT INTO `criterios_evaluacion` VALUES (3,50,'Prueba'),(4,51,'Prueba'),(6,48,'Prueba'),(7,52,'Prueba'),(11,49,'Prueba');
+INSERT INTO `criterios_evaluacion` VALUES (3,50,'Prueba'),(4,51,'Prueba'),(7,52,'Prueba'),(11,49,'Prueba'),(12,48,'Prueba');
 /*!40000 ALTER TABLE `criterios_evaluacion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -250,13 +250,16 @@ CREATE TABLE `expertos_semillas` (
   `id` int NOT NULL AUTO_INCREMENT,
   `experto_id` int NOT NULL,
   `semilla_id` int NOT NULL,
+  `competencia_id` int NOT NULL,
   `fecha_asignacion` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `experto_id` (`experto_id`,`semilla_id`),
+  UNIQUE KEY `experto_id` (`experto_id`,`semilla_id`,`competencia_id`),
   KEY `fk_rel_semilla` (`semilla_id`),
+  KEY `fk_rel_competencia` (`competencia_id`),
+  CONSTRAINT `fk_rel_competencia` FOREIGN KEY (`competencia_id`) REFERENCES `competencias` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_rel_experto` FOREIGN KEY (`experto_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_rel_semilla` FOREIGN KEY (`semilla_id`) REFERENCES `semillas` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -265,6 +268,7 @@ CREATE TABLE `expertos_semillas` (
 
 LOCK TABLES `expertos_semillas` WRITE;
 /*!40000 ALTER TABLE `expertos_semillas` DISABLE KEYS */;
+INSERT INTO `expertos_semillas` VALUES (1,3,1,14,'2026-05-18 04:06:15'),(2,4,1,14,'2026-05-18 04:06:15'),(3,5,1,14,'2026-05-18 04:06:15');
 /*!40000 ALTER TABLE `expertos_semillas` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -354,7 +358,7 @@ CREATE TABLE `invitaciones` (
   UNIQUE KEY `correo` (`correo`),
   KEY `fk_inv_rol_fk` (`rol_id`),
   CONSTRAINT `fk_inv_rol_fk` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`rol_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -363,7 +367,7 @@ CREATE TABLE `invitaciones` (
 
 LOCK TABLES `invitaciones` WRITE;
 /*!40000 ALTER TABLE `invitaciones` DISABLE KEYS */;
-INSERT INTO `invitaciones` VALUES (1,'juliandguevara12@gmail.com',5,'b756e05487fa0a0c33e8d5f4d27a2dc6a5b4fd501ef6cc9bf4de9a6bdba1bd02','2026-04-23 06:27:52',1,'2026-04-22 11:27:51'),(2,'juliandguevara13@gmail.com',4,'d599d49ef9840982759b3861f4d23e0561f78919ba0ea19bd5124f9f922852bd','2026-04-23 06:29:49',1,'2026-04-22 11:29:48');
+INSERT INTO `invitaciones` VALUES (1,'juliandguevara12@gmail.com',5,'b756e05487fa0a0c33e8d5f4d27a2dc6a5b4fd501ef6cc9bf4de9a6bdba1bd02','2026-04-23 06:27:52',1,'2026-04-22 11:27:51'),(2,'juliandguevara13@gmail.com',4,'d599d49ef9840982759b3861f4d23e0561f78919ba0ea19bd5124f9f922852bd','2026-04-23 06:29:49',1,'2026-04-22 11:29:48'),(3,'juliandguevara25@gmail.com',3,'18745a3d1aa07f1f35ea6e10df9f85ef2b0f33dfd6fec2b33e25d177f03e65c2','2026-05-18 23:41:26',1,'2026-05-18 04:41:25');
 /*!40000 ALTER TABLE `invitaciones` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -586,7 +590,7 @@ CREATE TABLE `semillas` (
   PRIMARY KEY (`id`),
   KEY `fk_semilla_prog` (`programa_id`),
   CONSTRAINT `fk_semilla_prog` FOREIGN KEY (`programa_id`) REFERENCES `programas` (`programa_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -595,6 +599,7 @@ CREATE TABLE `semillas` (
 
 LOCK TABLES `semillas` WRITE;
 /*!40000 ALTER TABLE `semillas` DISABLE KEYS */;
+INSERT INTO `semillas` VALUES (1,1,'Semilla - DESARROLLAR LA SOLUCIÓN DE SOFTWARE DE ACUERDO CON EL DISEÑO Y METODOLOGÍAS DE DESARROLLO','rechazada');
 /*!40000 ALTER TABLE `semillas` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -616,7 +621,7 @@ CREATE TABLE `tests_diagnosticos` (
   PRIMARY KEY (`id`),
   KEY `fk_test_diag_competencia` (`competencia_id`),
   CONSTRAINT `fk_test_diag_competencia` FOREIGN KEY (`competencia_id`) REFERENCES `competencias` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -625,7 +630,7 @@ CREATE TABLE `tests_diagnosticos` (
 
 LOCK TABLES `tests_diagnosticos` WRITE;
 /*!40000 ALTER TABLE `tests_diagnosticos` DISABLE KEYS */;
-INSERT INTO `tests_diagnosticos` VALUES (10,14,'Test inicial','Test inicial para los chicos de ADSO','{\"preguntas\": [{\"opciones\": [{\"texto\": \"Es un diagrama que representa la estructura de clases de un sistema orientado a objetos.\", \"es_correcta\": false}, {\"texto\": \"Es una herramienta visual que muestra las tareas de un proyecto en una línea de tiempo, permitiendo ver su duración y orden de ejecución.\", \"es_correcta\": false}, {\"texto\": \"Es un diagrama que describe el flujo de datos entre los módulos de una base de datos.\", \"es_correcta\": false}, {\"texto\": \"Es una herramienta para diseñar la interfaz gráfica.\", \"es_correcta\": true}], \"enunciado\": \"En la planificación de actividades para construir un software, ¿qué es un diagrama de Gantt y para qué se utiliza principalmente?\"}, {\"opciones\": [{\"texto\": \"Structured Query Language; es un lenguaje utilizado para comunicarse con bases de datos relacionales, permitiendo crear, consultar y manipular datos.\", \"es_correcta\": false}, {\"texto\": \"Simple Query Logic; es un lenguaje de programación para crear interfaces de usuario.\", \"es_correcta\": false}, {\"texto\": \"System Quality Language; es un estándar para medir la calidad del software.\", \"es_correcta\": true}, {\"texto\": \"Structured Queue List; es un protocolo de comunicación entre servidores web.\", \"es_correcta\": false}], \"enunciado\": \"Al construir una base de datos, ¿qué significa la sigla SQL y cuál es su función principal?\"}, {\"opciones\": [{\"texto\": \"Define la estructura y el contenido de la página mediante etiquetas.\", \"es_correcta\": false}, {\"texto\": \"Gestiona la comunicación entre el servidor y la base de datos.\", \"es_correcta\": false}, {\"texto\": \"Agrega interactividad y comportamiento dinámico a la página, permitiendo responder a eventos del usuario.\", \"es_correcta\": true}, {\"texto\": \"Controla los estilos visuales como colores, márgenes y tipografías de la página.\", \"es_correcta\": false}], \"enunciado\": \"En el desarrollo de componentes Front-End, ¿cuál es la función principal de JavaScript dentro de una página web?\"}, {\"opciones\": [{\"texto\": \"Es una línea de código que ejecuta una función especial del sistema operativo.\", \"es_correcta\": false}, {\"texto\": \"Es una instrucción que el compilador traduce a lenguaje máquina para optimizar el rendimiento.\", \"es_correcta\": false}, {\"texto\": \"Es una anotación escrita dentro del código fuente que no se ejecuta, y sirve para explicar la lógica del programa y facilitar su mantenimiento.\", \"es_correcta\": true}, {\"texto\": \"Es una variable temporal que almacena datos mientras el programa está en ejecución.\", \"es_correcta\": false}], \"enunciado\": \"Al codificar un software, ¿qué es un \'comentario en el código\' y por qué es importante utilizarlo?\"}, {\"opciones\": [{\"texto\": \"Prueba unitaria\", \"es_correcta\": false}, {\"texto\": \"Prueba de regresión\", \"es_correcta\": false}, {\"texto\": \"Prueba de carga\", \"es_correcta\": false}, {\"texto\": \"Prueba de aceptación\", \"es_correcta\": true}], \"enunciado\": \"Durante las pruebas al software, ¿qué tipo de prueba verifica que el sistema completo funciona correctamente desde la perspectiva del usuario final, simulando escenarios reales de uso?\"}, {\"opciones\": [{\"texto\": \"Es un lenguaje de programación del lado del servidor que permite generar estilos dinámicamente.\", \"es_correcta\": false}, {\"texto\": \"Es una colección de estilos y componentes predefinidos que facilita y acelera el diseño de interfaces web responsivas.\", \"es_correcta\": true}, {\"texto\": \"Es una herramienta para compilar archivos CSS en código JavaScript optimizado.\", \"es_correcta\": false}, {\"texto\": \"Es un gestor de bases de datos que permite almacenar los estilos de una aplicación.\", \"es_correcta\": false}], \"enunciado\": \"En el desarrollo Front-End, ¿qué es un \'framework de CSS\' como Bootstrap y cuál es su principal ventaja?\"}], \"descripcion\": \"Test inicial para los chicos de ADSO\", \"nombre_test\": \"Test inicial\"}',1,'2026-05-15 11:43:41');
+INSERT INTO `tests_diagnosticos` VALUES (12,14,'Hola como vamos','nvnvbnvbnv','{\"preguntas\": [{\"opciones\": [{\"texto\": \"Estimación por analogía (Analogical Estimation), que compara el proyecto actual con proyectos históricos similares para derivar el esfuerzo.\", \"es_correcta\": true}, {\"texto\": \"Análisis de Puntos de Función (Function Point Analysis), que cuantifica la funcionalidad entregada al usuario independientemente de la tecnología de implementación.\", \"es_correcta\": false}, {\"texto\": \"Planning Poker, que utiliza la estimación relativa mediante Story Points asignados por consenso del equipo Scrum.\", \"es_correcta\": false}, {\"texto\": \"COCOMO II (Constructive Cost Model), que estima el esfuerzo en persona-mes basándose en líneas de código fuente y factores de escala.\", \"es_correcta\": false}], \"enunciado\": \"En el contexto de la planificación de actividades de construcción de software, ¿cuál de las siguientes técnicas de estimación considera la complejidad funcional del sistema mediante la medición de entradas, salidas, consultas, archivos internos e interfaces externas?\"}, {\"opciones\": [{\"texto\": \"Eliminar los grupos repetitivos dentro de una tabla asegurando que cada celda contenga un único valor atómico, lo que corresponde a la Primera Forma Normal (1FN).\", \"es_correcta\": false}, {\"texto\": \"Garantizar que todos los atributos no clave dependan de la clave primaria completa, eliminando dependencias parciales, lo que corresponde a la Segunda Forma Normal (2FN).\", \"es_correcta\": false}, {\"texto\": \"Eliminar las dependencias transitivas, asegurando que los atributos no clave dependan únicamente de la clave primaria y no de otros atributos no clave.\", \"es_correcta\": true}, {\"texto\": \"Descomponer las relaciones para que cada determinante sea una clave candidata, lo que corresponde a la Forma Normal de Boyce-Codd (FNBC).\", \"es_correcta\": false}], \"enunciado\": \"Al construir una base de datos relacional, ¿cuál es el propósito principal de aplicar la Tercera Forma Normal (3FN) durante el proceso de normalización del modelo de datos?\"}, {\"opciones\": [{\"texto\": \"Store → Dispatcher → Action → View, donde la vista actualiza directamente el almacén de estado.\", \"es_correcta\": false}, {\"texto\": \"View → Store → Action → Dispatcher, donde el almacén recibe las acciones antes de ser despachadas.\", \"es_correcta\": false}, {\"texto\": \"Action → Dispatcher → Store → View, donde las acciones son despachadas, los almacenes actualizan el estado y las vistas se re-renderizan.\", \"es_correcta\": false}, {\"texto\": \"Dispatcher → View → Action → Store, donde el despachador inicia el ciclo de renderizado de la interfaz de usuario.\", \"es_correcta\": true}], \"enunciado\": \"En el desarrollo de componentes front-end, el patrón de arquitectura Flux propuesto por Meta (Facebook) establece un flujo de datos unidireccional. ¿Cuál es el orden correcto de los elementos que componen este flujo?\"}, {\"opciones\": [{\"texto\": \"Una clase debe tener una sola razón para cambiar, lo que significa que debe encapsular una única responsabilidad cohesiva dentro del sistema.\", \"es_correcta\": false}, {\"texto\": \"Los módulos de alto nivel no deben depender de módulos de bajo nivel; ambos deben depender de abstracciones, y las abstracciones no deben depender de los detalles.\", \"es_correcta\": true}, {\"texto\": \"Las entidades de software deben estar abiertas para la extensión pero cerradas para la modificación, utilizando herencia o composición para agregar comportamiento.\", \"es_correcta\": false}, {\"texto\": \"Los objetos de un programa deben ser reemplazables por instancias de sus subtipos sin alterar la corrección del programa, preservando el contrato de la clase base.\", \"es_correcta\": false}], \"enunciado\": \"Durante la codificación de software, el principio SOLID conocido como \'Principio de Inversión de Dependencias\' (DIP) establece que:\"}, {\"opciones\": [{\"texto\": \"Identificar las rutas de ejecución independientes dentro del código fuente mediante el análisis del grafo de flujo de control, calculando la complejidad ciclomática.\", \"es_correcta\": false}, {\"texto\": \"Diseñar casos de prueba que ejerciten los valores en los extremos y justo fuera de los rangos de las clases de equivalencia, donde la probabilidad de encontrar defectos es mayor.\", \"es_correcta\": true}, {\"texto\": \"Particionar el dominio de entrada en clases de equivalencia donde todos los valores de cada clase se espera que sean procesados de la misma manera por el software.\", \"es_correcta\": false}, {\"texto\": \"Evaluar el comportamiento del sistema bajo condiciones de carga extrema para determinar el punto de quiebre y los umbrales máximos de rendimiento aceptable.\", \"es_correcta\": false}], \"enunciado\": \"En el ámbito de las pruebas de software, la técnica de \'Análisis de Valor Límite\' (Boundary Value Analysis) se aplica principalmente para:\"}], \"descripcion\": \"nvnvbnvbnv\", \"nombre_test\": \"Hola como vamos\"}',1,'2026-05-16 02:02:05');
 /*!40000 ALTER TABLE `tests_diagnosticos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -679,7 +684,7 @@ CREATE TABLE `usuarios` (
   UNIQUE KEY `google_id` (`google_id`),
   KEY `fk_usuario_rol` (`rol_id`),
   CONSTRAINT `fk_usuario_rol` FOREIGN KEY (`rol_id`) REFERENCES `roles` (`rol_id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -688,7 +693,7 @@ CREATE TABLE `usuarios` (
 
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,5,'Julian Guevara','juliandguevara12@gmail.com',NULL,1,'112261216418703271589','2026-04-22 11:28:16','2026-04-22 11:28:16'),(2,4,'Julián Guevara','juliandguevara13@gmail.com',NULL,1,'103056020201633142895','2026-04-22 11:30:08','2026-05-12 14:33:55'),(3,3,'Prueba','prueba@gmail.com',NULL,1,NULL,'2026-04-22 11:30:08','2026-05-12 14:33:55'),(4,3,'Pruebados','prueba2@gmail.com',NULL,1,NULL,'2026-04-22 11:30:08','2026-05-12 15:43:09');
+INSERT INTO `usuarios` VALUES (1,5,'Julian Guevara','juliandguevara12@gmail.com',NULL,1,'112261216418703271589','2026-04-22 11:28:16','2026-04-22 11:28:16'),(2,4,'Julián Guevara','juliandguevara13@gmail.com',NULL,1,'103056020201633142895','2026-04-22 11:30:08','2026-05-12 14:33:55'),(3,3,'Prueba','prueba@gmail.com',NULL,1,NULL,'2026-04-22 11:30:08','2026-05-12 14:33:55'),(4,3,'Pruebados','prueba2@gmail.com',NULL,1,NULL,'2026-04-22 11:30:08','2026-05-12 15:43:09'),(5,3,'Julian','juliandguevara25@gmail.com',NULL,1,'111199419274961916730','2026-05-18 04:42:00','2026-05-18 04:42:00');
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -732,4 +737,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-15 19:54:58
+-- Dump completed on 2026-05-18 22:51:05
