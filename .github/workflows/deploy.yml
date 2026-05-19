@@ -82,10 +82,11 @@ jobs:
             echo "Archivo .env de Backend creado con éxito y Secrets inyectados."
             
             # 🚀 Orquestación de infraestructura forzando a Docker a leer el .env del Backend
-            # El flag -v limpia el volumen corrupto de MySQL por esta única vez
-            docker compose --env-file Backend/.env down
-            docker compose --env-file Backend/.env build --no-cache
-            docker compose --env-file Backend/.env up -d --force-recreate
+            docker compose --env-file Backend/.env build --no-cache sgo-backend sgo-frontend
+            docker compose --env-file Backend/.env up -d --force-recreate sgo-backend sgo-frontend
+            
+            # Limpieza de imágenes huérfanas sin tocar los contenedores en ejecución
+            docker image prune -f
             
             # Limpieza preventiva de almacenamiento
             docker image prune -f
