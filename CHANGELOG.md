@@ -1,3 +1,10 @@
+## [0.27.3](https://github.com/SGO-IA/SGO/compare/v0.27.2...v0.27.3) (2026-05-19)
+
+
+### Bug Fixes
+
+* Merge pull request [#45](https://github.com/SGO-IA/SGO/issues/45) from SGO-IA/claude ([a2b375f](https://github.com/SGO-IA/SGO/commit/a2b375fefca4d4529909f11e899d2a55557e39da))
+
 ## [0.27.2](https://github.com/SGO-IA/SGO/compare/v0.27.1...v0.27.2) (2026-05-19)
 
 
