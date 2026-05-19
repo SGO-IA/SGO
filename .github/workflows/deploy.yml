@@ -81,13 +81,12 @@ jobs:
             
             echo "Archivo .env de Backend creado con éxito y Secrets inyectados."
             
-            # Orquestación de infraestructura con Docker
-            docker compose down
-            docker compose build --no-cache
-            docker compose up -d --force-recreate
+            # 🚀 Orquestación de infraestructura forzando a Docker a leer el .env del Backend
+            # El flag -v limpia el volumen corrupto de MySQL por esta única vez
+            docker compose --env-file Backend/.env down -v
+            docker compose --env-file Backend/.env build --no-cache
+            docker compose --env-file Backend/.env up -d --force-recreate
             
             # Limpieza preventiva de almacenamiento
             docker image prune -f
           EOF
-
-          #s
