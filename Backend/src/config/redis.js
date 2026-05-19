@@ -1,10 +1,11 @@
 import Redis from 'ioredis';
 
 const redis = new Redis({
-  host: '127.0.0.1',
-  port: 6379,
-  connectTimeout: 10000, // 10 segundos de espera
-  family: 4,             // Forzar IPv4 para evitar el lío de localhost en Windows
+  // CAMBIO AQUÍ: Usamos la variable de entorno, y si no existe, el nombre del servicio
+  host: process.env.REDIS_HOST || 'sgo-redis', 
+  port: parseInt(process.env.REDIS_PORT) || 6379,
+  connectTimeout: 10000,
+  family: 4,
   reconnectOnError: (err) => {
     const targetError = "READONLY";
     if (err.message.includes(targetError)) {
@@ -14,9 +15,8 @@ const redis = new Redis({
   },
 });
 
-// Este log es VITAL. Si no aparece al reiniciar el back, no estamos conectados.
 redis.on('connect', () => {
-  console.log('🚀 Redis: Conectado exitosamente desde Docker (IPv4)');
+  console.log('🚀 Redis: Conectado exitosamente a ' + (process.env.REDIS_HOST || 'sgo-redis'));
 });
 
 redis.on('error', (err) => {
