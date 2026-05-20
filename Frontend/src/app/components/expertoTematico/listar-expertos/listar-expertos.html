@@ -1,0 +1,78 @@
+<div class="min-h-screen bg-gray-50/50 py-12 font-sans relative overflow-hidden">
+  <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-[#39A900]/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-2">
+          Seguimiento de <span class="text-[#39A900]">Expertos Temáticos</span>
+        </h1>
+        <p class="text-sm font-medium text-gray-400 uppercase tracking-widest">
+          Control de vinculación a Semillas y Programas de Formación
+        </p>
+      </div>
+
+      <div class="relative w-full md:w-80">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-gray-400">
+          <i class="pi pi-search"></i>
+        </span>
+        <input 
+          type="text" 
+          [ngModel]="searchQuery()" 
+          (ngModelChange)="searchQuery.set($event)"
+          placeholder="Buscar por nombre..." 
+          class="w-full pl-11 pr-4 py-3 bg-white border border-gray-100 rounded-full text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#39A900]/30 focus:shadow-[0_0_20px_rgba(57,169,0,0.05)] transition-all duration-300 shadow-sm"
+        />
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="flex flex-col items-center justify-center py-24 gap-4">
+        <i class="pi pi-spin pi-spinner text-3xl text-[#39A900]"></i>
+        <p class="text-xs font-black uppercase tracking-widest text-gray-400">Cargando base de datos...</p>
+      </div>
+    } @else {
+      
+      <div class="bg-white border border-gray-100 rounded-[2rem] shadow-[0_4px_30px_rgba(0,0,0,0.01)] overflow-hidden">
+        <div class="divide-y divide-gray-100">
+          
+          @for (experto of expertosFiltrados(); track experto.id) {
+            <div class="p-6 hover:bg-gray-50/50 transition-all duration-300 group flex items-center justify-between gap-6">
+              
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-700 font-bold border border-gray-100 group-hover:bg-white group-hover:border-[#39A900]/20 transition-all duration-300 text-sm">
+                  {{ experto.nombre.charAt(0).toUpperCase() }}
+                </div>
+                <div>
+                  <h3 class="text-sm font-black text-gray-900 tracking-tight group-hover:text-[#39A900] transition-colors">
+                    {{ experto.nombre }}
+                  </h3>
+                  <p class="text-xs text-gray-400 font-medium flex items-center gap-1.5 mt-0.5">
+                    <i class="pi pi-envelope text-[10px]"></i> {{ experto.correo }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="shrink-0">
+                <span class="px-3 py-1.5 rounded-full bg-gray-50 border border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:bg-white group-hover:border-[#39A900]/10 transition-all duration-300">
+                  <i class="pi pi-folder-open text-[#39A900] mr-1"></i>
+                  {{ experto.semillas_vinculadas?.length || 0 }} Semillas
+                </span>
+              </div>
+
+            </div>
+          } @empty {
+            <div class="bg-white p-16 text-center">
+              <i class="pi pi-users text-4xl text-gray-300 mb-4 block"></i>
+              <h3 class="text-lg font-black text-gray-900 mb-1">No se encontraron expertos</h3>
+              <p class="text-sm text-gray-400 font-medium">Prueba modificando los términos de tu búsqueda.</p>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
