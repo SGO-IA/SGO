@@ -15,5 +15,6 @@ router.get('/expertos', expertoController.listarExpertos);
 
 router.post('/crear-semillas', semillaController.crearSemillaCompleta);
 router.get('/listar-semillas', semillaController.obtenerTodasLasSemillas);
+router.get('/semillas/:id/detalle-completo', semillaController.obtenerDetalleSemilla);
 
 export default router;
