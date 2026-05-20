@@ -16,6 +16,9 @@ export class ListarExpertos {
   searchQuery = signal<string>('');
   loading = signal<boolean>(true);
 
+  expertoSeleccionado = signal<any | null>(null);
+  modalAbierto = signal<boolean>(false);
+
   // Filtro reactivo en tiempo real por nombre de experto
   expertosFiltrados = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
@@ -29,6 +32,16 @@ export class ListarExpertos {
 
   ngOnInit(): void {
     this.cargarExpertos();
+  }
+
+  abrirModal(experto: any): void {
+    this.expertoSeleccionado.set(experto);
+    this.modalAbierto.set(true);
+  }
+
+  cerrarModal(): void {
+    this.modalAbierto.set(false);
+    setTimeout(() => this.expertoSeleccionado.set(null), 300); // Espera a la animación de salida
   }
 
   cargarExpertos(): void {
