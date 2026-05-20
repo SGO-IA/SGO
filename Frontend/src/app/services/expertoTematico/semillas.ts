@@ -10,12 +10,15 @@ export class SemillasService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/expertoTematico`;
 
-  // Signals reactivos globales para la vista
   public semillas = signal<any[]>([]);
   public cargando = signal<boolean>(false);
+  
+  // Estados para el flujo de gestión interna del árbol de RAPs
+  public tieneRapsAsignados = signal<boolean>(false);
+  public rapsTrabajando = signal<any[]>([]);
+  public rapsDisponiblesParaSeleccionar = signal<any[]>([]);
 
   obtenerMisSemillas(): Observable<any[]> {
-    // Activamos el estado de carga
     this.cargando.set(true);
 
     return this.http.get<any[]>(`${this.apiUrl}/mis-semillas`, { 
@@ -24,6 +27,43 @@ export class SemillasService {
       tap((data) => {
         this.semillas.set(data);
       }),
+      finalize(() => {
+        this.cargando.set(false);
+      })
+    );
+  }
+
+  verificarEstadoRaps(semillaId: string): Observable<any> {
+    this.cargando.set(true);
+
+    return this.http.get<any>(`${this.apiUrl}/semilla/${semillaId}/verificar-estado`, {
+      withCredentials: true
+    }).pipe(
+      tap((res) => {
+        if (res.status === 'success') {
+          this.tieneRapsAsignados.set(res.tieneAsignacion);
+          
+          if (res.tieneAsignacion) {
+            this.rapsTrabajando.set(res.raps);
+          } else {
+            this.rapsDisponiblesParaSeleccionar.set(res.rapsDisponibles);
+          }
+        }
+      }),
+      finalize(() => {
+        this.cargando.set(false);
+      })
+    );
+  }
+
+  guardarAsignacionRaps(semillaId: string, rapIds: number[]): Observable<any> {
+    this.cargando.set(true);
+
+    return this.http.post<any>(
+      `${this.apiUrl}/semilla/${semillaId}/asignar`, 
+      { rapIds }, 
+      { withCredentials: true }
+    ).pipe(
       finalize(() => {
         this.cargando.set(false);
       })
