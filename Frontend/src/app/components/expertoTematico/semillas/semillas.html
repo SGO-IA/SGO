@@ -14,7 +14,8 @@
        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     
     <div *ngFor="let semilla of semillaService.semillas()" 
-         class="group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm hover:shadow-2xl hover:border-sena/30 transition-all duration-500 cursor-pointer">
+        [routerLink]="['/dashboard/semilla', semilla.id]"
+        class="group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm hover:shadow-2xl hover:border-sena/30 transition-all duration-500 cursor-pointer">
       
       <div class="flex justify-between items-start mb-6">
         <div class="w-12 h-12 bg-sena-alpha rounded-2xl flex items-center justify-center text-sena group-hover:bg-sena group-hover:text-white transition-all duration-300">
