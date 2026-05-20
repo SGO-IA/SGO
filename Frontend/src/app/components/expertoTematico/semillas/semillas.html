@@ -1,58 +1,86 @@
-<div class="p-8 max-w-7xl mx-auto">
+<div class="p-8 max-w-7xl mx-auto font-sans">
   
-  <div class="mb-10">
+  <div class="mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
     <h2 class="text-3xl font-black text-sena-black tracking-tighter">Mis Semillas</h2>
     <p class="text-xs text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Panel de construcción pedagógica</p>
   </div>
 
-  <div *ngIf="semillaService.cargando()" class="flex flex-col items-center justify-center py-20">
-    <i class="pi pi-spin pi-spinner text-sena text-4xl mb-4"></i>
+  <div *ngIf="semillaService.cargando()" class="flex flex-col items-center justify-center py-20 text-sena animate-pulse">
+    <i class="pi pi-spin pi-spinner text-4xl mb-4"></i>
     <p class="text-xs font-black text-gray-400 uppercase tracking-widest">Sincronizando con el servidor...</p>
   </div>
 
   <div *ngIf="!semillaService.cargando() && semillaService.semillas().length > 0" 
-       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
     
     <div *ngFor="let semilla of semillaService.semillas()" 
-        [routerLink]="['/dashboard/semilla', semilla.id]"
-        class="group bg-white rounded-[2rem] border border-gray-100 p-8 shadow-sm hover:shadow-2xl hover:border-sena/30 transition-all duration-500 cursor-pointer">
+         [routerLink]="['/dashboard/semilla', semilla.id]"
+         class="group bg-white rounded-[2.2rem] border border-gray-100/80 p-7 md:p-8 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.02)] hover:shadow-[0_30px_60px_-15px_rgba(57,169,0,0.08)] hover:border-sena/30 transition-all duration-500 cursor-pointer flex flex-col justify-between relative overflow-hidden">
       
-      <div class="flex justify-between items-start mb-6">
-        <div class="w-12 h-12 bg-sena-alpha rounded-2xl flex items-center justify-center text-sena group-hover:bg-sena group-hover:text-white transition-all duration-300">
-          <i class="pi pi-box text-xl"></i>
+      <div class="absolute -top-24 -right-24 w-48 h-48 bg-sena opacity-0 group-hover:opacity-[0.02] rounded-full blur-3xl transition-opacity duration-500"></div>
+
+      <div>
+        <div class="flex justify-between items-start mb-6">
+          <div class="w-12 h-12 bg-gray-50 text-gray-500 rounded-2xl flex items-center justify-center group-hover:bg-sena group-hover:text-white group-hover:shadow-[0_10px_20px_-5px_rgba(57,169,0,0.4)] transition-all duration-300">
+            <i class="pi pi-clone text-xl"></i>
+          </div>
+          
+          <span class="text-[9px] font-black uppercase tracking-wider px-3 py-1.5 rounded-xl border"
+                [ngClass]="{
+                  'bg-amber-50 text-amber-600 border-amber-200/60': semilla.estado === 'en_construccion',
+                  'bg-blue-50 text-blue-600 border-blue-200/60': semilla.estado === 'pendiente_rector',
+                  'bg-emerald-50 text-emerald-600 border-emerald-200/60': semilla.estado === 'aprobada',
+                  'bg-rose-50 text-rose-600 border-rose-200/60': semilla.estado === 'rechazada'
+                }">
+            <i class="pi" [ngClass]="{
+                  'pi-sliders-h': semilla.estado === 'en_construccion',
+                  'pi-clock': semilla.estado === 'pendiente_rector',
+                  'pi-check-circle': semilla.estado === 'aprobada',
+                  'pi-times-circle': semilla.estado === 'rechazada'
+                }" class="text-[9px] mr-1"></i>
+            {{ semilla.estado.replace('_', ' ') }}
+          </span>
         </div>
-        <span class="text-[9px] font-black uppercase px-3 py-1 rounded-full bg-gray-50 text-gray-400 group-hover:bg-sena-alpha group-hover:text-sena transition-colors">
-          {{ semilla.estado.replace('_', ' ') }}
+
+        <div class="space-y-2">
+          <h3 class="text-lg md:text-xl font-black text-sena-black leading-tight group-hover:text-sena transition-colors line-clamp-2" [title]="semilla.nombre_semilla">
+            {{ semilla.nombre_semilla }}
+          </h3>
+          <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wide line-clamp-2" [title]="semilla.programa_nombre">
+            {{ semilla.programa_nombre }}
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-5 border-t border-gray-50 flex items-center justify-between">
+        <span class="text-[10px] font-black text-gray-300 tracking-widest uppercase">
+          ID: <span class="text-gray-400 font-bold">#{{ semilla.id }}</span>
         </span>
-      </div>
-
-      <h3 class="text-xl font-black text-sena-black leading-tight mb-2 truncate">{{ semilla.nombre_semilla }}</h3>
-      <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wide mb-6">{{ semilla.programa_nombre }}</p>
-
-      <div class="pt-6 border-t border-gray-50 flex items-center justify-between">
-        <span class="text-[10px] font-bold text-gray-300 uppercase tracking-widest">ID: #{{ semilla.id }}</span>
-        <div class="flex items-center gap-2 text-sena font-black text-[10px] uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
-          Gestionar <i class="pi pi-arrow-right text-xs"></i>
+        
+        <div class="flex items-center gap-1.5 text-sena font-black text-[11px] uppercase tracking-tighter opacity-80 group-hover:opacity-100 group-hover:translate-x-[-4px] transition-all duration-300">
+          <span>Diseñar Semilla</span> 
+          <i class="pi pi-arrow-right text-[10px] transform group-hover:translate-x-1 transition-transform"></i>
         </div>
       </div>
+
     </div>
   </div>
 
   <div *ngIf="!semillaService.cargando() && semillaService.semillas().length === 0" 
-       class="flex flex-col items-center justify-center py-32 bg-white rounded-[3rem] border-2 border-dashed border-gray-100 shadow-inner">
+       class="flex flex-col items-center justify-center py-28 bg-white rounded-[2.5rem] border border-dashed border-gray-200 shadow-xs max-w-2xl mx-auto px-6 animate-in fade-in zoom-in-95 duration-500">
     
-    <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-      <i class="pi pi-user-plus text-gray-200 text-4xl"></i>
+    <div class="w-20 h-20 bg-gray-50 border border-gray-100/60 rounded-3xl flex items-center justify-center mb-6 text-gray-300">
+      <i class="pi pi-folder-open text-4xl"></i>
     </div>
     
     <h3 class="text-xl font-black text-sena-black tracking-tight">Sin semillas asignadas</h3>
-    <p class="text-sm text-gray-400 font-medium mt-2 max-w-xs text-center leading-relaxed">
-      Tu perfil de <span class="text-sena font-bold">Experto Temático</span> está activo, pero aún no tienes semillas vinculadas. Por favor, espera a que la coordinación académica te asigne una.
+    <p class="text-sm text-gray-400 font-medium mt-2 text-center leading-relaxed max-w-sm">
+      Tu perfil de <span class="text-sena font-bold">Experto Temático</span> está activo, pero aún no tienes semillas vinculadas en el SGO.
     </p>
 
-    <div class="mt-8 flex items-center gap-2 px-4 py-2 bg-sena-alpha rounded-full">
-      <span class="w-2 h-2 rounded-full bg-sena animate-pulse"></span>
-      <span class="text-[10px] font-bold text-sena-dark uppercase tracking-widest">Estado: En espera de vinculación</span>
+    <div class="mt-8 flex items-center gap-2.5 px-4 py-2 bg-amber-50 text-amber-800 border border-amber-100 rounded-xl">
+      <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+      <span class="text-[10px] font-black uppercase tracking-widest">Esperando asignación de coordinación</span>
     </div>
   </div>
 
