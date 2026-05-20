@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 
 @Component({
@@ -10,9 +10,16 @@ import { Router, RouterModule } from '@angular/router';
   styleUrl: './navbar.css',
 })
 export class Navbar {
+  isMobileMenuOpen = signal<boolean>(false);
+
   constructor(private router: Router) {}
 
+  toggleMobileMenu() {
+    this.isMobileMenuOpen.set(!this.isMobileMenuOpen());
+  }
+
   irAlLogin() {
+    this.isMobileMenuOpen.set(false);
     this.router.navigate(['/login']);
   }
 }

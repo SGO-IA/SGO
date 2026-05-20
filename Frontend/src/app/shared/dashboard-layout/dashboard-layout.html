@@ -1,12 +1,14 @@
-<div class="flex h-screen w-full bg-gray-50 overflow-hidden">
-  <app-sidebar class="w-64 flex-shrink-0"></app-sidebar>
+<div class="flex h-screen w-full bg-gray-50 overflow-hidden relative">
+  
+  <app-sidebar class="w-0 lg:w-72 flex-shrink-0 transition-all duration-300"></app-sidebar>
 
-  <main class="flex-1 overflow-y-auto custom-scrollbar">
+  <main class="flex-1 min-w-0 overflow-y-auto custom-scrollbar">
     <header>
-    </header>
+      </header>
 
-    <div class="p-4">
+    <div class="p-4 pt-20 lg:pt-4">
        <router-outlet></router-outlet>
     </div>
   </main>
+
 </div>
