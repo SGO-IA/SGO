@@ -1,11 +1,12 @@
-import { Component, inject, OnInit, signal, computed, Output, EventEmitter } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, Output, EventEmitter, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProgramasService, SemillaLista } from '../../../services/coordinador/programas';
+import { DetalleSemillaComponent } from '../detalle-semilla-component/detalle-semilla-component';
 
 @Component({
   selector: 'app-listar-semillas',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DetalleSemillaComponent],
   templateUrl: './listar-semillas.html',
   styleUrl: './listar-semillas.css'
 })
@@ -14,6 +15,7 @@ export class ListarSemillasComponent implements OnInit {
 
   // Evento para avisarle al padre que abra el modal de creación
   @Output() onCrearSemilla = new EventEmitter<void>();
+  @ViewChild('modalDetalle') modalDetalle!: DetalleSemillaComponent;
 
   // Signals de estado local
   public semillas = signal<SemillaLista[]>([]);

@@ -70,11 +70,18 @@
           <i class="pi pi-sliders-h text-xs"></i> Versión {{ semilla.programa_version }}
         </span>
         
-        <button class="text-xs font-bold text-sena-dark hover:text-sena flex items-center gap-1 transition-colors cursor-pointer">
+        <button 
+          (click)="modalDetalle.abrirModalConSemilla(semilla.semilla_id)"
+          class="text-xs font-bold text-sena-dark hover:text-sena flex items-center gap-1 transition-colors cursor-pointer"
+        >
           <span>Gestionar</span>
           <i class="pi pi-arrow-right text-[10px]"></i>
         </button>
       </div>
+
     </div>
   </div>
+
 </div>
+
+<app-detalle-semilla-component #modalDetalle></app-detalle-semilla-component>

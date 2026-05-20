@@ -42,4 +42,10 @@ export class ProgramasService {
   getListaSemillas(): Observable<SemillaLista[]> {
     return this.http.get<SemillaLista[]>(`${this.apiUrl}/listar-semillas`, { withCredentials: true });
   }
+
+  getDetalleCompletoSemilla(id: number): Observable<any> {
+    // Nota: Como tu API base ya maneja el prefijo '/coordinador', 
+    // apuntamos directo al recurso según tu diseño de ruteo de Express.
+    return this.http.get<any>(`${this.apiUrl}/semillas/${id}/detalle-completo`, { withCredentials: true });
+  }
 }

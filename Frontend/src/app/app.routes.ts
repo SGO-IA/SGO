@@ -96,6 +96,13 @@ export const routes: Routes = [
         title: 'S.G.O - Panel',
         data: { roles: [3] }
       },
+      {
+      // 🚀 NUEVA RUTA: Captura el ID de la semilla seleccionada
+      path: 'semilla/:id',
+      loadComponent: () => import('./pages/expertoTematico/gestionar-semilla/gestionar-semilla').then(m => m.GestionarSemilla),
+      title: 'S.G.O - Modulos de Semilla',
+      data: { roles: [3] }
+    },
     ]
   },
 

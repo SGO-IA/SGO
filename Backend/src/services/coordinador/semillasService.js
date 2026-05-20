@@ -47,5 +47,57 @@ export const semillaService = {
         
         // Aquí podrías aplicar formateos de fecha o mutaciones de negocio si se requiriera en el futuro
         return semillas;
+    },
+
+    async construirArbolCompleto(semillaId) {
+        // Extraemos la raíz (Semilla, Programa y Expertos asignados)
+        const [semillaBase, expertos] = await Promise.all([
+            semillaModel.obtenerBasePorId(semillaId),
+            semillaModel.obtenerExpertosPorSemilla(semillaId)
+        ]);
+
+        if (!semillaBase) return null;
+
+        // Construimos el nodo inicial
+        const arbolSemilla = {
+            ...semillaBase,
+            expertos,
+            ovas: []
+        };
+
+        // Buscamos los OVAs asociados a la semilla
+        const ovas = await semillaModel.obtenerOvasPorSemilla(semillaId);
+
+        // Orquestamos el recorrido de sub-nodos (Ciclos -> RAPs y Secciones)
+        for (let ova of ovas) {
+            const nodoOva = { ...ova, ciclos: [] };
+            const ciclos = await semillaModel.obtenerCiclosPorOva(ova.ova_id);
+
+            for (let ciclo of ciclos) {
+                // Buscamos RAPs y Secciones en paralelo por eficiencia
+                const [raps, secciones] = await Promise.all([
+                    semillaModel.obtenerRapsPorCiclo(ciclo.ciclo_id),
+                    semillaModel.obtenerSeccionesPorCiclo(ciclo.ciclo_id)
+                ]);
+
+                // Enriquecemos cada RAP con sus respectivos saberes, procesos y criterios
+                for (let rap of raps) {
+                    const componentes = await semillaModel.obtenerComponentesRap(rap.rap_id);
+                    rap.conocimientos_saber = componentes.saberes;
+                    rap.conocimientos_proceso = componentes.procesos;
+                    rap.criterios_evaluacion = componentes.criterios;
+                }
+
+                nodoOva.ciclos.push({
+                    ...ciclo,
+                    resultados_aprendizaje: raps,
+                    secciones
+                });
+            }
+
+            arbolSemilla.ovas.push(nodoOva);
+        }
+
+        return arbolSemilla;
     }
 };

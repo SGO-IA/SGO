@@ -2,11 +2,12 @@ import { Component, inject, OnInit } from '@angular/core';
 import { SemillasService } from '../../../services/expertoTematico/semillas';
 import { LoginService } from '../../../services/public/login-service';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-semillasComponent',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './semillas.html',
   styleUrl: './semillas.css',
 })

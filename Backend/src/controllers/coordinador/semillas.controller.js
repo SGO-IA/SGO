@@ -45,5 +45,39 @@ export const semillaController = {
                 error: error.message
             });
         }
+    },
+
+    async obtenerDetalleSemilla(req, res) {
+        try {
+            const { id } = req.params;
+
+            if (!id || isNaN(id)) {
+                return res.status(400).json({ 
+                    status: 'error', 
+                    message: 'El ID de la semilla proporcionado no es válido.' 
+                });
+            }
+
+            const detalleCompleto = await semillaService.construirArbolCompleto(Number(id));
+
+            if (!detalleCompleto) {
+                return res.status(404).json({ 
+                    status: 'error', 
+                    message: 'La semilla solicitada no existe en el sistema.' 
+                });
+            }
+
+            return res.status(200).json({
+                status: 'success',
+                data: detalleCompleto
+            });
+
+        } catch (error) {
+            console.error('Error en semillaController -> obtenerDetalleSemilla:', error);
+            return res.status(500).json({ 
+                status: 'error', 
+                message: 'Ocurrió un error interno al compilar la información de la semilla.' 
+            });
+        }
     }
 };
