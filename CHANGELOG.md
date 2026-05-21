@@ -1,3 +1,10 @@
+# [0.33.0](https://github.com/SGO-IA/SGO/compare/v0.32.0...v0.33.0) (2026-05-21)
+
+
+### Features
+
+* nueva actualizacion en la db ([9a1b5e0](https://github.com/SGO-IA/SGO/commit/9a1b5e0fabca4103dcf8a934273f81863384f3ec))
+
 # [0.32.0](https://github.com/SGO-IA/SGO/compare/v0.31.0...v0.32.0) (2026-05-21)
 
 
