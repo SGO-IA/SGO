@@ -19,10 +19,10 @@ export class NavigationService {
     { label: 'Configuracion', icon: 'cog', route: '/dashboard/configuracion', roles: [5] },
     { label: 'Panel Instructor', icon: 'briefcase', route: '/dashboard/instructor', roles: [2] },
     { label: 'Panel Aprendiz', icon: 'book', route: '/dashboard/aprendiz', roles: [1] },
-    { label: 'Coordinación', icon: 'shield', route: '/dashboard/coordinador', roles: [4] },
+    // { label: 'Coordinación', icon: 'shield', route: '/dashboard/coordinador', roles: [4] },
     { label: 'Semillas', icon: 'file', route: '/dashboard/semillas', roles: [4] },
     { label: 'Expertos Tematicos', icon: 'users', route: '/dashboard/expertos', roles: [4] },
-    { label: 'Instructores', icon: 'users', route: '/dashboard/instructores', roles: [4] },
+    // { label: 'Instructores', icon: 'users', route: '/dashboard/instructores', roles: [4] },
     { label: 'Experto Temático', icon: 'star', route: '/dashboard/panel', roles: [3] },
     { label: 'Panel Rectoría', icon: 'chart-bar', route: '/dashboard/rector', roles: [6] }
   ];
@@ -39,9 +39,9 @@ export class NavigationService {
   setMenuInternoSemilla(semillaId: string) {
     this.currentMenuOptions.set([
       { label: 'Estructura (OVAs)', icon: 'folder-open', route: `/dashboard/semilla/${semillaId}`, roles: [3] },
-      { label: 'Resultados (RAPs)', icon: 'bookmark', route: `/dashboard/semilla/${semillaId}/raps`, roles: [3] },
-      { label: 'Secciones Didácticas', icon: 'file-edit', route: `/dashboard/semilla/${semillaId}/secciones`, roles: [3] },
-      { label: 'Configurar Test IA', icon: 'bolt', route: `/dashboard/semilla/${semillaId}/tests`, roles: [3] },
+      // { label: 'Resultados (RAPs)', icon: 'bookmark', route: `/dashboard/semilla/${semillaId}/raps`, roles: [3] },
+      // { label: 'Secciones Didácticas', icon: 'file-edit', route: `/dashboard/semilla/${semillaId}/secciones`, roles: [3] },
+      // { label: 'Configurar Test IA', icon: 'bolt', route: `/dashboard/semilla/${semillaId}/tests`, roles: [3] },
       { label: 'Volver a Mis Semillas', icon: 'arrow-left', route: '/dashboard/panel', roles: [3] },
     ]);
   }
