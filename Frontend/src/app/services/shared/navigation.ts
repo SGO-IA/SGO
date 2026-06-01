@@ -38,11 +38,24 @@ export class NavigationService {
   // Método para inyectar el submenú de construcción de la semilla con su ID real
   setMenuInternoSemilla(semillaId: string) {
     this.currentMenuOptions.set([
-      { label: 'Estructura (OVAs)', icon: 'folder-open', route: `/dashboard/semilla/${semillaId}`, roles: [3] },
-      // { label: 'Resultados (RAPs)', icon: 'bookmark', route: `/dashboard/semilla/${semillaId}/raps`, roles: [3] },
-      // { label: 'Secciones Didácticas', icon: 'file-edit', route: `/dashboard/semilla/${semillaId}/secciones`, roles: [3] },
-      // { label: 'Configurar Test IA', icon: 'bolt', route: `/dashboard/semilla/${semillaId}/tests`, roles: [3] },
-      { label: 'Volver a Mis Semillas', icon: 'arrow-left', route: '/dashboard/panel', roles: [3] },
+      { 
+        label: 'Estructura (RAPs / OVAs)', 
+        icon: 'pi pi-sitemap', // Icono de árbol/estructura pedagógica
+        route: `/dashboard/semilla/${semillaId}`, 
+        roles: [3] 
+      },
+      { 
+        label: 'Ciclo Didáctico', 
+        icon: 'pi pi-sync', // Icono semántico de proceso cíclico / iterativo
+        route: `/dashboard/semilla/${semillaId}/ciclo-didactico`, 
+        roles: [3] 
+      },
+      { 
+        label: 'Volver a Mis Semillas', 
+        icon: 'pi pi-arrow-left', // Icono estándar de retorno
+        route: '/dashboard/panel', 
+        roles: [3] 
+      },
     ]);
   }
 }
