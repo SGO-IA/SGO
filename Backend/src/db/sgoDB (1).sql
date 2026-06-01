@@ -1,4 +1,6 @@
--- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
+CREATE DATABASE  IF NOT EXISTS `sgo` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `sgo`;
+-- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
 -- Host: localhost    Database: sgo
 -- ------------------------------------------------------
@@ -237,6 +239,39 @@ LOCK TABLES `criterios_evaluacion` WRITE;
 /*!40000 ALTER TABLE `criterios_evaluacion` DISABLE KEYS */;
 INSERT INTO `criterios_evaluacion` VALUES (3,50,'Prueba'),(4,51,'Prueba'),(7,52,'Prueba'),(11,49,'Prueba'),(12,48,'Prueba');
 /*!40000 ALTER TABLE `criterios_evaluacion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `expertos_raps_trabajo`
+--
+
+DROP TABLE IF EXISTS `expertos_raps_trabajo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `expertos_raps_trabajo` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `experto_id` int NOT NULL,
+  `semilla_id` int NOT NULL,
+  `rap_id` int NOT NULL,
+  `fecha_registro` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `experto_id` (`experto_id`,`semilla_id`,`rap_id`),
+  KEY `fk_exp_rap_semilla` (`semilla_id`),
+  KEY `fk_exp_rap_item` (`rap_id`),
+  CONSTRAINT `fk_exp_rap_item` FOREIGN KEY (`rap_id`) REFERENCES `resultados_aprendizaje` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_exp_rap_semilla` FOREIGN KEY (`semilla_id`) REFERENCES `semillas` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_exp_rap_usuario` FOREIGN KEY (`experto_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `expertos_raps_trabajo`
+--
+
+LOCK TABLES `expertos_raps_trabajo` WRITE;
+/*!40000 ALTER TABLE `expertos_raps_trabajo` DISABLE KEYS */;
+INSERT INTO `expertos_raps_trabajo` VALUES (1,5,1,48,'2026-05-20 14:55:45');
+/*!40000 ALTER TABLE `expertos_raps_trabajo` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -737,4 +772,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-21 17:28:55
+-- Dump completed on 2026-06-01 17:51:49
