@@ -1,3 +1,4 @@
+// Protocolo SGO-Layered: Service
 import { RapsModel } from '../../models/expertoTematico/rapsModels.js';
 
 export const RapsService = {
@@ -22,7 +23,7 @@ export const RapsService = {
   },
 
   registrarRapsDeTrabajo: async (expertoId, semillaId, rapIds) => {
-    // Orquesta la inserción masiva parametrizada
+    // Orquesta la inserción masiva parametrizada hacia el modelo de datos
     return await RapsModel.guardarSeleccionMasiva(expertoId, semillaId, rapIds);
   }
 };

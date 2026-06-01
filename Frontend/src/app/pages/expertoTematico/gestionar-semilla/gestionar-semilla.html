@@ -56,47 +56,65 @@
         <div class="bg-white border border-gray-100 rounded-[2.5rem] p-8 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.01)]">
           <div class="mb-6">
             <h3 class="text-lg font-black text-sena-black tracking-tight">Resultados de Aprendizaje Disponibles</h3>
-            <p class="text-xs text-gray-400 font-medium mt-0.5">Selecciona uno o múltiples RAPs pertenecientes a la competencia asignada:</p>
+            <p class="text-xs text-gray-400 font-medium mt-0.5">Selecciona uno o múltiples RAPs agrupados por la competencia asignada:</p>
           </div>
           
-          <div class="space-y-3">
-            @for (rap of semillaService.rapsDisponiblesParaSeleccionar(); track rap.id) {
-              <label 
-                class="flex items-center gap-4 p-4 rounded-2xl border transition-all group relative overflow-hidden"
-                [class.border-gray-100]="!rap.asignado_experto_id"
-                [class.hover:border-sena/20]="!rap.asignado_experto_id"
-                [class.hover:bg-sena/5]="!rap.asignado_experto_id"
-                [class.cursor-pointer]="!rap.asignado_experto_id"
-                [class.border-rose-100]="rap.asignado_experto_id"
-                [class.bg-rose-50/20]="rap.asignado_experto_id"
-                [class.opacity-80]="rap.asignado_experto_id"
-                [class.cursor-not-allowed]="rap.asignado_experto_id"
-              >
-                <input 
-                  type="checkbox" 
-                  [disabled]="rap.asignado_experto_id"
-                  (change)="onToggleRap(rap.id, $event)"
-                  class="w-5 h-5 rounded-md border-gray-300 text-sena focus:ring-sena focus:ring-offset-2 accent-sena transform scale-110 shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:text-gray-300"
-                />
+          <div class="space-y-8">
+            @for (grupo of competenciasConRaps; track grupo.competenciaId) {
+              <div class="border border-gray-100 bg-gray-50/40 rounded-[2rem] p-6 space-y-4 shadow-sm">
                 
-                <div class="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <div class="min-w-0">
-                    <span class="text-[10px] font-black text-gray-400 group-hover:text-sena transition-colors uppercase tracking-wider block">
-                      {{ rap.codigo_rap }}
-                    </span>
-                    <p class="text-sm font-bold text-gray-700 leading-tight mt-0.5">
-                      {{ rap.denominacion }}
-                    </p>
+                <div class="flex items-start gap-3 border-b border-gray-100 pb-4">
+                  <div class="w-8 h-8 rounded-xl bg-sena text-white flex items-center justify-center text-xs shadow-md shadow-sena/10 shrink-0 mt-0.5">
+                    <i class="pi pi-bookmark-fill text-xs"></i>
                   </div>
+                  <div class="min-w-0">
+                    <span class="text-[9px] font-black uppercase tracking-widest text-sena block">Competencia Curricular</span>
+                    <h4 class="text-sm font-extrabold text-sena-black leading-tight mt-0.5">{{ grupo.competenciaNombre }}</h4>
+                  </div>
+                </div>
 
-                  @if (rap.asignado_experto_id) {
-                    <span class="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-xl bg-rose-100/80 text-rose-700 border border-rose-200/40 whitespace-nowrap flex items-center gap-1 self-start sm:self-center shadow-sm">
-                      <i class="pi pi-lock text-[9px]"></i>
-                      Ocupado por: {{ rap.asignado_experto_nombre }}
-                    </span>
+                <div class="space-y-2.5">
+                  @for (rap of grupo.raps; track rap.id) {
+                    <label 
+                      class="flex items-center gap-4 p-4 rounded-2xl border bg-white transition-all group relative overflow-hidden"
+                      [class.border-gray-100]="!rap.asignado_experto_id"
+                      [class.hover:border-sena/20]="!rap.asignado_experto_id"
+                      [class.hover:bg-sena/5]="!rap.asignado_experto_id"
+                      [class.cursor-pointer]="!rap.asignado_experto_id"
+                      [class.border-rose-100]="rap.asignado_experto_id"
+                      [class.bg-rose-50/20]="rap.asignado_experto_id"
+                      [class.opacity-80]="rap.asignado_experto_id"
+                      [class.cursor-not-allowed]="rap.asignado_experto_id"
+                    >
+                      <input 
+                        type="checkbox" 
+                        [disabled]="rap.asignado_experto_id"
+                        (change)="onToggleRap(rap.id, $event)"
+                        class="w-5 h-5 rounded-md border-gray-300 text-sena focus:ring-sena focus:ring-offset-2 accent-sena transform scale-110 shrink-0 cursor-pointer disabled:cursor-not-allowed disabled:text-gray-300"
+                      />
+                      
+                      <div class="min-w-0 flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div class="min-w-0">
+                          <span class="text-[10px] font-black text-gray-400 group-hover:text-sena transition-colors uppercase tracking-wider block">
+                            {{ rap.codigo_rap }}
+                          </span>
+                          <p class="text-sm font-bold text-gray-700 leading-tight mt-0.5">
+                            {{ rap.denominacion }}
+                          </p>
+                        </div>
+
+                        @if (rap.asignado_experto_id) {
+                          <span class="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-xl bg-rose-100/80 text-rose-700 border border-rose-200/40 whitespace-nowrap flex items-center gap-1 self-start sm:self-center shadow-sm">
+                            <i class="pi pi-lock text-[9px]"></i>
+                            Ocupado por: {{ rap.asignado_experto_nombre }}
+                          </span>
+                        }
+                      </div>
+                    </label>
                   }
                 </div>
-              </label>
+
+              </div>
             } @empty {
               <div class="text-center py-12 bg-gray-50/50 rounded-2xl border border-dashed border-gray-200">
                 <i class="pi pi-info-circle text-gray-300 text-3xl mb-2"></i>

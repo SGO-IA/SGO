@@ -1,6 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SemillasService } from '../../../services/expertoTematico/semillas';
+interface CompetenciaAgrupada {
+  competenciaId: number;
+  competenciaNombre: string;
+  raps: any[];
+}
 
 @Component({
   selector: 'app-gestionar-semilla',
@@ -30,6 +35,29 @@ export class GestionarSemilla {
     });
   }
 
+  get competenciasConRaps(): CompetenciaAgrupada[] {
+    // Obtenemos los RAPs directamente desde el signal reactivo de tu servicio
+    const raps = this.semillaService.rapsDisponiblesParaSeleccionar();
+    const grupos: { [key: number]: CompetenciaAgrupada } = {};
+
+    raps.forEach((rap: any) => {
+      // Extrae las llaves exactas mapeadas con alias desde tu Backend en Node.JS
+      const compId = rap.competencia_id || 0; 
+      const compNombre = rap.competencia_nombre || 'Competencia Sin Asignar';
+
+      if (!grupos[compId]) {
+        grupos[compId] = {
+          competenciaId: compId,
+          competenciaNombre: compNombre,
+          raps: []
+        };
+      }
+      grupos[compId].raps.push(rap);
+    });
+
+    return Object.values(grupos);
+  }
+
   onToggleRap(rapId: number, event: Event): void {
     const checkbox = event.target as HTMLInputElement;
     if (checkbox.checked) {
@@ -44,7 +72,10 @@ export class GestionarSemilla {
 
     const idsArray = Array.from(this.rapIdsSeleccionados);
     this.semillaService.guardarAsignacionRaps(this.semillaId(), idsArray).subscribe({
-      next: () => this.cargarFlujoInicial(), // Re-sincroniza automáticamente los signals
+      next: () => {
+        this.rapIdsSeleccionados.clear(); // Limpia el Set local tras una asignación exitosa
+        this.cargarFlujoInicial();        // Re-sincroniza automáticamente los signals de SGO
+      }, 
       error: (err) => console.error('Error al guardar asignaciones:', err)
     });
   }
