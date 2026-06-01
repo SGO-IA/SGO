@@ -1,3 +1,10 @@
+## [0.33.1](https://github.com/SGO-IA/SGO/compare/v0.33.0...v0.33.1) (2026-06-01)
+
+
+### Bug Fixes
+
+* back up of data base ([034923b](https://github.com/SGO-IA/SGO/commit/034923bb35c852ca947c8d7c49c23297d9a99ce6))
+
 # [0.33.0](https://github.com/SGO-IA/SGO/compare/v0.32.0...v0.33.0) (2026-05-21)
 
 
