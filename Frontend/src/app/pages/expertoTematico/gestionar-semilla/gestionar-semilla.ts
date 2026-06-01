@@ -1,6 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SemillasService } from '../../../services/expertoTematico/semillas';
+import { RapsDisponiblesComponent } from '../../../components/expertoTematico/raps-disponibles-component/raps-disponibles-component';
+import { RapsTrabajandoComponent } from '../../../components/expertoTematico/raps-trabajando-component/raps-trabajando-component';
 interface CompetenciaAgrupada {
   competenciaId: number;
   competenciaNombre: string;
@@ -10,7 +12,7 @@ interface CompetenciaAgrupada {
 @Component({
   selector: 'app-gestionar-semilla',
   standalone: true,
-  imports: [],
+  imports: [RapsDisponiblesComponent, RapsTrabajandoComponent],
   templateUrl: './gestionar-semilla.html',
   styleUrl: './gestionar-semilla.css',
 })
