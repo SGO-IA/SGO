@@ -1,1 +1,34 @@
-<p>ciclo-didactico works!</p>
+<div class="p-4 sm:p-8 max-w-5xl mx-auto font-sans space-y-6">
+  
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gray-50/50 border border-gray-100 p-4 rounded-3xl">
+    <div class="min-w-0">
+      <h1 class="text-xl font-black text-sena-black tracking-tight">Constructor de Ciclo Didáctico</h1>
+      <p class="text-xs text-gray-400 font-medium">Estructure pedagógicamente las fases de formación técnica</p>
+    </div>
+
+    <button 
+      (click)="toggleAyuda()"
+      class="w-full sm:w-auto px-4 py-2 border-2 transition-all rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer"
+      [class.border-sena]="mostrarAyuda()"
+      [class.bg-sena-alpha]="mostrarAyuda()"
+      [class.text-sena-dark]="mostrarAyuda()"
+      [class.border-gray-200]="!mostrarAyuda()"
+      [class.bg-white]="!mostrarAyuda()"
+      [class.text-gray-500]="!mostrarAyuda()"
+      [class.hover:border-sena/30]="!mostrarAyuda()"
+    >
+      <i class="pi" [class.pi-question-circle]="!mostrarAyuda()" [class.pi-eye-slash]="mostrarAyuda()"></i> 
+      {{ mostrarAyuda() ? 'Ocultar Guía' : 'Ver Ayuda del Módulo' }}
+    </button>
+  </div>
+
+  <app-ciclo-didactico-presentacion 
+    [visible]="mostrarAyuda()" 
+    (onCerrar)="cerrarAyuda()" 
+  />
+
+  <div class="bg-white border border-gray-100 rounded-[2.5rem] p-8 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.01)]">
+    <p class="text-xs text-gray-400 font-bold uppercase tracking-wider text-center py-8">Lienzo de trabajo del ciclo didáctico...</p>
+  </div>
+
+</div>
