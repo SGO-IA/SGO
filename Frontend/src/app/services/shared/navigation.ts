@@ -39,7 +39,7 @@ export class NavigationService {
   setMenuInternoSemilla(semillaId: string) {
     this.currentMenuOptions.set([
       { 
-        label: 'Estructura (RAPs / OVAs)', 
+        label: 'RAPs', 
         icon: 'pi pi-sitemap', // Icono de árbol/estructura pedagógica
         route: `/dashboard/semilla/${semillaId}`, 
         roles: [3] 

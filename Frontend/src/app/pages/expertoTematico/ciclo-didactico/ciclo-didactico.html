@@ -27,12 +27,12 @@
     (onCerrar)="cerrarAyuda()" 
   />
 
-  @if (!tieneCicloDidactico()) {
+@if (!tieneCicloDidactico()) {
     <div class="bg-white border border-gray-100 rounded-[2.5rem] p-12 sm:p-20 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
       
       <div class="w-16 h-16 rounded-full bg-sena-alpha text-sena flex items-center justify-center text-2xl mb-4 shadow-sm">
         <i class="pi pi-folder-open"></i>
-      </div>l
+      </div>
 
       <h3 class="text-lg font-black text-sena-black tracking-tight">No hay un ciclo didáctico activo</h3>
       <p class="text-xs text-gray-400 font-medium max-w-sm mt-1 mb-8 leading-relaxed">
@@ -47,11 +47,6 @@
 
     </div>
   } @else {
-    <div class="bg-white border border-gray-100 rounded-[2.5rem] p-8 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.01)] animate-in fade-in duration-300">
-      <p class="text-xs text-gray-400 font-bold uppercase tracking-wider text-center py-8">
-        Lienzo de trabajo activo del ciclo didáctico...
-      </p>
-    </div>
-  }
+    }
 
 </div>

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { expertoController } from '../controllers/expertoTematico/semillas.controller.js';
 import { testController } from '../controllers/expertoTematico/testinicial.controller.js';
 import { RapsController } from '../controllers/expertoTematico/raps.controller.js';
+import { cicloController } from '../controllers/expertoTematico/cicloDidactico.controller.js';
 
 const router = Router();
 
@@ -18,5 +19,7 @@ router.get('/semilla/:semillaId/verificar-estado', RapsController.verificarYObte
 
 // Guardar la selección manual de RAPs del experto
 router.post('/semilla/:semillaId/asignar', RapsController.guardarAsignacionRaps);
+
+router.get('/dashboard-experto', cicloController.getDashboard);
 
 export default router;
