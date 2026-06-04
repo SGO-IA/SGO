@@ -3,14 +3,14 @@ import db from '../../config/dbConfig.js';
 
 export const RapsModel = {
   obtenerRapsAsignados: async (expertoId, semillaId) => {
-    // Se añade un JOIN a competencias para homogeneizar la estructura esperada por el árbol de Angular
     const query = `
       SELECT 
         r.id, 
         r.codigo_rap, 
         r.denominacion, 
         r.competencia_id,
-        c.nombre AS competencia_nombre
+        c.nombre AS competencia_nombre,
+        c.horas AS competencia_horas
       FROM expertos_raps_trabajo ert
       INNER JOIN resultados_aprendizaje r ON ert.rap_id = r.id
       INNER JOIN competencias c ON r.competencia_id = c.id
@@ -22,7 +22,6 @@ export const RapsModel = {
   },
 
   obtenerRapsDisponiblesPorSemilla: async (semillaId) => {
-    // Dejamos r.id y r.denominacion puros para que Angular los lea de forma estandarizada en la vista
     const query = `
       SELECT 
         r.id, 
@@ -30,6 +29,7 @@ export const RapsModel = {
         r.denominacion, 
         c.id AS competencia_id,
         c.nombre AS competencia_nombre,
+        c.horas AS competencia_horas,
         u.id AS asignado_experto_id,
         u.nombre AS asignado_experto_nombre
       FROM semillas s
