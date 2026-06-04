@@ -22,4 +22,6 @@ router.post('/semilla/:semillaId/asignar', RapsController.guardarAsignacionRaps)
 
 router.get('/dashboard-experto', cicloController.getDashboard);
 
+router.get('/fases-proyecto', cicloController.getFases);
+
 export default router;

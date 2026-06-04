@@ -25,5 +25,11 @@ export const cicloModel = {
         `;
         const [rows] = await db.execute(query, [expertoId]);
         return rows;
+    },
+
+    async obtenerFases() {
+        const query = `SELECT id, sigla, nombre_fase FROM fases_proyecto ORDER BY id ASC`;
+        const [rows] = await db.execute(query);
+        return rows;
     }
 };

@@ -8,12 +8,13 @@ import { environment } from '../../../environments/environment.development';
 })
 export class CicloDidacticoService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api/expertoTematico`;
+  private apiUrl = `${environment.apiUrl}/expertoTematico`;
 
-  /**
-   * Obtiene el dashboard con los RAPs y el estado de sus ciclos
-   */
   getDashboardExperto(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/dashboard-experto`);
+  }
+
+  getFasesProyecto(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/fases-proyecto`);
   }
 }

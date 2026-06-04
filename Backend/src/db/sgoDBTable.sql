@@ -235,6 +235,12 @@ CREATE TABLE `fases_proyecto` (
   UNIQUE KEY `uq_sigla` (`sigla`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+INSERT INTO fases_proyecto (sigla, nombre_fase) VALUES 
+('AN', 'Análisis'),
+('PL', 'Planeación'),
+('EJ', 'Ejecución'),
+('EV', 'Evaluación');
+
 -- ------------------------------------------------------------
 -- ovas
 -- ------------------------------------------------------------
