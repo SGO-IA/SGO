@@ -13,6 +13,7 @@ import { ReflexionInicial } from '../../../components/expertoTematico/etapasCicl
 import { Contextualizacion } from '../../../components/expertoTematico/etapasCiclo/contextualizacion/contextualizacion';
 import { Apropiacion } from '../../../components/expertoTematico/etapasCiclo/apropiacion/apropiacion';
 import { Transferencia } from '../../../components/expertoTematico/etapasCiclo/transferencia/transferencia';
+import { CicloDataService } from '../../../services/expertoTematico/ciclo-data-service';
 
 @Component({
   selector: 'app-confi-ciclo-didactico',
@@ -30,6 +31,7 @@ import { Transferencia } from '../../../components/expertoTematico/etapasCiclo/t
 export class ConfiCicloDidactico implements OnInit {
   private route = inject(ActivatedRoute);
   private semillasService = inject(SemillasService);
+  private cicloData = inject(CicloDataService);
   
   // Estados de flujo
   rapsList = signal<any[]>([]);
@@ -87,7 +89,9 @@ export class ConfiCicloDidactico implements OnInit {
 
   // Navegación de estados
   continuarAlEditor() {
-    if (this.puedeContinuar()) {
+    if (this.faseActual() && this.rapActual()) {
+      // Aquí guardas los datos globalmente
+      this.cicloData.setSeleccion(this.faseActual()!, this.rapActual()!);
       this.pasoActual.set('etapas');
     }
   }

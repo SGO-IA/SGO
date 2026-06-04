@@ -3,6 +3,7 @@ import { expertoController } from '../controllers/expertoTematico/semillas.contr
 import { testController } from '../controllers/expertoTematico/testinicial.controller.js';
 import { RapsController } from '../controllers/expertoTematico/raps.controller.js';
 import { cicloController } from '../controllers/expertoTematico/cicloDidactico.controller.js';
+import { IAController } from '../controllers/expertoTematico/ia.controller.js';
 
 const router = Router();
 
@@ -23,5 +24,7 @@ router.post('/semilla/:semillaId/asignar', RapsController.guardarAsignacionRaps)
 router.get('/dashboard-experto', cicloController.getDashboard);
 
 router.get('/fases-proyecto', cicloController.getFases);
+
+router.post('/sugerir-contenido', IAController.generarSugerencia);
 
 export default router;
