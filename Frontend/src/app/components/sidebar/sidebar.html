@@ -35,20 +35,19 @@
   </div>
 
   <ul class="flex-1 px-6 space-y-2 relative z-10 overflow-y-auto custom-scrollbar">
-    <li *ngFor="let option of menuFiltrado">
-      <a [routerLink]="option.route" 
-         routerLinkActive="!bg-white !text-sena-black shadow-[0_10px_25px_-5px_rgba(57,169,0,0.15)] translate-x-1"
-         [routerLinkActiveOptions]="{exact: true}"
-         (click)="closeMobileMenu()"
-         class="flex items-center gap-3 px-4 py-3.5 rounded-[1.25rem] transition-all duration-300 group relative text-gray-400 hover:text-sena hover:bg-sena/5 font-sans">
-        
-        <i [class]="'pi pi-' + option.icon + ' text-lg transition-all duration-300 group-hover:scale-110 group-hover:rotate-3'"></i>
-        
-        <span class="text-sm font-bold tracking-tight">{{ option.label }}</span>
-        
-        <div class="absolute left-1 w-1 h-4 bg-sena rounded-full scale-0 group-hover:scale-100 transition-transform"></div>
-      </a>
-    </li>
+    @for (option of menuFiltrado(); track option.route) {
+      <li>
+        <a [routerLink]="option.route" 
+          routerLinkActive="!bg-white !text-sena-black shadow-[0_10px_25px_-5px_rgba(57,169,0,0.15)] translate-x-1"
+          [routerLinkActiveOptions]="{exact: false}"
+          (click)="closeMobileMenu()"
+          class="flex items-center gap-3 px-4 py-3.5 rounded-[1.25rem] transition-all duration-300 group relative text-gray-400 hover:text-sena hover:bg-sena/5 font-sans">
+          
+          <i [class]="'pi pi-' + option.icon + ' text-lg'"></i>
+          <span class="text-sm font-bold tracking-tight">{{ option.label }}</span>
+        </a>
+      </li>
+    }
   </ul>
 
   <div class="p-6 border-t border-gray-50 bg-gray-50/30 backdrop-blur-md relative z-10">

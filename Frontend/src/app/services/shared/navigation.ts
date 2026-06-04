@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import { Router } from '@angular/router';
 
 export interface MenuOption {
   label: string;
@@ -28,34 +29,32 @@ export class NavigationService {
   ];
 
   // 🔔 Signal que lee el sidebar. Cambia de contenido dinámicamente.
-  currentMenuOptions = signal<MenuOption[]>(this.menuGlobal);
+currentMenuOptions = signal<MenuOption[]>([]);
 
-  // Método para volver a los accesos del rol estándar
-  setMenuGlobal() {
-    this.currentMenuOptions.set(this.menuGlobal);
+  constructor(private router: Router) {
+    // 2. Verificación inmediata al instanciar el servicio
+    this.detectarYAplicarMenu(this.router.url);
   }
 
-  // Método para inyectar el submenú de construcción de la semilla con su ID real
+  detectarYAplicarMenu(url: string) {
+    if (url.includes('/dashboard/semilla/')) {
+      const segmentos = url.split('/');
+      const index = segmentos.indexOf('semilla');
+      if (index !== -1 && segmentos[index + 1]) {
+        this.setMenuInternoSemilla(segmentos[index + 1]);
+      }
+    } else {
+      this.setMenuGlobal();
+    }
+  }
+
+  setMenuGlobal() { this.currentMenuOptions.set(this.menuGlobal); }
+
   setMenuInternoSemilla(semillaId: string) {
     this.currentMenuOptions.set([
-      { 
-        label: 'RAPs', 
-        icon: 'pi pi-sitemap', // Icono de árbol/estructura pedagógica
-        route: `/dashboard/semilla/${semillaId}`, 
-        roles: [3] 
-      },
-      { 
-        label: 'Ciclo Didáctico', 
-        icon: 'pi pi-sync', // Icono semántico de proceso cíclico / iterativo
-        route: `/dashboard/semilla/${semillaId}/ciclo-didactico`, 
-        roles: [3] 
-      },
-      { 
-        label: 'Volver a Mis Semillas', 
-        icon: 'pi pi-arrow-left', // Icono estándar de retorno
-        route: '/dashboard/panel', 
-        roles: [3] 
-      },
+      { label: 'RAPs', icon: 'sitemap', route: `/dashboard/semilla/${semillaId}`, roles: [3] },
+      { label: 'Ciclo Didáctico', icon: 'sync', route: `/dashboard/semilla/${semillaId}/ciclo-didactico`, roles: [3] },
+      { label: 'Volver a Mis Semillas', icon: 'arrow-left', route: '/dashboard/panel', roles: [3] },
     ]);
   }
 }

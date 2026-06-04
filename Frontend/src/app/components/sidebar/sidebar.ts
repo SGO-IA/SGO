@@ -3,7 +3,7 @@ import { LoginService } from '../../services/public/login-service';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
-import { NavigationService } from '../../services/shared/navigation';
+import { MenuOption, NavigationService } from '../../services/shared/navigation';
 
 @Component({
   selector: 'app-sidebar',
@@ -18,42 +18,26 @@ export class Sidebar implements OnInit {
   private router = inject(Router);
   
   isMobileMenuOpen = signal<boolean>(false);
-  menuFiltrado: any[] = [];
+  menuFiltrado = signal<MenuOption[]>([]);
 
   constructor() {
-    // Escuchamos de forma automática los cambios en el menú para aplicar el filtro de rol
+    // Escucha cambios en el usuario O cambios en las opciones del menú
     effect(() => {
       const user = this.authService.currentUser();
-      const opcionesActuales = this.navService.currentMenuOptions();
+      const opciones = this.navService.currentMenuOptions();
       
-      if (user) {
-        this.menuFiltrado = opcionesActuales.filter(option => 
-          option.roles.includes(user.rol_id)
-        );
+      if (user && opciones.length > 0) {
+        this.menuFiltrado.set(opciones.filter(op => op.roles.includes(user.rol_id)));
       }
     });
   }
 
   ngOnInit(): void {
-    // 🧠 DETECTOR DE RUTAS: Analiza a dónde se está moviendo el usuario
+      // Solo necesitamos escuchar los cambios de navegación para actualizar el servicio
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      const url = event.urlAfterRedirects || event.url;
-      
-      // Si la ruta contiene 'dashboard/semilla/', extraemos el ID de la URL
-      if (url.includes('dashboard/semilla/')) {
-        const segmentos = url.split('/');
-        const index = segmentos.indexOf('semilla');
-        const semillaId = segmentos[index + 1]; // Toma el ID que viene justo después
-        
-        if (semillaId) {
-          this.navService.setMenuInternoSemilla(semillaId);
-        }
-      } else {
-        // Si sale de la semilla a cualquier otra parte, limpia y recupera el menú principal
-        this.navService.setMenuGlobal();
-      }
+      this.navService.detectarYAplicarMenu(event.urlAfterRedirects || event.url);
     });
   }
 
