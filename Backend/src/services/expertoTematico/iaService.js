@@ -3,21 +3,27 @@ import { generarPromptPedagogico } from '../../prompts/expertoTematico/cicloDida
 import { anthropic, anthropicConfig } from '../../config/claude.js';
 
 export const IAService = {
-  obtenerSugerencia: async (prompt, etapa, rapId) => {
-    // 1. Obtener datos del Modelo
+  obtenerSugerencia: async (instruccion, etapa, rapId) => {
+    // 1. Obtener contexto del Modelo (Data Layer)
     const data = await RAPModel.getContextoCompleto(rapId);
     
+    // 2. Formatear contexto para la IA (Business Logic Layer)
     const contextoIA = data ? `
       RAP: ${data.rap_nombre}
       Conocimientos de Proceso: ${data.conocimientos_proceso || 'N/A'}
       Conocimientos del Saber: ${data.conocimientos_saber || 'N/A'}
       Criterios de Evaluación: ${data.criterios_evaluacion || 'N/A'}
-    ` : 'Información técnica no encontrada para este RAP.';
+    ` : 'Data not found.';
 
-    // 2. Obtener el prompt centralizado
-    const content = generarPromptPedagogico(etapa, contextoIA, prompt);
+    // 3. Generar el prompt final (Prompt Layer)
+    const content = generarPromptPedagogico(etapa, contextoIA, instruccion);
 
-    // 3. Llamada a Anthropic
+    // LOG DE DEPURACIÓN: Muestra lo que se envía a la IA
+    console.log("------------------ PROMPT ENVIADO A LA IA ------------------");
+    console.log(content);
+    console.log("-----------------------------------------------------------");
+
+    // 4. Invocación a la API (Integration Layer)
     const response = await anthropic.messages.create({
       model: anthropicConfig.model,
       max_tokens: anthropicConfig.maxTokens,

@@ -21,13 +21,16 @@
     </div>
   }
 
-  <button 
-    (click)="sugerirIA()" 
-    [disabled]="loadingIA()"
-    class="btn-sena mt-3 bg-sena-black disabled:bg-gray-400 transition-colors">
-    <i class="pi pi-sparkles"></i> 
-    {{ loadingIA() ? 'Generando...' : 'Sugerir con IA' }}
+  <button (click)="showModal = true" class="btn-sena mt-3 bg-sena-black">
+    <i class="pi pi-sparkles"></i> Sugerir con IA personalizada
   </button>
+
+  @if (showModal) {
+    <app-modal-ia
+      (close)="showModal = false" 
+      (submit)="openIA($event)">
+    </app-modal-ia>
+  }
 </div>
 
   <div class="grid md:grid-cols-2 gap-8">

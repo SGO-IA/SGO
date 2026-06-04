@@ -2,11 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CicloDataService } from '../../../../services/expertoTematico/ciclo-data-service';
 import { IAService } from '../../../../services/expertoTematico/ia';
+import { ModalIa } from '../modal-ia/modal-ia';
 
 @Component({
   selector: 'app-reflexion-inicial',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, ModalIa],
   templateUrl: './reflexion-inicial.html',
 })
 export class ReflexionInicial {
@@ -14,6 +15,7 @@ archivos: File[] = [];
   links: string[] = [];
   nuevoLink: string = '';
   contenido: string = '';
+  showModal = false;
   
   private cicloData = inject(CicloDataService);
   private iaService = inject(IAService);
@@ -34,21 +36,23 @@ archivos: File[] = [];
     "Ya casi terminamos, dando los últimos toques..."
   ];
 
-async sugerirIA() {
+async sugerirIA(customPrompt?: string) {
   const rapId = this.cicloData.rapId();
   if (!rapId) return;
 
   this.loadingIA.set(true);
+  // Si hay un customPrompt, lo usamos, si no, usamos el contenido actual o vacío
+  const promptToUse = customPrompt || this.contenido;
   this.contenido = "";
   
   let i = 0;
-  // Aumentamos a 2500ms para un ritmo más pausado y profesional
   this.intervalId = setInterval(() => {
     this.mensajeActual.set(this.mensajesCarga[i % this.mensajesCarga.length]);
     i++;
   }, 2500); 
 
-  this.iaService.sugerir(this.contenido, 'Reflexión Inicial', rapId).subscribe({
+  // Pasamos el promptToUse al servicio
+  this.iaService.sugerir(promptToUse, 'Reflexión Inicial', rapId).subscribe({
     next: (res) => {
       this.contenido = res.sugerencia;
       this.finalizarCarga();
@@ -58,6 +62,13 @@ async sugerirIA() {
       this.finalizarCarga();
     }
   });
+}
+
+openIA(customPrompt?: string) {
+  if (customPrompt) {
+    this.showModal = false;
+    this.sugerirIA(customPrompt);
+  }
 }
 
   private finalizarCarga() {
