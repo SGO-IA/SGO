@@ -1,9 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CicloDataService } from '../../../../services/expertoTematico/ciclo-data-service';
 import { IAService } from '../../../../services/expertoTematico/ia';
 import { ModalIa } from '../modal-ia/modal-ia';
-
+import { marked } from 'marked';
 @Component({
   selector: 'app-reflexion-inicial',
   standalone: true,
@@ -16,9 +16,12 @@ archivos: File[] = [];
   nuevoLink: string = '';
   contenido: string = '';
   showModal = false;
+  contenidoRenderizado: string = '';
+  modoEdicion = false;
   
   private cicloData = inject(CicloDataService);
   private iaService = inject(IAService);
+  private cdr = inject(ChangeDetectorRef);
   
   loadingIA = signal(false);
   mensajeActual = signal("");
@@ -41,7 +44,6 @@ async sugerirIA(customPrompt?: string) {
   if (!rapId) return;
 
   this.loadingIA.set(true);
-  // Si hay un customPrompt, lo usamos, si no, usamos el contenido actual o vacío
   const promptToUse = customPrompt || this.contenido;
   this.contenido = "";
   
@@ -51,17 +53,53 @@ async sugerirIA(customPrompt?: string) {
     i++;
   }, 2500); 
 
-  // Pasamos el promptToUse al servicio
   this.iaService.sugerir(promptToUse, 'Reflexión Inicial', rapId).subscribe({
-    next: (res) => {
-      this.contenido = res.sugerencia;
+    next: async (res) => {
+      // 1. Limpieza total de basura de IA
+      let texto = res.sugerencia || "";
+      texto = texto.replace(/undefined/g, ""); 
+      texto = texto.replace(/\[\]\((undefined|null)\)/g, "");
+      // Limpiamos espacios en los links: [texto]( url ) -> [texto](url)
+      texto = texto.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
+      
+      this.contenido = texto;
+      this.modoEdicion = false;
+      
+      // 2. Renderer configurado
+      const renderer = {
+        link(href: string, title: string | null, text: string) {
+          let linkText = (!text || text === 'undefined') ? 'Ver recurso externo' : text;
+
+          // Corrección: Solo anteponer https si no tiene ni http ni https
+          let finalHref = href;
+          if (!href.startsWith('http')) {
+            finalHref = 'https://' + href.replace(/^\/+/, ''); // elimina slashes iniciales si los hay
+          }
+
+          return `<a href="${finalHref}" target="_blank" rel="noopener noreferrer" class="text-sena font-bold hover:underline">${linkText}</a>`;
+        }
+      };
+
+      marked.use({ renderer: renderer as any });
+      
+      // 3. IMPORTANTE: Parseamos 'texto' (que ya está limpio), no 'res.sugerencia'
+      this.contenidoRenderizado = await marked.parse(texto);
+      
       this.finalizarCarga();
+      this.cdr.detectChanges();
     },
     error: () => {
-      this.contenido = "Error al conectar con la IA. Inténtalo de nuevo.";
+      this.contenido = "Error de conexión. Intenta nuevamente.";
       this.finalizarCarga();
+      this.cdr.detectChanges();
     }
   });
+}
+
+finalizarEdicion() {
+  this.contenidoRenderizado = marked.parse(this.contenido) as string;
+  this.modoEdicion = false;
+  this.cdr.detectChanges();
 }
 
 openIA(customPrompt?: string) {

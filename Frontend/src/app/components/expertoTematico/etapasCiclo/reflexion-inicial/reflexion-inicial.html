@@ -2,36 +2,66 @@
   <h2 class="text-2xl font-black text-sena-black mb-6">Redacción de Reflexión Inicial</h2>
 
 <div class="mb-8 relative">
-  <textarea 
-    [(ngModel)]="contenido" 
-    [disabled]="loadingIA()"
-    class="input-sena w-full resize-y min-h-[200px] pt-4 transition-opacity duration-500"
-    [class.opacity-50]="loadingIA()"
-    [placeholder]="loadingIA() ? mensajeActual() : 'Escribe aquí...'">
-  </textarea>
-
-  @if (loadingIA()) {
-    <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-10 backdrop-blur-[2px]">
-      <div class="relative mb-4">
-        <i class="pi pi-spinner pi-spin text-4xl text-sena"></i>
+    
+    @if (contenido && !loadingIA() && !modoEdicion) {
+      <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <article 
+          class="prose prose-sena max-w-none" 
+          [innerHTML]="contenidoRenderizado">
+        </article>
+        
+        <div class="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+          <button (click)="modoEdicion = true" class="text-sm text-gray-500 hover:text-sena font-semibold transition-colors">
+            <i class="pi pi-pencil mr-1"></i> Editar contenido
+          </button>
+        </div>
       </div>
-      <p class="font-bold text-sena animate-in fade-in duration-700 text-center px-4">
-        {{ mensajeActual() }}
-      </p>
-    </div>
-  }
+    }
 
-  <button (click)="showModal = true" class="btn-sena mt-3 bg-sena-black">
-    <i class="pi pi-sparkles"></i> Sugerir con IA personalizada
-  </button>
+    @if (!contenido || loadingIA() || modoEdicion) { 
+      <textarea 
+        [(ngModel)]="contenido" 
+        [disabled]="loadingIA()"
+        class="input-sena w-full resize-y min-h-[200px] pt-4 transition-opacity duration-500"
+        [class.opacity-50]="loadingIA()"
+        [placeholder]="loadingIA() ? mensajeActual() : 'Escribe aquí o genera contenido con IA...'">
+      </textarea>
 
-  @if (showModal) {
-    <app-modal-ia
-      (close)="showModal = false" 
-      (submit)="openIA($event)">
-    </app-modal-ia>
-  }
-</div>
+      @if (modoEdicion) {
+        <button (click)="finalizarEdicion()" class="btn-sena mt-3 bg-sena-dark">
+          <i class="pi pi-check"></i> Guardar cambios y previsualizar
+        </button>
+      }
+    }
+
+    @if (loadingIA()) {
+      <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-10 backdrop-blur-[2px]">
+        <div class="relative mb-4">
+          <i class="pi pi-spinner pi-spin text-4xl text-sena"></i>
+        </div>
+        <p class="font-bold text-sena animate-in fade-in duration-700 text-center px-4">
+          {{ mensajeActual() }}
+        </p>
+      </div>
+    }
+
+    @if (!modoEdicion) {
+      <button 
+        (click)="showModal = true" 
+        [disabled]="loadingIA()"
+        class="btn-sena mt-3 bg-sena-black disabled:bg-gray-400 transition-colors">
+        <i class="pi pi-sparkles"></i> 
+        {{ contenido ? 'Regenerar con IA' : 'Sugerir con IA' }}
+      </button>
+    }
+
+    @if (showModal) {
+      <app-modal-ia
+        (close)="showModal = false" 
+        (submit)="openIA($event)">
+      </app-modal-ia>
+    }
+  </div>
 
   <div class="grid md:grid-cols-2 gap-8">
     
