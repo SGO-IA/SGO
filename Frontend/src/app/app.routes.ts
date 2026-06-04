@@ -109,6 +109,12 @@ export const routes: Routes = [
       title: 'S.G.O - Ciclo Didáctico',
       data: { roles: [3] }
     },
+    {
+      path: 'semilla/:id/ciclo-didactico/editor',
+      loadComponent: () => import('./pages/expertoTematico/confi-ciclo-didactico/confi-ciclo-didactico').then(m => m.ConfiCicloDidactico),
+      title: 'S.G.O - Editor de Fase',
+      data: { roles: [3] }
+    }
     ]
   },
 
