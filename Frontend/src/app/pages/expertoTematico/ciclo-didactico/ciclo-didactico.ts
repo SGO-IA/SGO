@@ -1,11 +1,11 @@
 import { Component, signal, OnInit, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router'; // Importa esto
+import { ActivatedRoute, RouterLink } from '@angular/router'; // Importa esto
 import { CicloDidacticoPresentacion } from '../../../components/expertoTematico/ciclo-didactico-presentacion/ciclo-didactico-presentacion';
 
 @Component({
   selector: 'app-ciclo-didactico',
   standalone: true,
-  imports: [CicloDidacticoPresentacion], 
+  imports: [CicloDidacticoPresentacion, RouterLink], 
   templateUrl: './ciclo-didactico.html'
 })
 export class CicloDidactico implements OnInit {
