@@ -10,25 +10,31 @@
     </button>
   }
 
-  @if (pasoActual() === 'etapas') {
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      @for (etapa of etapasInfo; track etapa.nombre) {
-        <button 
-          (click)="etapaActiva.set(etapa.nombre); pasoActual.set('editor')"
-          class="group p-6 bg-white border-2 border-gray-100 rounded-[var(--radius-sena)] shadow-sm 
-                hover:border-sena hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-left"
-        >
-          <div class="w-12 h-12 flex items-center justify-center rounded-2xl bg-sena-alpha text-sena mb-4 
-                      group-hover:bg-sena group-hover:text-white transition-colors duration-300">
-            <i [class]="etapa.icono + ' text-2xl'"></i>
-          </div>
-          
-          <h3 class="text-lg font-black text-sena-black">{{ etapa.nombre }}</h3>
-          <p class="text-xs text-gray-400 mt-2">{{ etapa.desc }}</p>
-        </button>
-      }
-    </div>
-  }
+@if (pasoActual() === 'etapas') {
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-4xl mx-auto">
+    @for (etapa of etapasInfo; let i = $index; track etapa.nombre) {
+      <button 
+        (click)="etapaActiva.set(etapa.nombre); pasoActual.set('editor')"
+        class="group relative p-8 bg-white border-2 border-gray-100 rounded-[var(--radius-sena)] shadow-sm 
+               hover:border-sena hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-left overflow-hidden"
+      >
+        <div class="absolute -top-3 -right-2 text-8xl font-black text-gray-200 select-none pointer-events-none">
+          0{{ i + 1 }}
+        </div>
+        
+        <div class="w-16 h-16 flex items-center justify-center rounded-2xl bg-sena-alpha text-sena mb-6 
+                    group-hover:bg-sena group-hover:text-white transition-colors duration-300 relative z-10">
+          <i [class]="etapa.icono + ' text-3xl'"></i>
+        </div>
+        
+        <h3 class="text-xl font-black text-sena-black group-hover:text-sena transition-colors relative z-10">
+          {{ etapa.nombre }}
+        </h3>
+        <p class="text-sm text-gray-500 mt-3 leading-relaxed relative z-10">{{ etapa.desc }}</p>
+      </button>
+    }
+  </div>
+}
 
   @if (pasoActual() === 'editor') {
     <button (click)="pasoActual.set('etapas')" class="text-blue-600 mb-4">← Volver a etapas</button>
