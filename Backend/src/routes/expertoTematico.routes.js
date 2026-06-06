@@ -1,9 +1,13 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { expertoController } from '../controllers/expertoTematico/semillas.controller.js';
 import { testController } from '../controllers/expertoTematico/testinicial.controller.js';
 import { RapsController } from '../controllers/expertoTematico/raps.controller.js';
 import { cicloController } from '../controllers/expertoTematico/cicloDidactico.controller.js';
 import { IAController } from '../controllers/expertoTematico/ia.controller.js';
+import { MaterialController } from '../controllers/expertoTematico/r2.controller.js';
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
@@ -26,5 +30,7 @@ router.get('/dashboard-experto', cicloController.getDashboard);
 router.get('/fases-proyecto', cicloController.getFases);
 
 router.post('/sugerir-contenido', IAController.generarSugerencia);
+
+router.post('/secciones/:seccionId/recursos', upload.single('archivo'), MaterialController.uploadRecurso);
 
 export default router;

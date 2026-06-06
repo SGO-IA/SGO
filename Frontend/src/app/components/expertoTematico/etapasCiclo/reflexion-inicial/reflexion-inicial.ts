@@ -4,6 +4,8 @@ import { CicloDataService } from '../../../../services/expertoTematico/ciclo-dat
 import { IAService } from '../../../../services/expertoTematico/ia';
 import { ModalIa } from '../modal-ia/modal-ia';
 import { marked } from 'marked';
+import { R2Cloudflare } from '../../../../services/expertoTematico/r2-cloudflare';
+import { forkJoin } from 'rxjs';
 @Component({
   selector: 'app-reflexion-inicial',
   standalone: true,
@@ -22,6 +24,7 @@ archivos: File[] = [];
   private cicloData = inject(CicloDataService);
   private iaService = inject(IAService);
   private cdr = inject(ChangeDetectorRef);
+  private r2Cloudflare = inject(R2Cloudflare);
   
   loadingIA = signal(false);
   mensajeActual = signal("");
@@ -38,6 +41,48 @@ archivos: File[] = [];
     "Refinando el lenguaje técnico...",
     "Ya casi terminamos, dando los últimos toques..."
   ];
+
+  guardarReflexion() {
+    // Simulamos u obtenemos el ID de sección correspondiente (este ID debería venir del ciclo actual o backend)
+    const seccionIdActual = 1; 
+
+    if (this.archivos.length > 0) {
+      console.log(`Iniciando carga masiva de ${this.archivos.length} archivos a Cloudflare R2...`);
+      
+      // Mapeamos cada archivo del array a una petición observable de subida
+      const peticionesSubida = this.archivos.map(archivo => 
+        this.r2Cloudflare.subirArchivoASeccion(seccionIdActual, archivo)
+      );
+
+      // forkJoin ejecuta todas las subidas en paralelo (equivalente a Promise.all)
+      forkJoin(peticionesSubida).subscribe({
+        next: (respuestas) => {
+          console.log('Todos los archivos se subieron e indexaron con éxito en R2:', respuestas);
+          
+          // Limpiamos la zona de archivos cargados tras el éxito
+          this.archivos = [];
+          
+          // TODO: Aquí disparas el guardado del texto de la reflexión (this.contenido) y tus links
+          this.ejecutarPersistenciaTexto();
+          
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error crítico durante la subida masiva a Cloudflare R2:', err);
+          // Aquí puedes mapear una alerta visual para informar al usuario de la falla
+        }
+      });
+    } else {
+      // Si no hay archivos, guardamos el texto y los links directamente
+      this.ejecutarPersistenciaTexto();
+    }
+  }
+
+  private ejecutarPersistenciaTexto() {
+    console.log('Persitiendo contenido HTML de la reflexión:', this.contenido);
+    console.log('Persistiendo enlaces externos adicionales:', this.links);
+    // Aquí invocarías al servicio correspondiente que guarde la sección en BD
+  }
 
 async sugerirIA(customPrompt?: string) {
   const rapId = this.cicloData.rapId();
