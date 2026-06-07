@@ -1,5 +1,5 @@
 import { Component, signal, OnInit, inject } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CicloDidacticoPresentacion } from '../../../components/expertoTematico/ciclo-didactico-presentacion/ciclo-didactico-presentacion';
 import { CicloDidacticoService } from '../../../services/expertoTematico/ciclo-didactico';
 import { SemillasService } from '../../../services/expertoTematico/semillas'; // Importamos el servicio de semillas
@@ -13,7 +13,8 @@ import { SemillasService } from '../../../services/expertoTematico/semillas'; //
 export class CicloDidactico implements OnInit {
   private route = inject(ActivatedRoute);
   private cicloService = inject(CicloDidacticoService);
-  private semillasService = inject(SemillasService); // Inyectamos para obtener el OVA
+  private semillasService = inject(SemillasService);
+  private router = inject(Router);
   
   mostrarAyuda = signal<boolean>(false);
   idSemilla = signal<string | null>(null);
@@ -22,10 +23,39 @@ export class CicloDidactico implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.idSemilla.set(id);
-      this.verificarCiclosActivos(id);
+    
+    if (!id) {
+      console.error('🚩 [CicloDidactico] No se encontró ID en la URL.');
+      this.router.navigate(['/dashboard/panel']);
+      return;
     }
+
+    this.idSemilla.set(id);
+    
+    // Aplicamos la misma regla de seguridad estricta
+    this.semillasService.verificarEstadoRaps(id).subscribe({
+      next: (res) => {
+        // Regla de seguridad: Si el backend indica error o no hay asignación
+        if (res.status === 'error' || res.tieneAsignacion === false) {
+          console.warn('🚩 [CicloDidactico] Acceso no autorizado para esta semilla. Redirigiendo...');
+          this.router.navigate(['/dashboard/panel']);
+          return;
+        }
+
+        // Si la validación pasa, procedemos con la lógica del componente
+        console.log('🚩 [CicloDidactico] Validación exitosa. Cargando ciclos...');
+        const ovaId = res.raps[0]?.ova_id;
+        if (ovaId) {
+          this.cargarCiclosPorOva(ovaId);
+        } else {
+          this.tieneCicloDidactico.set(false);
+        }
+      },
+      error: (err) => {
+        console.error('🚩 [CicloDidactico] Error crítico al verificar semilla:', err);
+        this.router.navigate(['/dashboard/panel']);
+      }
+    });
   }
 
   private verificarCiclosActivos(semillaId: string) {

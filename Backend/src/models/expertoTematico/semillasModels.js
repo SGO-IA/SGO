@@ -18,5 +18,25 @@ export const expertoModel = {
         `;
         const [rows] = await db.execute(query, [expertoId]);
         return rows;
+    },
+
+async verificarRelacionSemillaCiclo(semillaId, cicloId) {
+    const query = `
+        SELECT COUNT(*) AS coincidencia
+        FROM ciclos_didacticos cd
+        INNER JOIN ovas o ON cd.ova_id = o.id
+        WHERE cd.id = ? AND o.semilla_id = ?
+    `;
+    
+    console.log(`🚩 [Model] Ejecutando SQL con params: [${cicloId}, ${semillaId}]`);
+    
+    try {
+        const [rows] = await db.execute(query, [cicloId, semillaId]);
+        console.log(`🚩 [Model] Resultado SQL:`, rows[0]);
+        return rows[0].coincidencia > 0;
+    } catch (err) {
+        console.error(`🚩 [Model] Error en SQL:`, err.message);
+        throw err;
     }
+}
 };

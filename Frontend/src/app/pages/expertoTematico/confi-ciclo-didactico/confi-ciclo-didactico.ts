@@ -41,22 +41,67 @@ export class ConfiCicloDidactico implements OnInit {
     { nombre: 'Transferencia', icono: 'pi pi-send', desc: 'Aplicar lo aprendido en retos.' }
   ];
 
-  ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) this.cargarRaps(id);
+ngOnInit(): void {
+  const idSemilla = this.route.snapshot.paramMap.get('id');
 
-    // Escuchamos los Query Params para saber si venimos de editar un ciclo existente
-    this.route.queryParams.subscribe(params => {
-      const step = params['step'];
-      const cicloId = params['cicloId'];
+  // 1. Protección inicial: Si no hay ID en la URL, no hacemos nada
+  if (!idSemilla) {
+    this.router.navigate(['/dashboard/panel']);
+    return;
+  }
 
-      if (step === 'etapas' && cicloId) {
-        // 1. Guardamos el ID del ciclo seleccionado en el servicio
-        this.cicloData.setCicloId(Number(cicloId));
-        // 2. Saltamos directamente a la vista de etapas
-        this.pasoActual.set('etapas');
+  // 2. Validación de Semilla (Regla de seguridad estricta)
+  this.semillasService.verificarEstadoRaps(idSemilla).subscribe({
+    next: (res) => {
+      // Si la semilla no es válida, expulsamos inmediatamente
+      if (res.status === 'error' || res.tieneAsignacion === false) {
+        console.warn('🚩 [ConfiCiclo] Acceso no autorizado a la semilla.');
+        this.router.navigate(['/dashboard/panel']);
+        return;
       }
+
+      // Si la semilla es válida, procedemos a cargar los datos necesarios
+      this.cargarRaps(idSemilla);
+
+      // 3. Ahora que sabemos que la semilla es válida, escuchamos los queryParams
+      this.route.queryParams.subscribe(params => {
+        const step = params['step'];
+        const cicloIdParam = params['cicloId'];
+
+        if (step === 'etapas' && cicloIdParam) {
+          const cicloIdNum = Number(cicloIdParam);
+          
+          if (isNaN(cicloIdNum)) {
+            this.expulsarPorUrlInvalida(idSemilla);
+            return;
+          }
+
+          // Validación SGO-Layered: ¿El usuario tiene permiso para este ciclo?
+          this.semillasService.verificarAccesoCiclo(idSemilla, cicloIdNum, step).subscribe({
+            next: () => {
+              this.cicloData.setCicloId(cicloIdNum);
+              this.cicloIdVerificado.set(cicloIdNum);
+              this.pasoActual.set('etapas');
+            },
+            error: () => {
+              this.expulsarPorUrlInvalida(idSemilla);
+            }
+          });
+        }
+      });
+    },
+    error: (err) => {
+      console.error('🚩 [ConfiCiclo] Error crítico al verificar semilla:', err);
+      this.router.navigate(['/dashboard/panel']);
+    }
+  });
+}
+
+  private expulsarPorUrlInvalida(idSemilla: string | null) {
+    this.router.navigate(['/dashboard/semilla', idSemilla, 'ciclo-didactico', 'editor'], {
+      queryParams: {} // Limpiamos la URL contaminada
     });
+    this.pasoActual.set('seleccion');
   }
 
   private cargarRaps(id: string) {
@@ -85,16 +130,16 @@ continuarAlEditor() {
     }
   }
 
-  accederAEtapasConParams() {
-    // Cambiamos la URL inyectando los Query Params
+accederAEtapasConParams() {
+    const cicloId = this.cicloIdVerificado();
+    if (!cicloId) return;
+
+    // Solo navegamos. No toques 'pasoActual' aquí.
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { cicloId: this.cicloIdVerificado(), step: 'etapas' },
-      queryParamsHandling: 'merge' // Mantiene el resto de la URL intacta
+      queryParams: { cicloId, step: 'etapas' },
+      queryParamsHandling: 'merge'
     });
-    
-    // Mostramos la vista de etapas
-    this.pasoActual.set('etapas');
   }
 
   procesarCreacionCiclo(datos: any) {

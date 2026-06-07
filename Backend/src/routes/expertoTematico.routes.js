@@ -33,6 +33,8 @@ router.post('/sugerir-contenido', IAController.generarSugerencia);
 
 router.post('/secciones/:seccionId/recursos', upload.single('archivo'), MaterialController.uploadRecurso);
 
+router.get('/semillas/:semillaId/ciclos-didacticos/:cicloId/verificar-acceso', expertoController.verificarAccesoCiclo);
+
 router.get('/ciclos/verificar', cicloController.verificar);
 
 router.post('/ciclos/crear', cicloController.crear);
