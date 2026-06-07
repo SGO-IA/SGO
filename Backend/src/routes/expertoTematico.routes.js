@@ -37,4 +37,6 @@ router.get('/ciclos/verificar', cicloController.verificar);
 
 router.post('/ciclos/crear', cicloController.crear);
 
+router.get('/ciclos/ova/:ova_id', cicloController.getCiclosPorOva);
+
 export default router;

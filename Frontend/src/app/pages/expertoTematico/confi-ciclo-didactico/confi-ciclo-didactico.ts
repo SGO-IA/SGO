@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SemillasService } from '../../../services/expertoTematico/semillas';
 import { CicloDataService } from '../../../services/expertoTematico/ciclo-data-service';
 import { RapSelector } from '../../../components/expertoTematico/rap-selector/rap-selector';
@@ -22,6 +22,7 @@ export class ConfiCicloDidactico implements OnInit {
   private semillasService = inject(SemillasService);
   private cicloDidacticoService = inject(CicloDidacticoService);
   private cicloData = inject(CicloDataService);
+  private router = inject(Router);
 
   rapsList = signal<any[]>([]);
   pasoActual = signal<'seleccion' | 'etapas' | 'editor' | 'existe'>('seleccion');
@@ -31,6 +32,7 @@ export class ConfiCicloDidactico implements OnInit {
   ovaAsociado = signal<number | null>(null);
   mostrarModal = signal(false);
   etapaActiva = signal<string | null>(null);
+  cicloIdVerificado = signal<number | null>(null);
 
   etapasInfo = [
     { nombre: 'Reflexión', icono: 'pi pi-bolt', desc: 'Despertar interés y saberes previos.' },
@@ -42,6 +44,19 @@ export class ConfiCicloDidactico implements OnInit {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) this.cargarRaps(id);
+
+    // Escuchamos los Query Params para saber si venimos de editar un ciclo existente
+    this.route.queryParams.subscribe(params => {
+      const step = params['step'];
+      const cicloId = params['cicloId'];
+
+      if (step === 'etapas' && cicloId) {
+        // 1. Guardamos el ID del ciclo seleccionado en el servicio
+        this.cicloData.setCicloId(Number(cicloId));
+        // 2. Saltamos directamente a la vista de etapas
+        this.pasoActual.set('etapas');
+      }
+    });
   }
 
   private cargarRaps(id: string) {
@@ -50,16 +65,16 @@ export class ConfiCicloDidactico implements OnInit {
     });
   }
 
-  continuarAlEditor() {
+continuarAlEditor() {
     const rapSeleccionado = this.rapsList().find(r => r.rap_id === this.rapActual() || r.id === this.rapActual());
     
     if (rapSeleccionado?.ova_id) {
         this.ovaAsociado.set(rapSeleccionado.ova_id);
         
         this.cicloDidacticoService.verificarCiclo(rapSeleccionado.ova_id, this.faseActual()!).subscribe(res => {
-            // Verificamos que existe Y que ciclo_id no sea undefined
             if (res.existe && typeof res.ciclo_id === 'number') {
-                this.cicloData.setCicloId(res.ciclo_id); // Ahora TS sabe que es un number
+                this.cicloData.setCicloId(res.ciclo_id); 
+                this.cicloIdVerificado.set(res.ciclo_id); // <--- Guardamos el ID aquí
                 this.pasoActual.set('existe');
             } else {
                 this.mostrarModal.set(true);
@@ -68,6 +83,18 @@ export class ConfiCicloDidactico implements OnInit {
     } else {
         alert('Por favor selecciona un RAP válido');
     }
+  }
+
+  accederAEtapasConParams() {
+    // Cambiamos la URL inyectando los Query Params
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { cicloId: this.cicloIdVerificado(), step: 'etapas' },
+      queryParamsHandling: 'merge' // Mantiene el resto de la URL intacta
+    });
+    
+    // Mostramos la vista de etapas
+    this.pasoActual.set('etapas');
   }
 
   procesarCreacionCiclo(datos: any) {

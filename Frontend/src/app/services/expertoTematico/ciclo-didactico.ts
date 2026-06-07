@@ -28,4 +28,10 @@ export class CicloDidacticoService {
           `${this.apiUrl}/ciclos/verificar?ova_id=${ova_id}&fase_proyecto_id=${fase_id}`
       );
   }
+
+  getCiclosPorOva(ova_id: number): Observable<{ status: string; data: any[] }> {
+      return this.http.get<{ status: string; data: any[] }>(
+          `${this.apiUrl}/ciclos/ova/${ova_id}`
+      );
+  }
 }

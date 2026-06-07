@@ -57,5 +57,30 @@ export const cicloModel = {
         // Solo enviamos ova_id como parámetro
         const [rows] = await db.execute(query, [ova_id]);
         return rows.length > 0 ? rows[0] : null; // Retornamos el objeto completo o null
+    },
+
+    async obtenerCiclosConExpertoPorOva(ovaId) {
+        const query = `
+            SELECT 
+                c.id AS ciclo_id,
+                c.titulo AS titulo_ciclo,
+                IF(CHAR_LENGTH(c.descripcion_general) > 100, CONCAT(LEFT(c.descripcion_general, 100), '...'), c.descripcion_general) AS descripcion_general,
+                f.nombre_fase,
+                GROUP_CONCAT(DISTINCT u.nombre SEPARATOR ', ') AS experto_nombre,
+                GROUP_CONCAT(DISTINCT u.correo SEPARATOR ', ') AS experto_correo
+            FROM ciclos_didacticos c
+            INNER JOIN fases_proyecto f ON c.fase_proyecto_id = f.id
+            LEFT JOIN resultados_aprendizaje rap ON rap.ciclo_id = c.id
+            LEFT JOIN expertos_raps_trabajo ert ON ert.rap_id = rap.id
+            LEFT JOIN usuarios u ON ert.experto_id = u.id
+            WHERE c.ova_id = ?
+            GROUP BY 
+                c.id, 
+                c.titulo, 
+                c.descripcion_general,
+                f.nombre_fase;
+        `;
+        const [rows] = await db.execute(query, [ovaId]);
+        return rows;
     }
 };

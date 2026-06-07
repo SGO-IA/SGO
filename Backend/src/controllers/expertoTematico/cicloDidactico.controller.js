@@ -50,5 +50,15 @@ export const cicloController = {
         } catch (error) {
             res.status(400).json({ status: 'error', message: error.message });
         }
+    },
+
+    async getCiclosPorOva(req, res) {
+        try {
+            const { ova_id } = req.params;
+            const data = await cicloService.obtenerCiclosPorOva(ova_id);
+            res.status(200).json({ status: 'success', data });
+        } catch (error) {
+            res.status(500).json({ status: 'error', message: error.message });
+        }
     }
 };
