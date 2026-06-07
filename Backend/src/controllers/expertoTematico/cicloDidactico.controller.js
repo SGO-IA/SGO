@@ -31,9 +31,22 @@ export const cicloController = {
     
     async verificar(req, res) {
         try {
-            const { ova_id, fase_proyecto_id } = req.query;
-            const existe = await cicloService.validarExistencia(ova_id, fase_proyecto_id);
-            res.status(200).json({ status: 'success', existe });
+            const { ova_id } = req.query;
+            const ciclo = await cicloService.validarExistencia(ova_id);
+            
+            if (ciclo) {
+                // Frontend espera: { existe: true, ciclo_id: number }
+                res.status(200).json({ 
+                    status: 'success', 
+                    existe: true, 
+                    ciclo_id: ciclo.id 
+                });
+            } else {
+                res.status(200).json({ 
+                    status: 'success', 
+                    existe: false 
+                });
+            }
         } catch (error) {
             res.status(400).json({ status: 'error', message: error.message });
         }

@@ -22,7 +22,10 @@ export class CicloDidacticoService {
     return this.http.post<any>(`${this.apiUrl}/ciclos/crear`, data);
   }
 
-  verificarCiclo(ova_id: number, fase_id: number): Observable<{existe: boolean}> {
-    return this.http.get<{existe: boolean}>(`${this.apiUrl}/ciclos/verificar?ova_id=${ova_id}&fase_proyecto_id=${fase_id}`);
+  verificarCiclo(ova_id: number, fase_id: number): Observable<{ existe: boolean; ciclo_id?: number }> {
+      // Nota: ciclo_id es opcional porque solo vendrá si existe = true
+      return this.http.get<{ existe: boolean; ciclo_id?: number }>(
+          `${this.apiUrl}/ciclos/verificar?ova_id=${ova_id}&fase_proyecto_id=${fase_id}`
+      );
   }
 }

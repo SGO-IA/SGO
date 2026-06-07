@@ -47,14 +47,15 @@ export const cicloModel = {
         return { id: result.insertId };
     },
 
-    async verificarCicloExistente(ova_id, fase_proyecto_id) {
+    async verificarCicloExistente(ova_id) {
         const query = `
             SELECT id, fase_proyecto_id 
             FROM ciclos_didacticos 
             WHERE ova_id = ? 
             LIMIT 1
         `;
-        const [rows] = await db.execute(query, [ova_id, fase_proyecto_id]);
-        return rows.length > 0;
+        // Solo enviamos ova_id como parámetro
+        const [rows] = await db.execute(query, [ova_id]);
+        return rows.length > 0 ? rows[0] : null; // Retornamos el objeto completo o null
     }
 };

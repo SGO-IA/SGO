@@ -51,39 +51,42 @@ export class ConfiCicloDidactico implements OnInit {
   }
 
   continuarAlEditor() {
-      // Asegúrate de que ovaAsociado esté actualizado antes de verificar
-      const rapSeleccionado = this.rapsList().find(r => r.rap_id === this.rapActual() || r.id === this.rapActual());
-      if (rapSeleccionado?.ova_id) {
-          this.ovaAsociado.set(rapSeleccionado.ova_id);
-          
-          this.cicloDidacticoService.verificarCiclo(rapSeleccionado.ova_id, this.faseActual()!).subscribe(res => {
-              if (res.existe) {
-                  this.pasoActual.set('existe'); // Esto activará el bloque HTML nuevo
-              } else {
-                  this.mostrarModal.set(true);
-              }
-          });
-      } else {
-          alert('Por favor selecciona un RAP válido');
-      }
+    const rapSeleccionado = this.rapsList().find(r => r.rap_id === this.rapActual() || r.id === this.rapActual());
+    
+    if (rapSeleccionado?.ova_id) {
+        this.ovaAsociado.set(rapSeleccionado.ova_id);
+        
+        this.cicloDidacticoService.verificarCiclo(rapSeleccionado.ova_id, this.faseActual()!).subscribe(res => {
+            // Verificamos que existe Y que ciclo_id no sea undefined
+            if (res.existe && typeof res.ciclo_id === 'number') {
+                this.cicloData.setCicloId(res.ciclo_id); // Ahora TS sabe que es un number
+                this.pasoActual.set('existe');
+            } else {
+                this.mostrarModal.set(true);
+            }
+        });
+    } else {
+        alert('Por favor selecciona un RAP válido');
+    }
   }
 
   procesarCreacionCiclo(datos: any) {
-      const payload = {
-          ova_id: this.ovaAsociado()!,
-          fase_proyecto_id: this.faseActual()!,
-          titulo: datos.titulo,
-          descripcion_general: datos.descripcion_general
-      };
+    const payload = {
+        ova_id: this.ovaAsociado()!,
+        fase_proyecto_id: this.faseActual()!,
+        titulo: datos.titulo,
+        descripcion_general: datos.descripcion_general
+    };
 
-      this.cicloDidacticoService.crearCiclo(payload).subscribe({
-          next: (res) => {
-              console.log('✅ Ciclo creado con éxito:', res);
-              this.mostrarModal.set(false);
-              this.pasoActual.set('etapas');
-          },
-          error: (err) => console.error('❌ Error al crear ciclo:', err)
-      });
+    this.cicloDidacticoService.crearCiclo(payload).subscribe({
+        next: (res) => {
+            // Sincronizamos el ID del nuevo ciclo creado
+            this.cicloData.setCicloId(res.data.id); 
+            this.mostrarModal.set(false);
+            this.pasoActual.set('etapas');
+        },
+        error: (err) => console.error('❌ Error al crear ciclo:', err)
+    });
   }
 
   // Setters y Navegación

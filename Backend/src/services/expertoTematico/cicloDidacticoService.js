@@ -17,7 +17,7 @@ export const cicloService = {
         return await cicloModel.crearCiclo(data);
     },
 
-    async validarExistencia(ova_id, fase_proyecto_id) {
-        return await cicloModel.verificarCicloExistente(ova_id, fase_proyecto_id);
+    async validarExistencia(ova_id) {
+        return await cicloModel.verificarCicloExistente(ova_id);
     }
 };
