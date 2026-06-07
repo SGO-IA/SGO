@@ -1,49 +1,64 @@
-<div class="p-8">
+<div class="p-8 max-w-6xl mx-auto">
   <h1 class="text-2xl font-black text-gray-800 mb-6">Editor de Ciclo Didáctico</h1>
 
   @if (pasoActual() === 'seleccion') {
-    <app-fases-tabs (faseSeleccionada)="manejarSeleccionFase($event)"></app-fases-tabs>
-    <app-rap-selector [raps]="rapsList()" (rapSeleccionado)="manejarSeleccionRap($event)"></app-rap-selector>
-    
-    <button [disabled]="!puedeContinuar()" (click)="continuarAlEditor()" class="mt-8 bg-green-600 text-white px-8 py-3 rounded-xl font-bold">
-      Aceptar y Continuar
-    </button>
+    <div class="space-y-6">
+      <app-fases-tabs (faseSeleccionada)="manejarSeleccionFase($event)"></app-fases-tabs>
+      <app-rap-selector [raps]="rapsList()" (rapSeleccionado)="manejarSeleccionRap($event)"></app-rap-selector>
+      
+      <div class="mt-8 flex justify-end border-t border-gray-100 pt-6">
+        <button 
+          [disabled]="!puedeContinuar()" 
+          (click)="continuarAlEditor()" 
+          class="bg-sena hover:bg-sena-dark text-white px-8 py-3 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          Aceptar y Continuar <i class="pi pi-arrow-right"></i>
+        </button>
+      </div>
+    </div>
   }
 
-@if (pasoActual() === 'etapas') {
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-4xl mx-auto">
-    @for (etapa of etapasInfo; let i = $index; track etapa.nombre) {
-      <button 
-        (click)="etapaActiva.set(etapa.nombre); pasoActual.set('editor')"
-        class="group relative p-8 bg-white border-2 border-gray-100 rounded-[var(--radius-sena)] shadow-sm 
-               hover:border-sena hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 text-left overflow-hidden"
-      >
-        <div class="absolute -top-3 -right-2 text-8xl font-black text-gray-200 select-none pointer-events-none">
-          0{{ i + 1 }}
-        </div>
-        
-        <div class="w-16 h-16 flex items-center justify-center rounded-2xl bg-sena-alpha text-sena mb-6 
-                    group-hover:bg-sena group-hover:text-white transition-colors duration-300 relative z-10">
-          <i [class]="etapa.icono + ' text-3xl'"></i>
-        </div>
-        
-        <h3 class="text-xl font-black text-sena-black group-hover:text-sena transition-colors relative z-10">
-          {{ etapa.nombre }}
-        </h3>
-        <p class="text-sm text-gray-500 mt-3 leading-relaxed relative z-10">{{ etapa.desc }}</p>
-      </button>
-    }
-  </div>
-}
+  @if (pasoActual() === 'etapas') {
+    <button (click)="volverASeleccion()" class="text-gray-500 hover:text-sena font-bold text-sm mb-6 flex items-center gap-1 transition-colors">
+      <i class="pi pi-arrow-left text-xs"></i> Volver a selección
+    </button>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      @for (etapa of etapasInfo; let i = $index; track etapa.nombre) {
+        <button 
+          (click)="seleccionarEtapa(etapa.nombre)"
+          class="group relative p-8 bg-white border-2 border-gray-100 rounded-3xl shadow-sm hover:border-sena hover:shadow-xl transition-all duration-300 text-left overflow-hidden"
+        >
+          <div class="absolute -top-3 -right-2 text-8xl font-black text-gray-100 select-none">0{{ i + 1 }}</div>
+          <div class="w-16 h-16 flex items-center justify-center rounded-2xl bg-sena-alpha text-sena mb-6 group-hover:bg-sena group-hover:text-white transition-colors relative z-10">
+            <i [class]="etapa.icono + ' text-3xl'"></i>
+          </div>
+          <h3 class="text-xl font-black text-gray-800 group-hover:text-sena transition-colors relative z-10">{{ etapa.nombre }}</h3>
+          <p class="text-sm text-gray-500 mt-2 relative z-10">{{ etapa.desc }}</p>
+        </button>
+      }
+    </div>
+  }
 
   @if (pasoActual() === 'editor') {
-    <button (click)="pasoActual.set('etapas')" class="text-blue-600 mb-4">← Volver a etapas</button>
+    <button (click)="volverAEtapas()" class="text-sena font-bold text-sm mb-6 flex items-center gap-2">
+      <i class="pi pi-arrow-left text-xs"></i> Volver a etapas
+    </button>
     
-    @switch (etapaActiva()) {
-      @case ('Reflexión') { <app-reflexion-inicial /> }
-      @case ('Contextualización') { <app-contextualizacion /> }
-      @case ('Apropiación') { <app-apropiacion /> }
-      @case ('Transferencia') { <app-transferencia /> }
-    }
+    <div class="animate-in fade-in duration-300">
+      @switch (etapaActiva()) {
+        @case ('Reflexión') { <app-reflexion-inicial /> }
+        @case ('Contextualización') { <app-contextualizacion /> }
+        @case ('Apropiación') { <app-apropiacion /> }
+        @case ('Transferencia') { <app-transferencia /> }
+      }
+    </div>
   }
 </div>
+
+@if (mostrarModal()) {
+  <app-modal-crear-ciclo 
+    (cerrar)="mostrarModal.set(false)" 
+    (guardar)="procesarCreacionCiclo($event)">
+  </app-modal-crear-ciclo>
+}

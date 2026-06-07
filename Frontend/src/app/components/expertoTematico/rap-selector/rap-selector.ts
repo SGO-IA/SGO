@@ -1,9 +1,10 @@
+import { JsonPipe } from '@angular/common';
 import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-rap-selector',
   standalone: true,
-  imports: [],
+  imports: [JsonPipe],
   templateUrl: './rap-selector.html',
   styleUrl: './rap-selector.css',
 })

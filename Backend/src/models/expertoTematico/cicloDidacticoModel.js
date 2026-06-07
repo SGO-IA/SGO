@@ -31,5 +31,19 @@ export const cicloModel = {
         const query = `SELECT id, sigla, nombre_fase FROM fases_proyecto ORDER BY id ASC`;
         const [rows] = await db.execute(query);
         return rows;
+    },
+
+    async crearCiclo(data) {
+        const query = `
+            INSERT INTO ciclos_didacticos (ova_id, fase_proyecto_id, titulo, descripcion_general)
+            VALUES (?, ?, ?, ?)
+        `;
+        const [result] = await db.execute(query, [
+            data.ova_id, 
+            data.fase_proyecto_id, 
+            data.titulo, 
+            data.descripcion_general
+        ]);
+        return { id: result.insertId };
     }
 };

@@ -18,5 +18,14 @@ export const cicloController = {
         } catch (error) {
             res.status(500).json({ message: 'Error al obtener fases', error: error.message });
         }
+    },
+
+    async crear(req, res) {
+        try {
+            const nuevoCiclo = await cicloService.registrarNuevoCiclo(req.body);
+            res.status(201).json({ status: 'success', data: nuevoCiclo });
+        } catch (error) {
+            res.status(400).json({ status: 'error', message: error.message });
+        }
     }
 };

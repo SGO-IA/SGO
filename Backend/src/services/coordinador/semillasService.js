@@ -3,22 +3,24 @@ import db from '../../config/dbConfig.js';
 
 export const semillaService = {
     async crearNuevaSemillaConExpertos({ programa_id, nombre_semilla, expertos }) {
-        // Obtenemos una conexión exclusiva del pool para controlar la transacción manualmente
         const connection = await db.getConnection();
         
         try {
-            // 1. Iniciamos la transacción atómica
             await connection.beginTransaction();
 
-            // 2. Insertamos la cabecera de la semilla
+            // 1. Insertamos la cabecera de la semilla (Programa de formación)
             const semillaId = await semillaModel.insertarSemilla(connection, { programa_id, nombre_semilla });
 
-            // 3. Mapeamos e insertamos de forma masiva cada experto con su respectiva competencia
-            // expertos es un objeto: { "ID_EXPERTO": [ID_COMPETENCIA_1, ID_COMPETENCIA_2] }
+            // Usamos un Set para identificar las competencias únicas asociadas
+            const competenciasUnicas = new Set();
+
+            // 2. Vinculamos expertos y competencias
             for (const [expertoIdStr, competenciasIds] of Object.entries(expertos)) {
                 const expertoId = parseInt(expertoIdStr, 10);
 
                 for (const competenciaId of competenciasIds) {
+                    competenciasUnicas.add(competenciaId);
+
                     await semillaModel.vincularExpertoACompetencia(connection, {
                         experto_id: expertoId,
                         semilla_id: semillaId,
@@ -27,30 +29,39 @@ export const semillaService = {
                 }
             }
 
-            // 4. Si todo salió impecable, consolidamos los cambios en el storage SQL
+            // Validación preventiva por si llega el objeto de expertos vacío
+            if (competenciasUnicas.size === 0) {
+                throw new Error("Debe asociar al menos una competencia para poder estructurar los OVA de la semilla.");
+            }
+
+            // 3. CREACIÓN DE LOS OVA MAESTROS (Límite del flujo del Coordinador)
+            // Cada competencia única se registra como un Objeto Virtual de Aprendizaje (OVA) base
+            for (const competenciaId of competenciasUnicas) {
+                await semillaModel.insertarOvaEstructura(connection, {
+                    semilla_id: semillaId,
+                    competencia_id: competenciaId,
+                    titulo: `OVA - Competencia [ID: ${competenciaId}]`
+                });
+            }
+
+            // Confirmamos la transacción solo con la estructura de semillas, vínculos y ovas
             await connection.commit();
             return { semillaId };
 
         } catch (error) {
-            // 5. Si algo falla (ej: violación de llave foránea o caída de red), revertimos todo para no dejar basura
+            // Si algo falla, revertimos para no dejar datos huérfanos
             await connection.rollback();
             throw error;
         } finally {
-            // Devolvemos la conexión al pool de inmediato
             connection.release();
         }
     },
 
     async listarSemillasPedagogicas() {
-        // Orquestamos la consulta al modelo mapeador
-        const semillas = await semillaModel.obtenerListaSemillas();
-        
-        // Aquí podrías aplicar formateos de fecha o mutaciones de negocio si se requiriera en el futuro
-        return semillas;
+        return await semillaModel.obtenerListaSemillas();
     },
 
     async construirArbolCompleto(semillaId) {
-        // Extraemos la raíz (Semilla, Programa y Expertos asignados)
         const [semillaBase, expertos] = await Promise.all([
             semillaModel.obtenerBasePorId(semillaId),
             semillaModel.obtenerExpertosPorSemilla(semillaId)
@@ -58,29 +69,26 @@ export const semillaService = {
 
         if (!semillaBase) return null;
 
-        // Construimos el nodo inicial
         const arbolSemilla = {
             ...semillaBase,
             expertos,
             ovas: []
         };
 
-        // Buscamos los OVAs asociados a la semilla
         const ovas = await semillaModel.obtenerOvasPorSemilla(semillaId);
 
-        // Orquestamos el recorrido de sub-nodos (Ciclos -> RAPs y Secciones)
+        // Mantenemos la lectura completa del árbol intacta. Cuando la semilla sea nueva, 
+        // "ciclos" retornará vacío de forma natural hasta que el experto los cree manualmente.
         for (let ova of ovas) {
             const nodoOva = { ...ova, ciclos: [] };
             const ciclos = await semillaModel.obtenerCiclosPorOva(ova.ova_id);
 
             for (let ciclo of ciclos) {
-                // Buscamos RAPs y Secciones en paralelo por eficiencia
                 const [raps, secciones] = await Promise.all([
                     semillaModel.obtenerRapsPorCiclo(ciclo.ciclo_id),
                     semillaModel.obtenerSeccionesPorCiclo(ciclo.ciclo_id)
                 ]);
 
-                // Enriquecemos cada RAP con sus respectivos saberes, procesos y criterios
                 for (let rap of raps) {
                     const componentes = await semillaModel.obtenerComponentesRap(rap.rap_id);
                     rap.conocimientos_saber = componentes.saberes;
