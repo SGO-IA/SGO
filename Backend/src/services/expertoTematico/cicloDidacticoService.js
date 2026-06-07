@@ -15,5 +15,9 @@ export const cicloService = {
             throw new Error("Faltan datos obligatorios para el ciclo");
         }
         return await cicloModel.crearCiclo(data);
+    },
+
+    async validarExistencia(ova_id, fase_proyecto_id) {
+        return await cicloModel.verificarCicloExistente(ova_id, fase_proyecto_id);
     }
 };

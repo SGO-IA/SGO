@@ -24,8 +24,8 @@ export class ConfiCicloDidactico implements OnInit {
   private cicloData = inject(CicloDataService);
 
   rapsList = signal<any[]>([]);
-  pasoActual = signal<'seleccion' | 'etapas' | 'editor'>('seleccion');
-  
+  pasoActual = signal<'seleccion' | 'etapas' | 'editor' | 'existe'>('seleccion');
+
   faseActual = signal<number | null>(null);
   rapActual = signal<number | null>(null);
   ovaAsociado = signal<number | null>(null);
@@ -51,13 +51,21 @@ export class ConfiCicloDidactico implements OnInit {
   }
 
   continuarAlEditor() {
-    const rap = this.rapsList().find(r => r.rap_id === this.rapActual() || r.id === this.rapActual());
-    if (rap?.ova_id) {
-      this.ovaAsociado.set(rap.ova_id);
-      this.mostrarModal.set(true);
-    } else {
-      alert('Error: RAP sin OVA asociado.');
-    }
+      // Asegúrate de que ovaAsociado esté actualizado antes de verificar
+      const rapSeleccionado = this.rapsList().find(r => r.rap_id === this.rapActual() || r.id === this.rapActual());
+      if (rapSeleccionado?.ova_id) {
+          this.ovaAsociado.set(rapSeleccionado.ova_id);
+          
+          this.cicloDidacticoService.verificarCiclo(rapSeleccionado.ova_id, this.faseActual()!).subscribe(res => {
+              if (res.existe) {
+                  this.pasoActual.set('existe'); // Esto activará el bloque HTML nuevo
+              } else {
+                  this.mostrarModal.set(true);
+              }
+          });
+      } else {
+          alert('Por favor selecciona un RAP válido');
+      }
   }
 
   procesarCreacionCiclo(datos: any) {

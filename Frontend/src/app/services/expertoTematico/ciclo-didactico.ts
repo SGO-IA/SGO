@@ -21,4 +21,8 @@ export class CicloDidacticoService {
   crearCiclo(data: { ova_id: number, fase_proyecto_id: number, titulo: string, descripcion_general: string }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/ciclos/crear`, data);
   }
+
+  verificarCiclo(ova_id: number, fase_id: number): Observable<{existe: boolean}> {
+    return this.http.get<{existe: boolean}>(`${this.apiUrl}/ciclos/verificar?ova_id=${ova_id}&fase_proyecto_id=${fase_id}`);
+  }
 }
