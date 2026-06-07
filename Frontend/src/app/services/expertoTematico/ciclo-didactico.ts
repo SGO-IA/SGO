@@ -17,4 +17,8 @@ export class CicloDidacticoService {
   getFasesProyecto(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/fases-proyecto`);
   }
+
+  crearCiclo(data: { ova_id: number, fase_proyecto_id: number, titulo: string, descripcion_general: string }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/ciclos/crear`, data);
+  }
 }

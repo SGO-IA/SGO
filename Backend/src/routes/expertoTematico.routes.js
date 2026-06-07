@@ -33,4 +33,6 @@ router.post('/sugerir-contenido', IAController.generarSugerencia);
 
 router.post('/secciones/:seccionId/recursos', upload.single('archivo'), MaterialController.uploadRecurso);
 
+router.post('/ciclos/crear', cicloController.crear);
+
 export default router;

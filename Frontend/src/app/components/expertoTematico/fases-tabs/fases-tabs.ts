@@ -16,12 +16,16 @@ export class FasesTabs implements OnInit {
   faseSeleccionada = output<number>(); 
   faseActiva = signal<number | null>(null);
 
-  ngOnInit() {
-    this.service.getFasesProyecto().subscribe({
-      next: (data) => this.fases.set(data),
-      error: (err) => console.error('Error cargando fases:', err)
-    });
-  }
+ngOnInit() {
+  console.log('🚀 Solicitando fases al backend...');
+  this.service.getFasesProyecto().subscribe({
+    next: (data) => {
+      console.log('📦 Fases recibidas:', data);
+      this.fases.set(data);
+    },
+    error: (err) => console.error('❌ Error cargando las fases:', err)
+  });
+}
 
   seleccionarFase(id: number) {
     this.faseActiva.set(id);

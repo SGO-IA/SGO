@@ -78,10 +78,43 @@ archivos: File[] = [];
     }
   }
 
-  private ejecutarPersistenciaTexto() {
-    console.log('Persitiendo contenido HTML de la reflexión:', this.contenido);
-    console.log('Persistiendo enlaces externos adicionales:', this.links);
-    // Aquí invocarías al servicio correspondiente que guarde la sección en BD
+private ejecutarPersistenciaTexto() {
+    // 1. Extraemos el contexto de la verdad (las llaves foráneas)
+    const ovaId = this.cicloData.ovaId();
+    const faseId = this.cicloData.faseId();
+    const rapId = this.cicloData.rapId();
+
+    // Validación de seguridad
+    if (!ovaId || !faseId || !rapId) {
+      console.error('Error: Se perdió el contexto del ciclo didáctico. No se puede guardar.');
+      // Aquí podrías mostrar un Toast/SweetAlert de error al usuario
+      return;
+    }
+
+    // 2. Armamos el DTO (Data Transfer Object) para el backend
+    const payloadBD = {
+      ova_id: ovaId,
+      fase_proyecto_id: faseId,
+      rap_id: rapId,
+      tipo_etapa: 'Reflexión Inicial', // Para que la BD sepa qué etapa es
+      contenido_html: this.contenido,
+      enlaces_externos: this.links // Puede ser un JSON en tu BD
+      // Nota: Los archivos ya se subieron a R2, pero si necesitas guardar 
+      // sus URLs en BD, deberías pasarlas desde el map del forkJoin aquí.
+    };
+
+    console.log('📦 Payload listo para enviar al backend:', payloadBD);
+
+    // 3. Consumo del servicio HTTP (Descomenta y ajusta cuando tengas el servicio)
+    /*
+    this.tuServicioBackend.guardarEtapaCiclo(payloadBD).subscribe({
+      next: (res) => {
+        console.log('Guardado exitoso en BD');
+        // Mostrar mensaje de éxito al usuario
+      },
+      error: (err) => console.error('Error al guardar en BD', err)
+    });
+    */
   }
 
 async sugerirIA(customPrompt?: string) {
