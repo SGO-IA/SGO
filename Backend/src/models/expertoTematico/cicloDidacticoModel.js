@@ -121,5 +121,26 @@ export const cicloModel = {
         `;
         const [result] = await db.execute(query, [seccionId, nombreArchivo, urlR2, tipoArchivo]);
         return { id: result.insertId };
+    },
+
+    async borrarEnlacesPorSeccion(seccionId) {
+        const query = `DELETE FROM enlaces_seccion WHERE seccion_id = ?`;
+        await db.execute(query, [seccionId]);
+        return true;
+    },
+
+    async insertarEnlace(seccionId, url) {
+        const query = `
+            INSERT INTO enlaces_seccion (seccion_id, url) 
+            VALUES (?, ?)
+        `;
+        const [result] = await db.execute(query, [seccionId, url]);
+        return { id: result.insertId };
+    },
+
+    async obtenerEnlacesPorSeccion(seccionId) {
+        const query = `SELECT id, url, etiqueta FROM enlaces_seccion WHERE seccion_id = ?`;
+        const [rows] = await db.execute(query, [seccionId]);
+        return rows;
     }
 };

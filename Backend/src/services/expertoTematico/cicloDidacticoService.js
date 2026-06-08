@@ -35,14 +35,8 @@ async procesarGuardadoEtapa(cicloId, payload) {
         };
         const tipoSeccionEnum = mapaEtapas[payload.tipo_etapa] || 'Reflexion';
 
-        // 2. Adjuntar links al HTML
-        let contenidoFinal = payload.contenido_html || '';
-        if (payload.enlaces_externos && payload.enlaces_externos.length > 0) {
-            const linksHtml = payload.enlaces_externos
-                .map(link => `<li><a href="${link}" target="_blank" rel="noopener noreferrer" class="text-sena hover:underline">${link}</a></li>`)
-                .join('');
-            contenidoFinal += `\n<div class="enlaces-externos mt-4"><h4>Recursos de Apoyo:</h4><ul class="list-disc pl-5">${linksHtml}</ul></div>`;
-        }
+        // 2. Extraer HTML puro (SIN INYECTAR LINKS AQUÍ)
+        const contenidoFinal = payload.contenido_html || '';
 
         // 3. Upsert de la Sección (Buscar -> Actualizar o Insertar)
         let seccion = await cicloModel.obtenerSeccionPorCicloYTipo(cicloId, tipoSeccionEnum);
@@ -56,11 +50,20 @@ async procesarGuardadoEtapa(cicloId, payload) {
             seccionId = insertResult.id;
         }
 
-        // 4. Persistencia de Recursos R2 (Ahora sí tenemos el seccionId seguro)
+        // 4. Persistencia de Recursos R2
         if (payload.recursos_adjuntos && payload.recursos_adjuntos.length > 0) {
             for (const recurso of payload.recursos_adjuntos) {
-                // Insertamos en BD usando el seccionId real
                 await cicloModel.guardarRecursoR2(seccionId, recurso.nombre, recurso.url, recurso.tipoArchivo);
+            }
+        }
+
+        // 5. Persistencia de Enlaces Externos (Sincronización destructiva)
+        // Borramos los anteriores y reinsertamos los nuevos enviados por el frontend
+        await cicloModel.borrarEnlacesPorSeccion(seccionId);
+        
+        if (payload.enlaces_externos && payload.enlaces_externos.length > 0) {
+            for (const linkUrl of payload.enlaces_externos) {
+                await cicloModel.insertarEnlace(seccionId, linkUrl);
             }
         }
 
