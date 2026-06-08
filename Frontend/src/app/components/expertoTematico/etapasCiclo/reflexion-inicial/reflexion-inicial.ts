@@ -155,7 +155,7 @@ export class ReflexionInicial implements OnInit{
       
       contenido_html: this.contenido, 
       
-      enlaces_externos: this.links,
+      enlaces_externos: this.links.map(l => l.url),
       recursos_adjuntos: archivosInfo, 
       titulo: this.titulo,
     };
@@ -266,11 +266,19 @@ export class ReflexionInicial implements OnInit{
     }
   }
 
-  agregarLink(event: KeyboardEvent) {
+agregarLink(event: KeyboardEvent) {
     if (event.key === 'Enter' && this.nuevoLink.trim() !== '') {
-      this.links.push(this.nuevoLink.trim());
+      // ✅ Guardar como objeto { id, url } en lugar de solo el string
+      this.links.push({ 
+        id: null, 
+        url: this.nuevoLink.trim() 
+      });
+      
       this.nuevoLink = ''; 
       event.preventDefault();
+      
+      // ✅ Forzar detección de cambios
+      this.cdr.detectChanges(); 
     }
   }
 
@@ -296,17 +304,22 @@ removerRecurso(index: number) {
     }
   }
 
-  removerLink(index: number) {
+removerLink(index: number) {
     const enlace = this.links[index];
     
+    // Si tiene ID, es de BD -> Borramos en servidor
     if (enlace.id && this.seccionIdBD) {
       this.cicloService.eliminarEnlace(this.seccionIdBD, enlace.id).subscribe({
         next: () => {
           this.links.splice(index, 1);
-        }
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error("Error al borrar enlace:", err)
       });
     } else {
+      // Si es nuevo (id null) -> Borramos solo localmente
       this.links.splice(index, 1);
+      this.cdr.detectChanges();
     }
   }
 }

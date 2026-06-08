@@ -101,13 +101,12 @@
              class="input-sena w-full" placeholder="Pega el link y presiona Enter...">
       
       <div class="flex flex-wrap gap-2 mt-4">
-        @for (archivo of archivos; track $index) {
-          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg text-sm border">
-            <span class="truncate">
-              <i class="pi pi-file mr-2 text-sena"></i>{{ archivo.name }}
-            </span>
-            <button (click)="removerRecurso($index)" class="text-red-500">
-              <i class="pi pi-trash"></i>
+        @for (link of links; track link.id || $index) {
+          <div class="flex items-center gap-2 bg-sena-alpha text-sena px-3 py-1 rounded-full text-sm font-semibold border border-sena/20">
+            <i class="pi pi-link text-xs"></i>
+            {{ link.url }} 
+            <button (click)="removerLink($index)" class="hover:text-sena-dark">
+              <i class="pi pi-times"></i>
             </button>
           </div>
         }
