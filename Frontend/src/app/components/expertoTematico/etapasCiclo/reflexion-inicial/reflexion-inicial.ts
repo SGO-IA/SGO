@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CicloDataService } from '../../../../services/expertoTematico/ciclo-data-service';
 import { IAService } from '../../../../services/expertoTematico/ia';
@@ -13,8 +13,8 @@ import { CicloDidacticoService } from '../../../../services/expertoTematico/cicl
   imports: [FormsModule, ModalIa],
   templateUrl: './reflexion-inicial.html',
 })
-export class ReflexionInicial {
-  archivos: File[] = [];
+export class ReflexionInicial implements OnInit{
+  archivos: any[] = [];
   links: string[] = [];
   titulo: string = '';
   nuevoLink: string = '';
@@ -44,8 +44,49 @@ export class ReflexionInicial {
     "Ya casi terminamos, dando los últimos toques..."
   ];
 
+  ngOnInit() {
+    this.cargarInformacionGuardada();
+  }
+
+  private cargarInformacionGuardada() {
+    const cicloId = this.cicloData.cicloId();
+    if (!cicloId) return;
+
+    // Llamamos al método GET del servicio pasando el tipo de etapa
+    this.cicloService.cargarEtapa(cicloId, 'Reflexión Inicial').subscribe({
+      next: async (res) => {
+        if (res && res.data) {
+          const data = res.data;
+          
+          // Llenamos el formulario con los datos del backend
+          this.titulo = data.titulo || '';
+          this.contenido = data.contenido_html || '';
+          this.links = data.enlaces_externos || [];
+          
+          // Para los archivos, mapeamos los que vienen del backend
+          if (data.recursos_adjuntos) {
+            this.archivos = data.recursos_adjuntos.map((r: any) => ({
+              name: r.nombre, // Mapeamos 'nombre' a 'name' para que el HTML lo lea igual que un File real
+              url: r.url,
+              tipoArchivo: r.tipoArchivo,
+              isBackendFile: true // Bandera para saber que no es un archivo nuevo para subir
+            }));
+          }
+
+          // Si hay contenido, lo renderizamos de una vez y lo ponemos en modo vista
+          if (this.contenido) {
+            this.contenidoRenderizado = await marked.parse(this.contenido);
+            this.modoEdicion = false;
+          }
+          
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => console.error('🚩 [ReflexionInicial] Error al cargar información previa:', err)
+    });
+  }
+
   guardarReflexion() {
-    // Obtenemos el ID desde la señal reactiva
     const cicloId = this.cicloData.cicloId(); 
 
     if (!cicloId) {
@@ -53,29 +94,41 @@ export class ReflexionInicial {
       return;
     }
 
-    if (this.archivos.length > 0) {
-      // 1. Subida a R2 pasando el cicloId usando el servicio unificado
-      const peticiones = this.archivos.map(archivo => 
+    const archivosNuevos = this.archivos.filter(a => !a.isBackendFile);
+
+    if (archivosNuevos.length > 0) {
+      const peticiones = archivosNuevos.map(archivo => 
         this.cicloService.subirRecurso(cicloId, archivo)
       );
 
       forkJoin(peticiones).subscribe({
         next: (respuestas) => {
-          // Obtenemos los metadatos de los archivos para guardar en BD
-          const archivosInfo = respuestas.map(r => ({
+          const archivosInfoNuevos = respuestas.map(r => ({
             url: r.data.urlR2,
             nombre: r.data.nombreArchivo,
-            tipoArchivo: r.data.tipoArchivo, // Aseguramos el tipo MIME
+            tipoArchivo: r.data.tipoArchivo,
             key: r.data.keyR2
           }));
           
-          // 2. Persistir con los metadatos de R2
-          this.ejecutarPersistenciaTexto(archivosInfo);
+          // Juntamos los archivos que ya existían con los nuevos que acabamos de subir
+          const archivosViejos = this.archivos.filter(a => a.isBackendFile).map(a => ({
+              nombre: a.name,
+              url: a.url,
+              tipoArchivo: a.tipoArchivo
+          }));
+
+          this.ejecutarPersistenciaTexto([...archivosViejos, ...archivosInfoNuevos]);
         },
         error: (err) => console.error('🚩 [ReflexionInicial] Error en carga R2:', err)
       });
     } else {
-      this.ejecutarPersistenciaTexto([]);
+      // Si no hay archivos nuevos, igual enviamos los viejos para que no se borren en el Upsert
+      const archivosViejos = this.archivos.filter(a => a.isBackendFile).map(a => ({
+          nombre: a.name,
+          url: a.url,
+          tipoArchivo: a.tipoArchivo
+      }));
+      this.ejecutarPersistenciaTexto(archivosViejos);
     }
   }
 
@@ -91,10 +144,13 @@ export class ReflexionInicial {
 
     // 2. Armamos el DTO exacto que espera tu Backend
     const payloadBD = {
-      tipo_etapa: 'Reflexión Inicial', // Enum match in backend
-      contenido_html: this.contenidoRenderizado || this.contenido, // Aseguramos enviar el HTML
+      tipo_etapa: 'Reflexión Inicial', 
+      
+      // ✅ CORRECCIÓN: Enviamos solo el texto puro/Markdown del textarea
+      contenido_html: this.contenido, 
+      
       enlaces_externos: this.links,
-      recursos_adjuntos: archivosInfo, // Array con URLs generadas por Cloudflare
+      recursos_adjuntos: archivosInfo, 
       titulo: this.titulo,
     };
 
@@ -105,9 +161,8 @@ export class ReflexionInicial {
       next: (res) => {
         console.log('✅ [ReflexionInicial] Guardado exitoso en BD:', res);
         
-        // Limpiamos los arrays después de un guardado exitoso
-        this.archivos = [];
-        // this.links = []; // Comenta esto si prefieres que los links sigan visibles tras guardar
+        // Limpiamos los arrays de archivos nuevos después de un guardado exitoso
+        this.archivos = this.archivos.filter(a => a.isBackendFile);
         this.cdr.detectChanges();
         
         alert('Etapa guardada correctamente con sus recursos adjuntos.');

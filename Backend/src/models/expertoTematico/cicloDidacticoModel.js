@@ -86,13 +86,26 @@ export const cicloModel = {
 
     async obtenerSeccionPorCicloYTipo(cicloId, tipoSeccion) {
         const query = `
-            SELECT id, contenido_html 
+            SELECT id, titulo, contenido_html 
             FROM ciclo_secciones 
             WHERE ciclo_id = ? AND tipo_seccion = ?
             LIMIT 1
         `;
         const [rows] = await db.execute(query, [cicloId, tipoSeccion]);
         return rows.length > 0 ? rows[0] : null;
+    },
+
+    async obtenerEnlacesPorSeccion(seccionId) {
+        const query = `SELECT url FROM enlaces_seccion WHERE seccion_id = ?`;
+        const [rows] = await db.execute(query, [seccionId]);
+        return rows;
+    },
+
+    // Obtener los recursos físicos de Cloudflare R2
+    async obtenerRecursosPorSeccion(seccionId) {
+        const query = `SELECT nombre_archivo, url_r2, tipo_archivo FROM recursos_r2 WHERE seccion_id = ?`;
+        const [rows] = await db.execute(query, [seccionId]);
+        return rows;
     },
 
     async crearSeccion(cicloId, tipoSeccion, contenidoHtml) {

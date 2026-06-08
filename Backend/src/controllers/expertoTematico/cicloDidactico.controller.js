@@ -62,6 +62,33 @@ export const cicloController = {
         }
     },
 
+    async obtenerEtapa(req, res) {
+        try {
+            const cicloId = Number(req.params.cicloId);
+            const { tipo_etapa } = req.query; // Esperamos algo como ?tipo_etapa=Reflexion
+
+            if (isNaN(cicloId) || cicloId <= 0 || !tipo_etapa) {
+                return res.status(400).json({ 
+                    status: 'error', 
+                    message: 'ID de ciclo y tipo de etapa son requeridos.' 
+                });
+            }
+
+            const resultado = await cicloService.obtenerEtapaCompleta(cicloId, tipo_etapa);
+            
+            return res.status(200).json({ 
+                status: 'success', 
+                data: resultado 
+            });
+        } catch (error) {
+            console.error('❌ Error en obtenerEtapa Controller:', error);
+            return res.status(500).json({ 
+                status: 'error', 
+                message: 'Error interno al consultar la etapa.' 
+            });
+        }
+    },
+
     async guardarEtapa(req, res) {
         try {
             const cicloId = Number(req.params.cicloId);

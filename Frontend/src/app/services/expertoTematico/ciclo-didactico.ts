@@ -44,4 +44,9 @@ export class CicloDidacticoService {
     
     return this.http.post<any>(`${this.apiUrl}/secciones/${identificador}/recursos`, formData);
   }
+
+  cargarEtapa(cicloId: number, tipoEtapa: string): Observable<any> {
+    // Ejemplo de uso: cargarEtapa(7, 'Reflexión Inicial')
+    return this.http.get<any>(`${this.apiUrl}/ciclos/${cicloId}/secciones?tipo_etapa=${tipoEtapa}`);
+  }
 }

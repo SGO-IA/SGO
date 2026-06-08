@@ -41,6 +41,8 @@ router.get('/ciclos/ova/:ova_id', cicloController.getCiclosPorOva);
 
 router.post('/ciclos/:cicloId/secciones', cicloController.guardarEtapa);
 
+router.get('/ciclos/:cicloId/secciones', cicloController.obtenerEtapa);
+
 router.post('/secciones/:seccionId/recursos', upload.single('archivo'), materialController.uploadRecurso);
 
 export default router;

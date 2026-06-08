@@ -25,6 +25,49 @@ export const cicloService = {
         return await cicloModel.obtenerCiclosConExpertoPorOva(ovaId);
     },
 
+    async obtenerEtapaCompleta(cicloId, tipoEtapaFrontend) {
+        // 1. Mapeo inverso / directo del ENUM
+        const mapaEtapas = {
+            'Reflexión Inicial': 'Reflexion',
+            'Contextualización': 'Contextualizacion',
+            'Apropiación': 'Apropiacion',
+            'Transferencia': 'Transferencia'
+        };
+        const tipoSeccionEnum = mapaEtapas[tipoEtapaFrontend] || tipoEtapaFrontend;
+
+        // 2. Buscar la sección base
+        const seccion = await cicloModel.obtenerSeccionPorCicloYTipo(cicloId, tipoSeccionEnum);
+
+        // Si no hay sección guardada, devolvemos un cascarón vacío para el Frontend
+        if (!seccion) {
+            return {
+                titulo: '',
+                contenido_html: '',
+                enlaces_externos: [],
+                recursos_adjuntos: []
+            };
+        }
+
+        // 3. Buscar data relacional en paralelo (Optimización de tiempo)
+        const [enlaces, recursos] = await Promise.all([
+            cicloModel.obtenerEnlacesPorSeccion(seccion.id),
+            cicloModel.obtenerRecursosPorSeccion(seccion.id)
+        ]);
+
+        // 4. Construir y retornar el DTO consolidado
+        return {
+            seccionId: seccion.id,
+            titulo: seccion.titulo || '',
+            contenido_html: seccion.contenido_html || '',
+            enlaces_externos: enlaces.map(link => link.url), // Extraemos solo el string del link
+            recursos_adjuntos: recursos.map(rec => ({
+                nombre: rec.nombre_archivo,
+                url: rec.url_r2,
+                tipoArchivo: rec.tipo_archivo
+            }))
+        };
+    },
+
 async procesarGuardadoEtapa(cicloId, payload) {
         // 1. Mapeo al ENUM de la BD
         const mapaEtapas = {
