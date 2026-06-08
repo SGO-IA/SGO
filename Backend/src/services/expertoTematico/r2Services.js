@@ -1,5 +1,5 @@
 // services/r2Services.js
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import crypto from 'crypto';
 
 const r2Client = new S3Client({
@@ -33,5 +33,14 @@ export class MaterialService {
             tipoArchivo: file.mimetype,
             keyR2: uniqueName
         };
+    }
+
+    static async deleteFromR2(key) {
+        const deleteParams = {
+            Bucket: process.env.R2_BUCKET_NAME,
+            Key: key, // Esta es la 'keyR2' (el nombre único del archivo)
+        };
+        // Esto borra el archivo físicamente de Cloudflare
+        await r2Client.send(new DeleteObjectCommand(deleteParams));
     }
 }

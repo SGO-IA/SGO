@@ -109,5 +109,22 @@ export const cicloController = {
             console.error('❌ Error en guardarEtapa Controller:', error);
             return res.status(500).json({ status: 'error', message: 'Error interno en persistencia.' });
         }
+    },
+
+    async deleteEnlace(req, res) {
+        try {
+            const { enlaceId } = req.params;
+            
+            // Llamamos al service para borrar
+            await cicloService.eliminarEnlace(enlaceId);
+            
+            return res.status(200).json({ 
+                status: 'success', 
+                message: 'Enlace eliminado correctamente' 
+            });
+        } catch (error) {
+            console.error('❌ Error en deleteEnlace Controller:', error);
+            return res.status(500).json({ status: 'error', message: 'Error al eliminar el enlace.' });
+        }
     }
 };

@@ -45,4 +45,8 @@ router.get('/ciclos/:cicloId/secciones', cicloController.obtenerEtapa);
 
 router.post('/secciones/:seccionId/recursos', upload.single('archivo'), materialController.uploadRecurso);
 
+router.delete('/secciones/:seccionId/recursos/:recursoId', materialController.deleteRecurso);
+
+router.delete('/secciones/:seccionId/enlaces/:enlaceId', cicloController.deleteEnlace);
+
 export default router;

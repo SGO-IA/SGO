@@ -59,11 +59,13 @@ export const cicloService = {
             seccionId: seccion.id,
             titulo: seccion.titulo || '',
             contenido_html: seccion.contenido_html || '',
-            enlaces_externos: enlaces.map(link => link.url), // Extraemos solo el string del link
+            enlaces_externos: enlaces.map(link => ({ id: link.id, url: link.url })), 
             recursos_adjuntos: recursos.map(rec => ({
+                id: rec.id, 
                 nombre: rec.nombre_archivo,
                 url: rec.url_r2,
-                tipoArchivo: rec.tipo_archivo
+                tipoArchivo: rec.tipo_archivo,
+                keyR2: rec.key_r2
             }))
         };
     },
@@ -98,7 +100,14 @@ async procesarGuardadoEtapa(cicloId, payload) {
         // 4. Persistencia de Recursos R2
         if (payload.recursos_adjuntos && payload.recursos_adjuntos.length > 0) {
             for (const recurso of payload.recursos_adjuntos) {
-                await cicloModel.guardarRecursoR2(seccionId, recurso.nombre, recurso.url, recurso.tipoArchivo);
+                // Asegúrate de enviar el 'key' o 'keyR2' desde el frontend
+                await cicloModel.guardarRecursoR2(
+                    seccionId, 
+                    recurso.nombre, 
+                    recurso.url, 
+                    recurso.tipoArchivo || null, 
+                    recurso.key || null
+                );
             }
         }
 
@@ -113,5 +122,9 @@ async procesarGuardadoEtapa(cicloId, payload) {
         }
 
         return { seccionId, cicloId, tipo_seccion: tipoSeccionEnum };
+    },
+
+    async eliminarEnlace(enlaceId) {
+        return await cicloModel.eliminarEnlace(enlaceId);
     }
 };

@@ -15,13 +15,14 @@ import { CicloDidacticoService } from '../../../../services/expertoTematico/cicl
 })
 export class ReflexionInicial implements OnInit{
   archivos: any[] = [];
-  links: string[] = [];
+  links: any[] = [];
   titulo: string = '';
   nuevoLink: string = '';
   contenido: string = '';
   showModal = false;
   contenidoRenderizado: string = '';
   modoEdicion = false;
+  seccionIdBD: number | null = null;
   
   private cicloData = inject(CicloDataService);
   private iaService = inject(IAService);
@@ -57,19 +58,25 @@ export class ReflexionInicial implements OnInit{
       next: async (res) => {
         if (res && res.data) {
           const data = res.data;
+          this.seccionIdBD = data.seccionId;
           
-          // Llenamos el formulario con los datos del backend
           this.titulo = data.titulo || '';
           this.contenido = data.contenido_html || '';
-          this.links = data.enlaces_externos || [];
           
-          // Para los archivos, mapeamos los que vienen del backend
+          // ✅ CORRECCIÓN AQUÍ: Asegúrate de mapear el 'id' que viene del backend
+          this.links = data.enlaces_externos.map((enlace: any) => ({
+            id: enlace.id, // El backend debe enviar { id, url }
+            url: enlace.url 
+          })) || [];
+          
+          // ✅ CORRECCIÓN AQUÍ: Asegúrate de mapear el 'id' del recurso
           if (data.recursos_adjuntos) {
             this.archivos = data.recursos_adjuntos.map((r: any) => ({
-              name: r.nombre, // Mapeamos 'nombre' a 'name' para que el HTML lo lea igual que un File real
+              id: r.id, // <--- ESTO ES VITAL: El ID que viene de la tabla recursos_r2
+              name: r.nombre,
               url: r.url,
               tipoArchivo: r.tipoArchivo,
-              isBackendFile: true // Bandera para saber que no es un archivo nuevo para subir
+              isBackendFile: true 
             }));
           }
 
@@ -146,7 +153,6 @@ export class ReflexionInicial implements OnInit{
     const payloadBD = {
       tipo_etapa: 'Reflexión Inicial', 
       
-      // ✅ CORRECCIÓN: Enviamos solo el texto puro/Markdown del textarea
       contenido_html: this.contenido, 
       
       enlaces_externos: this.links,
@@ -268,7 +274,39 @@ export class ReflexionInicial implements OnInit{
     }
   }
 
+removerRecurso(index: number) {
+    const recurso = this.archivos[index];
+    
+    // DEBUG: Verifica qué tiene el objeto antes de borrar
+    console.log("DEBUG Recurso a borrar:", recurso);
+
+    // Si tiene un ID de base de datos, borramos en servidor
+    if (recurso.isBackendFile && recurso.id && this.seccionIdBD) {
+      this.cicloService.eliminarRecurso(this.seccionIdBD, recurso.id).subscribe({
+        next: () => {
+          this.archivos.splice(index, 1);
+          this.cdr.detectChanges();
+        },
+        error: (err) => console.error("Error al borrar del servidor:", err)
+      });
+    } else {
+      // Si es un archivo local (o no tiene ID), solo borramos del array local
+      this.archivos.splice(index, 1);
+      this.cdr.detectChanges();
+    }
+  }
+
   removerLink(index: number) {
-    this.links.splice(index, 1);
+    const enlace = this.links[index];
+    
+    if (enlace.id && this.seccionIdBD) {
+      this.cicloService.eliminarEnlace(this.seccionIdBD, enlace.id).subscribe({
+        next: () => {
+          this.links.splice(index, 1);
+        }
+      });
+    } else {
+      this.links.splice(index, 1);
+    }
   }
 }

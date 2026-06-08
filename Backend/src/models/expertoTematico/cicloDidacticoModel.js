@@ -103,17 +103,22 @@ export const cicloModel = {
 
     // Obtener los recursos físicos de Cloudflare R2
     async obtenerRecursosPorSeccion(seccionId) {
-        const query = `SELECT nombre_archivo, url_r2, tipo_archivo FROM recursos_r2 WHERE seccion_id = ?`;
+        // Agregamos key_r2 (asegúrate que el nombre de la columna en BD sea correcto)
+        const query = `SELECT id, nombre_archivo, url_r2, tipo_archivo, key_r2 FROM recursos_r2 WHERE seccion_id = ?`;
         const [rows] = await db.execute(query, [seccionId]);
         return rows;
     },
 
-    async crearSeccion(cicloId, tipoSeccion, contenidoHtml) {
+    // Agrega 'titulo' a los argumentos de la función
+    async crearSeccion(cicloId, tipoSeccion, contenidoHtml, titulo) {
         const query = `
             INSERT INTO ciclo_secciones (ciclo_id, tipo_seccion, contenido_html, titulo)
             VALUES (?, ?, ?, ?)
         `;
-        const [result] = await db.execute(query, [cicloId, tipoSeccion, contenidoHtml]);
+        
+        // Asegúrate de que el array tenga exactamente los 4 elementos
+        const [result] = await db.execute(query, [cicloId, tipoSeccion, contenidoHtml, titulo]);
+        
         return { id: result.insertId };
     },
 
@@ -132,13 +137,19 @@ export const cicloModel = {
         return true;
     },
 
-    async guardarRecursoR2(seccionId, nombreArchivo, urlR2, tipoArchivo = null) {
+    async guardarRecursoR2(seccionId, nombre, url, tipo, key) {
+        // Si algún valor es undefined, lo convertimos a null explícitamente
         const query = `
-            INSERT INTO recursos_r2 (seccion_id, nombre_archivo, url_r2, tipo_archivo)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO recursos_r2 (seccion_id, nombre_archivo, url_r2, tipo_archivo, key_r2)
+            VALUES (?, ?, ?, ?, ?)
         `;
-        const [result] = await db.execute(query, [seccionId, nombreArchivo, urlR2, tipoArchivo]);
-        return { id: result.insertId };
+        await db.execute(query, [
+            seccionId, 
+            nombre || null, 
+            url || null, 
+            tipo || null, 
+            key || null
+        ]);
     },
 
     async borrarEnlacesPorSeccion(seccionId) {
@@ -160,5 +171,24 @@ export const cicloModel = {
         const query = `SELECT id, url, etiqueta FROM enlaces_seccion WHERE seccion_id = ?`;
         const [rows] = await db.execute(query, [seccionId]);
         return rows;
+    },
+
+    async obtenerRecursoPorId(recursoId) {
+        // Si tu columna se llama 'key_r2', asegúrate de que esté en el SELECT
+        const query = 'SELECT id, nombre_archivo, url_r2, tipo_archivo, key_r2 FROM recursos_r2 WHERE id = ?';
+        const [rows] = await db.execute(query, [recursoId]);
+        return rows[0]; // Esto devuelve el objeto con { id, nombre_archivo, url_r2, tipo_archivo, key_r2 }
+    },
+
+    // 2. Eliminar registro del recurso en BD
+    async eliminarRecurso(recursoId) {
+        const query = 'DELETE FROM recursos_r2 WHERE id = ?';
+        await db.execute(query, [recursoId]);
+    },
+
+    // 3. Eliminar enlace en BD
+    async eliminarEnlace(enlaceId) {
+        const query = 'DELETE FROM enlaces_seccion WHERE id = ?';
+        await db.execute(query, [enlaceId]);
     }
 };

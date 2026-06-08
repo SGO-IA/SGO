@@ -49,4 +49,12 @@ export class CicloDidacticoService {
     // Ejemplo de uso: cargarEtapa(7, 'Reflexión Inicial')
     return this.http.get<any>(`${this.apiUrl}/ciclos/${cicloId}/secciones?tipo_etapa=${tipoEtapa}`);
   }
+
+  eliminarRecurso(seccionId: number, recursoId: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/secciones/${seccionId}/recursos/${recursoId}`);
+  }
+
+  eliminarEnlace(seccionId: number, enlaceId: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/secciones/${seccionId}/enlaces/${enlaceId}`);
+  }
 }
