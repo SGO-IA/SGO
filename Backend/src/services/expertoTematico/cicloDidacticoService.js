@@ -37,16 +37,18 @@ async procesarGuardadoEtapa(cicloId, payload) {
 
         // 2. Extraer HTML puro (SIN INYECTAR LINKS AQUÍ)
         const contenidoFinal = payload.contenido_html || '';
+        const titulo = payload.titulo || 'Sin título';
 
         // 3. Upsert de la Sección (Buscar -> Actualizar o Insertar)
         let seccion = await cicloModel.obtenerSeccionPorCicloYTipo(cicloId, tipoSeccionEnum);
         let seccionId;
 
         if (seccion) {
-            await cicloModel.actualizarSeccion(seccion.id, contenidoFinal);
+            console.log('DEBUG SERVICE:', seccion.id);
+            await cicloModel.actualizarSeccion(seccion.id, contenidoFinal, titulo);
             seccionId = seccion.id;
         } else {
-            const insertResult = await cicloModel.crearSeccion(cicloId, tipoSeccionEnum, contenidoFinal);
+            const insertResult = await cicloModel.crearSeccion(cicloId, tipoSeccionEnum, contenidoFinal, titulo);
             seccionId = insertResult.id;
         }
 

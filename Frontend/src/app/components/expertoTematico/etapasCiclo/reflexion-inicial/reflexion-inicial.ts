@@ -16,6 +16,7 @@ import { CicloDidacticoService } from '../../../../services/expertoTematico/cicl
 export class ReflexionInicial {
   archivos: File[] = [];
   links: string[] = [];
+  titulo: string = '';
   nuevoLink: string = '';
   contenido: string = '';
   showModal = false;
@@ -93,7 +94,8 @@ export class ReflexionInicial {
       tipo_etapa: 'Reflexión Inicial', // Enum match in backend
       contenido_html: this.contenidoRenderizado || this.contenido, // Aseguramos enviar el HTML
       enlaces_externos: this.links,
-      recursos_adjuntos: archivosInfo // Array con URLs generadas por Cloudflare
+      recursos_adjuntos: archivosInfo, // Array con URLs generadas por Cloudflare
+      titulo: this.titulo,
     };
 
     console.log('📦 [ReflexionInicial] Payload listo para enviar al backend:', payloadBD);

@@ -1,8 +1,16 @@
 <div class="bg-white p-8 rounded-[var(--radius-sena)] border border-gray-200 shadow-sm">
   <h2 class="text-2xl font-black text-sena-black mb-6">Redacción de Reflexión Inicial</h2>
 
-<div class="mb-8 relative">
-    
+  <div class="mb-6">
+    <label class="block text-sm font-bold text-gray-700 mb-2">Título de la sección</label>
+    <input 
+      type="text" 
+      [(ngModel)]="titulo" 
+      class="input-sena w-full border-gray-300 focus:border-sena focus:ring-1 focus:ring-sena transition-all" 
+      placeholder="Ej: Reflexión sobre la importancia de la IA...">
+  </div>
+
+  <div class="mb-8 relative">
     @if (contenido && !loadingIA() && !modoEdicion) {
       <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
         <article 
@@ -64,7 +72,6 @@
   </div>
 
   <div class="grid md:grid-cols-2 gap-8">
-    
     <div>
       <label class="block text-sm font-bold text-gray-700 mb-2">Recursos (Archivos)</label>
       <div class="drop-zone-sena border-gray-300 mb-4">
@@ -87,7 +94,7 @@
     <div>
       <label class="block text-sm font-bold text-gray-700 mb-2">Enlaces Externos</label>
       <input type="text" [(ngModel)]="nuevoLink" (keydown)="agregarLink($event)" 
-             class="input-sena" placeholder="Pega el link y presiona Enter...">
+             class="input-sena w-full" placeholder="Pega el link y presiona Enter...">
       
       <div class="flex flex-wrap gap-2 mt-4">
         @for (link of links; track link) {

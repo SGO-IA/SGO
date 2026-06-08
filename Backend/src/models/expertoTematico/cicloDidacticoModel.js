@@ -97,20 +97,25 @@ export const cicloModel = {
 
     async crearSeccion(cicloId, tipoSeccion, contenidoHtml) {
         const query = `
-            INSERT INTO ciclo_secciones (ciclo_id, tipo_seccion, contenido_html)
-            VALUES (?, ?, ?)
+            INSERT INTO ciclo_secciones (ciclo_id, tipo_seccion, contenido_html, titulo)
+            VALUES (?, ?, ?, ?)
         `;
         const [result] = await db.execute(query, [cicloId, tipoSeccion, contenidoHtml]);
         return { id: result.insertId };
     },
 
-    async actualizarSeccion(seccionId, contenidoHtml) {
+    async actualizarSeccion(seccionId, contenidoHtml, titulo) {
+        console.log('DEBUG SQL UPDATE:', { seccionId, contenidoHtml, titulo });
+        
         const query = `
             UPDATE ciclo_secciones 
-            SET contenido_html = ? 
+            SET contenido_html = ?, titulo = ?
             WHERE id = ?
         `;
-        await db.execute(query, [contenidoHtml, seccionId]);
+        
+        if (!seccionId) throw new Error('El ID de la sección es requerido para actualizar');
+        
+        await db.execute(query, [contenidoHtml, titulo, seccionId]); 
         return true;
     },
 
