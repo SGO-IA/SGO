@@ -8,8 +8,10 @@ export class CicloDataService {
     ovaId: null as number | null 
   });
 
-  private cicloId = signal<number | null>(null);
-
+  private _cicloId = signal<number | null>(null); // renombrado para seguir convención
+  
+  // Getter público para el componente
+  cicloId = computed(() => this._cicloId());
   // Getters reactivos
   rapId = computed(() => this.selection().rapId);
   faseId = computed(() => this.selection().faseId);
@@ -21,6 +23,6 @@ export class CicloDataService {
   }
 
   setCicloId(id: number) {
-    this.cicloId.set(id);
+    this._cicloId.set(id);
   }
 }

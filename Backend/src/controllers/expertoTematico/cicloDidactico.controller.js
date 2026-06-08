@@ -60,5 +60,27 @@ export const cicloController = {
         } catch (error) {
             res.status(500).json({ status: 'error', message: error.message });
         }
+    },
+
+    async guardarEtapa(req, res) {
+        try {
+            const cicloId = Number(req.params.cicloId);
+            const payload = req.body;
+
+            if (isNaN(cicloId) || cicloId <= 0) {
+                return res.status(400).json({ status: 'error', message: 'ID de ciclo inválido.' });
+            }
+
+            const resultado = await cicloService.procesarGuardadoEtapa(cicloId, payload);
+            
+            return res.status(200).json({ 
+                status: 'success', 
+                message: 'Etapa guardada y recursos indexados', 
+                data: resultado 
+            });
+        } catch (error) {
+            console.error('❌ Error en guardarEtapa Controller:', error);
+            return res.status(500).json({ status: 'error', message: 'Error interno en persistencia.' });
+        }
     }
 };

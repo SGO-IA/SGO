@@ -4,8 +4,9 @@ import { CicloDataService } from '../../../../services/expertoTematico/ciclo-dat
 import { IAService } from '../../../../services/expertoTematico/ia';
 import { ModalIa } from '../modal-ia/modal-ia';
 import { marked } from 'marked';
-import { R2Cloudflare } from '../../../../services/expertoTematico/r2-cloudflare';
 import { forkJoin } from 'rxjs';
+import { CicloDidacticoService } from '../../../../services/expertoTematico/ciclo-didactico'; // ✅ Inyección actualizada
+
 @Component({
   selector: 'app-reflexion-inicial',
   standalone: true,
@@ -13,7 +14,7 @@ import { forkJoin } from 'rxjs';
   templateUrl: './reflexion-inicial.html',
 })
 export class ReflexionInicial {
-archivos: File[] = [];
+  archivos: File[] = [];
   links: string[] = [];
   nuevoLink: string = '';
   contenido: string = '';
@@ -24,7 +25,7 @@ archivos: File[] = [];
   private cicloData = inject(CicloDataService);
   private iaService = inject(IAService);
   private cdr = inject(ChangeDetectorRef);
-  private r2Cloudflare = inject(R2Cloudflare);
+  private cicloService = inject(CicloDidacticoService); // ✅ Usamos el servicio centralizado
   
   loadingIA = signal(false);
   mensajeActual = signal("");
@@ -43,149 +44,148 @@ archivos: File[] = [];
   ];
 
   guardarReflexion() {
-    // Simulamos u obtenemos el ID de sección correspondiente (este ID debería venir del ciclo actual o backend)
-    const seccionIdActual = 1; 
+    // Obtenemos el ID desde la señal reactiva
+    const cicloId = this.cicloData.cicloId(); 
 
-    if (this.archivos.length > 0) {
-      console.log(`Iniciando carga masiva de ${this.archivos.length} archivos a Cloudflare R2...`);
-      
-      // Mapeamos cada archivo del array a una petición observable de subida
-      const peticionesSubida = this.archivos.map(archivo => 
-        this.r2Cloudflare.subirArchivoASeccion(seccionIdActual, archivo)
-      );
-
-      // forkJoin ejecuta todas las subidas en paralelo (equivalente a Promise.all)
-      forkJoin(peticionesSubida).subscribe({
-        next: (respuestas) => {
-          console.log('Todos los archivos se subieron e indexaron con éxito en R2:', respuestas);
-          
-          // Limpiamos la zona de archivos cargados tras el éxito
-          this.archivos = [];
-          
-          // TODO: Aquí disparas el guardado del texto de la reflexión (this.contenido) y tus links
-          this.ejecutarPersistenciaTexto();
-          
-          this.cdr.detectChanges();
-        },
-        error: (err) => {
-          console.error('Error crítico durante la subida masiva a Cloudflare R2:', err);
-          // Aquí puedes mapear una alerta visual para informar al usuario de la falla
-        }
-      });
-    } else {
-      // Si no hay archivos, guardamos el texto y los links directamente
-      this.ejecutarPersistenciaTexto();
-    }
-  }
-
-private ejecutarPersistenciaTexto() {
-    // 1. Extraemos el contexto de la verdad (las llaves foráneas)
-    const ovaId = this.cicloData.ovaId();
-    const faseId = this.cicloData.faseId();
-    const rapId = this.cicloData.rapId();
-
-    // Validación de seguridad
-    if (!ovaId || !faseId || !rapId) {
-      console.error('Error: Se perdió el contexto del ciclo didáctico. No se puede guardar.');
-      // Aquí podrías mostrar un Toast/SweetAlert de error al usuario
+    if (!cicloId) {
+      console.error('🚩 [ReflexionInicial] No hay un cicloId definido.');
       return;
     }
 
-    // 2. Armamos el DTO (Data Transfer Object) para el backend
+    if (this.archivos.length > 0) {
+      // 1. Subida a R2 pasando el cicloId usando el servicio unificado
+      const peticiones = this.archivos.map(archivo => 
+        this.cicloService.subirRecurso(cicloId, archivo)
+      );
+
+      forkJoin(peticiones).subscribe({
+        next: (respuestas) => {
+          // Obtenemos los metadatos de los archivos para guardar en BD
+          const archivosInfo = respuestas.map(r => ({
+            url: r.data.urlR2,
+            nombre: r.data.nombreArchivo,
+            tipoArchivo: r.data.tipoArchivo, // Aseguramos el tipo MIME
+            key: r.data.keyR2
+          }));
+          
+          // 2. Persistir con los metadatos de R2
+          this.ejecutarPersistenciaTexto(archivosInfo);
+        },
+        error: (err) => console.error('🚩 [ReflexionInicial] Error en carga R2:', err)
+      });
+    } else {
+      this.ejecutarPersistenciaTexto([]);
+    }
+  }
+
+  private ejecutarPersistenciaTexto(archivosInfo: any[]) {
+    // 1. Extraemos SOLO la llave maestra necesaria
+    const cicloId = this.cicloData.cicloId();
+
+    // Validación de seguridad SGO
+    if (!cicloId) {
+      console.error('🚩 [ReflexionInicial] Error: No se encontró el cicloId. No se puede guardar.');
+      return;
+    }
+
+    // 2. Armamos el DTO exacto que espera tu Backend
     const payloadBD = {
-      ova_id: ovaId,
-      fase_proyecto_id: faseId,
-      rap_id: rapId,
-      tipo_etapa: 'Reflexión Inicial', // Para que la BD sepa qué etapa es
-      contenido_html: this.contenido,
-      enlaces_externos: this.links // Puede ser un JSON en tu BD
-      // Nota: Los archivos ya se subieron a R2, pero si necesitas guardar 
-      // sus URLs en BD, deberías pasarlas desde el map del forkJoin aquí.
+      tipo_etapa: 'Reflexión Inicial', // Enum match in backend
+      contenido_html: this.contenidoRenderizado || this.contenido, // Aseguramos enviar el HTML
+      enlaces_externos: this.links,
+      recursos_adjuntos: archivosInfo // Array con URLs generadas por Cloudflare
     };
 
-    console.log('📦 Payload listo para enviar al backend:', payloadBD);
+    console.log('📦 [ReflexionInicial] Payload listo para enviar al backend:', payloadBD);
 
-    // 3. Consumo del servicio HTTP (Descomenta y ajusta cuando tengas el servicio)
-    /*
-    this.tuServicioBackend.guardarEtapaCiclo(payloadBD).subscribe({
+    // 3. Consumo del servicio HTTP
+    this.cicloService.guardarEtapa(cicloId, payloadBD).subscribe({
       next: (res) => {
-        console.log('Guardado exitoso en BD');
-        // Mostrar mensaje de éxito al usuario
+        console.log('✅ [ReflexionInicial] Guardado exitoso en BD:', res);
+        
+        // Limpiamos los arrays después de un guardado exitoso
+        this.archivos = [];
+        // this.links = []; // Comenta esto si prefieres que los links sigan visibles tras guardar
+        this.cdr.detectChanges();
+        
+        alert('Etapa guardada correctamente con sus recursos adjuntos.');
       },
-      error: (err) => console.error('Error al guardar en BD', err)
+      error: (err) => {
+        console.error('❌ [ReflexionInicial] Error al guardar en BD:', err);
+        alert('Ocurrió un error al guardar la información en la base de datos.');
+      }
     });
-    */
   }
 
-async sugerirIA(customPrompt?: string) {
-  const rapId = this.cicloData.rapId();
-  if (!rapId) return;
+  async sugerirIA(customPrompt?: string) {
+    const rapId = this.cicloData.rapId();
+    if (!rapId) return;
 
-  this.loadingIA.set(true);
-  const promptToUse = customPrompt || this.contenido;
-  this.contenido = "";
-  
-  let i = 0;
-  this.intervalId = setInterval(() => {
-    this.mensajeActual.set(this.mensajesCarga[i % this.mensajesCarga.length]);
-    i++;
-  }, 2500); 
+    this.loadingIA.set(true);
+    const promptToUse = customPrompt || this.contenido;
+    this.contenido = "";
+    
+    let i = 0;
+    this.intervalId = setInterval(() => {
+      this.mensajeActual.set(this.mensajesCarga[i % this.mensajesCarga.length]);
+      i++;
+    }, 2500); 
 
-  this.iaService.sugerir(promptToUse, 'Reflexión Inicial', rapId).subscribe({
-    next: async (res) => {
-      // 1. Limpieza total de basura de IA
-      let texto = res.sugerencia || "";
-      texto = texto.replace(/undefined/g, ""); 
-      texto = texto.replace(/\[\]\((undefined|null)\)/g, "");
-      // Limpiamos espacios en los links: [texto]( url ) -> [texto](url)
-      texto = texto.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
-      
-      this.contenido = texto;
-      this.modoEdicion = false;
-      
-      // 2. Renderer configurado
-      const renderer = {
-        link(href: string, title: string | null, text: string) {
-          let linkText = (!text || text === 'undefined') ? 'Ver recurso externo' : text;
+    this.iaService.sugerir(promptToUse, 'Reflexión Inicial', rapId).subscribe({
+      next: async (res) => {
+        // 1. Limpieza total de basura de IA
+        let texto = res.sugerencia || "";
+        texto = texto.replace(/undefined/g, ""); 
+        texto = texto.replace(/\[\]\((undefined|null)\)/g, "");
+        // Limpiamos espacios en los links: [texto]( url ) -> [texto](url)
+        texto = texto.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
+        
+        this.contenido = texto;
+        this.modoEdicion = false;
+        
+        // 2. Renderer configurado
+        const renderer = {
+          link(href: string, title: string | null, text: string) {
+            let linkText = (!text || text === 'undefined') ? 'Ver recurso externo' : text;
 
-          // Corrección: Solo anteponer https si no tiene ni http ni https
-          let finalHref = href;
-          if (!href.startsWith('http')) {
-            finalHref = 'https://' + href.replace(/^\/+/, ''); // elimina slashes iniciales si los hay
+            // Corrección: Solo anteponer https si no tiene ni http ni https
+            let finalHref = href;
+            if (!href.startsWith('http')) {
+              finalHref = 'https://' + href.replace(/^\/+/, '');
+            }
+
+            return `<a href="${finalHref}" target="_blank" rel="noopener noreferrer" class="text-sena font-bold hover:underline">${linkText}</a>`;
           }
+        };
 
-          return `<a href="${finalHref}" target="_blank" rel="noopener noreferrer" class="text-sena font-bold hover:underline">${linkText}</a>`;
-        }
-      };
-
-      marked.use({ renderer: renderer as any });
-      
-      // 3. IMPORTANTE: Parseamos 'texto' (que ya está limpio), no 'res.sugerencia'
-      this.contenidoRenderizado = await marked.parse(texto);
-      
-      this.finalizarCarga();
-      this.cdr.detectChanges();
-    },
-    error: () => {
-      this.contenido = "Error de conexión. Intenta nuevamente.";
-      this.finalizarCarga();
-      this.cdr.detectChanges();
-    }
-  });
-}
-
-finalizarEdicion() {
-  this.contenidoRenderizado = marked.parse(this.contenido) as string;
-  this.modoEdicion = false;
-  this.cdr.detectChanges();
-}
-
-openIA(customPrompt?: string) {
-  if (customPrompt) {
-    this.showModal = false;
-    this.sugerirIA(customPrompt);
+        marked.use({ renderer: renderer as any });
+        
+        // 3. Parseamos 'texto'
+        this.contenidoRenderizado = await marked.parse(texto);
+        
+        this.finalizarCarga();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.contenido = "Error de conexión. Intenta nuevamente.";
+        this.finalizarCarga();
+        this.cdr.detectChanges();
+      }
+    });
   }
-}
+
+  finalizarEdicion() {
+    this.contenidoRenderizado = marked.parse(this.contenido) as string;
+    this.modoEdicion = false;
+    this.cdr.detectChanges();
+  }
+
+  openIA(customPrompt?: string) {
+    if (customPrompt) {
+      this.showModal = false;
+      this.sugerirIA(customPrompt);
+    }
+  }
 
   private finalizarCarga() {
     this.loadingIA.set(false);
@@ -206,7 +206,7 @@ openIA(customPrompt?: string) {
   agregarLink(event: KeyboardEvent) {
     if (event.key === 'Enter' && this.nuevoLink.trim() !== '') {
       this.links.push(this.nuevoLink.trim());
-      this.nuevoLink = ''; // Limpiar campo
+      this.nuevoLink = ''; 
       event.preventDefault();
     }
   }

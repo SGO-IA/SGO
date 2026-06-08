@@ -23,7 +23,6 @@ export class CicloDidacticoService {
   }
 
   verificarCiclo(ova_id: number, fase_id: number): Observable<{ existe: boolean; ciclo_id?: number }> {
-      // Nota: ciclo_id es opcional porque solo vendrá si existe = true
       return this.http.get<{ existe: boolean; ciclo_id?: number }>(
           `${this.apiUrl}/ciclos/verificar?ova_id=${ova_id}&fase_proyecto_id=${fase_id}`
       );
@@ -33,5 +32,16 @@ export class CicloDidacticoService {
       return this.http.get<{ status: string; data: any[] }>(
           `${this.apiUrl}/ciclos/ova/${ova_id}`
       );
+  }
+
+  guardarEtapa(cicloId: number, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/ciclos/${cicloId}/secciones`, payload);
+  }
+
+  subirRecurso(identificador: number | string, archivo: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    
+    return this.http.post<any>(`${this.apiUrl}/secciones/${identificador}/recursos`, formData);
   }
 }

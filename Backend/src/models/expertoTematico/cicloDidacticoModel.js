@@ -82,5 +82,44 @@ export const cicloModel = {
         `;
         const [rows] = await db.execute(query, [ovaId]);
         return rows;
+    },
+
+    async obtenerSeccionPorCicloYTipo(cicloId, tipoSeccion) {
+        const query = `
+            SELECT id, contenido_html 
+            FROM ciclo_secciones 
+            WHERE ciclo_id = ? AND tipo_seccion = ?
+            LIMIT 1
+        `;
+        const [rows] = await db.execute(query, [cicloId, tipoSeccion]);
+        return rows.length > 0 ? rows[0] : null;
+    },
+
+    async crearSeccion(cicloId, tipoSeccion, contenidoHtml) {
+        const query = `
+            INSERT INTO ciclo_secciones (ciclo_id, tipo_seccion, contenido_html)
+            VALUES (?, ?, ?)
+        `;
+        const [result] = await db.execute(query, [cicloId, tipoSeccion, contenidoHtml]);
+        return { id: result.insertId };
+    },
+
+    async actualizarSeccion(seccionId, contenidoHtml) {
+        const query = `
+            UPDATE ciclo_secciones 
+            SET contenido_html = ? 
+            WHERE id = ?
+        `;
+        await db.execute(query, [contenidoHtml, seccionId]);
+        return true;
+    },
+
+    async guardarRecursoR2(seccionId, nombreArchivo, urlR2, tipoArchivo = null) {
+        const query = `
+            INSERT INTO recursos_r2 (seccion_id, nombre_archivo, url_r2, tipo_archivo)
+            VALUES (?, ?, ?, ?)
+        `;
+        const [result] = await db.execute(query, [seccionId, nombreArchivo, urlR2, tipoArchivo]);
+        return { id: result.insertId };
     }
 };

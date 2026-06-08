@@ -44,26 +44,21 @@ export class ConfiCicloDidactico implements OnInit {
 ngOnInit(): void {
   const idSemilla = this.route.snapshot.paramMap.get('id');
 
-  // 1. Protección inicial: Si no hay ID en la URL, no hacemos nada
   if (!idSemilla) {
     this.router.navigate(['/dashboard/panel']);
     return;
   }
 
-  // 2. Validación de Semilla (Regla de seguridad estricta)
+  // Validación de Seguridad Estricta
   this.semillasService.verificarEstadoRaps(idSemilla).subscribe({
     next: (res) => {
-      // Si la semilla no es válida, expulsamos inmediatamente
       if (res.status === 'error' || res.tieneAsignacion === false) {
-        console.warn('🚩 [ConfiCiclo] Acceso no autorizado a la semilla.');
         this.router.navigate(['/dashboard/panel']);
         return;
       }
 
-      // Si la semilla es válida, procedemos a cargar los datos necesarios
       this.cargarRaps(idSemilla);
 
-      // 3. Ahora que sabemos que la semilla es válida, escuchamos los queryParams
       this.route.queryParams.subscribe(params => {
         const step = params['step'];
         const cicloIdParam = params['cicloId'];
@@ -76,24 +71,20 @@ ngOnInit(): void {
             return;
           }
 
-          // Validación SGO-Layered: ¿El usuario tiene permiso para este ciclo?
+          // Validación SGO-Layered: Acceso al Ciclo
           this.semillasService.verificarAccesoCiclo(idSemilla, cicloIdNum, step).subscribe({
             next: () => {
+              // Sincronización única del estado global
               this.cicloData.setCicloId(cicloIdNum);
               this.cicloIdVerificado.set(cicloIdNum);
               this.pasoActual.set('etapas');
             },
-            error: () => {
-              this.expulsarPorUrlInvalida(idSemilla);
-            }
+            error: () => this.expulsarPorUrlInvalida(idSemilla)
           });
         }
       });
     },
-    error: (err) => {
-      console.error('🚩 [ConfiCiclo] Error crítico al verificar semilla:', err);
-      this.router.navigate(['/dashboard/panel']);
-    }
+    error: () => this.router.navigate(['/dashboard/panel'])
   });
 }
 
