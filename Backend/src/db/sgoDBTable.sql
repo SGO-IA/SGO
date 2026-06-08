@@ -299,6 +299,18 @@ CREATE TABLE `ciclo_secciones` (
     FOREIGN KEY (`ciclo_id`) REFERENCES `ciclos_didacticos` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+CREATE TABLE `enlaces_seccion` (
+  `id`         INT NOT NULL AUTO_INCREMENT,
+  `seccion_id` INT NOT NULL,
+  `url`        TEXT NOT NULL,
+  `etiqueta`   VARCHAR(255) DEFAULT 'Recurso externo',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_enlace_seccion` (`seccion_id`),
+  CONSTRAINT `fk_enlace_seccion`
+    FOREIGN KEY (`seccion_id`) REFERENCES `ciclo_secciones` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 -- ------------------------------------------------------------
 -- recursos_r2
 -- ------------------------------------------------------------
