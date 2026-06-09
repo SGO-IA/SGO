@@ -4,6 +4,7 @@ import { forkJoin } from 'rxjs';
 import { CicloDataService } from './services/expertoTematico/ciclo-data-service';
 import { IAService } from './services/expertoTematico/ia';
 import { CicloDidacticoService } from './services/expertoTematico/ciclo-didactico';
+import Swal from 'sweetalert2';
 
 @Directive()
 export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
@@ -145,11 +146,27 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
       next: (res) => {
         this.archivos = this.archivos.filter(a => a.isBackendFile);
         this.cdr.detectChanges();
-        alert('Etapa guardada correctamente con sus recursos adjuntos.');
+        
+        // Alerta de éxito con SweetAlert2
+        Swal.fire({
+          icon: 'success',
+          title: '¡Guardado exitoso!',
+          text: `La etapa de ${this.tipoEtapaNombre} se ha guardado correctamente.`,
+          confirmButtonColor: '#39A900', // Verde institucional
+          timer: 2500, // Se cierra solo después de 2.5 segundos
+          showConfirmButton: false // Oculta el botón para que sea una notificación rápida
+        });
       },
       error: (err) => {
         console.error(`❌ [${this.tipoEtapaNombre}] Error al guardar en BD:`, err);
-        alert('Ocurrió un error al guardar la información en la base de datos.');
+        
+        // Alerta de error con SweetAlert2
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Ocurrió un error al guardar la información en la base de datos. Por favor, intenta de nuevo.',
+          confirmButtonColor: '#39A900'
+        });
       }
     });
   }
