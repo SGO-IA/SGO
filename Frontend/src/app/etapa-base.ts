@@ -154,12 +154,19 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
     });
   }
 
-  async sugerirIA(customPrompt?: string) {
+async sugerirIA(customPrompt?: string) {
     const rapId = this.cicloData.rapId();
-    if (!rapId) return;
+    
+    // 🚩 Validación ruidosa: Si falla, te darás cuenta de inmediato
+    if (!rapId) {
+      alert("Error: No se ha seleccionado un RAP válido en el contexto.");
+      console.error("🚩 [SugerirIA] rapId es null o undefined.");
+      return;
+    }
 
     this.loadingIA.set(true);
-    const promptToUse = customPrompt || this.contenido;
+    // Si el prompt está vacío, enviamos el contenido actual como contexto
+    const promptToUse = customPrompt || this.contenido || "Genera la estructura inicial.";
     this.contenido = "";
     
     let i = 0;
@@ -170,14 +177,34 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
 
     this.iaService.sugerir(promptToUse, this.tipoEtapaNombre, rapId).subscribe({
       next: async (res) => {
-        let texto = res.sugerencia || "";
-        texto = texto.replace(/undefined/g, ""); 
-        texto = texto.replace(/\[\]\((undefined|null)\)/g, "");
-        texto = texto.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
+        let textoCrudo = res.sugerencia || "";
+        let tituloExtraido = this.titulo; 
+        let contenidoLimpio = textoCrudo;
+
+        try {
+          // 1. Limpieza estricta de formato Markdown/JSON (Vital para Cloudflare Workers AI)
+          let jsonLimpio = textoCrudo.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
+          
+          // 2. Extracción del DTO JSON
+          const data = JSON.parse(jsonLimpio);
+          tituloExtraido = data.titulo || this.titulo;
+          contenidoLimpio = data.contenido || "";
+        } catch (error) {
+          console.warn("🚩 La IA no devolvió un JSON válido. Procesando como texto plano.");
+          contenidoLimpio = textoCrudo;
+        }
+
+        // 3. Limpieza de Links rotos y undefined
+        contenidoLimpio = contenidoLimpio.replace(/undefined/g, ""); 
+        contenidoLimpio = contenidoLimpio.replace(/\[\]\((undefined|null)\)/g, "");
+        contenidoLimpio = contenidoLimpio.replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
         
-        this.contenido = texto;
+        // 4. Inyección a las variables del modelo (Actualiza la UI)
+        this.titulo = tituloExtraido;
+        this.contenido = contenidoLimpio;
         this.modoEdicion = false;
         
+        // 5. Motor de renderizado Markdown a HTML
         const renderer = {
           link(href: string, title: string | null, text: string) {
             let linkText = (!text || text === 'undefined') ? 'Ver recurso externo' : text;
@@ -187,13 +214,14 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
         };
 
         marked.use({ renderer: renderer as any });
-        this.contenidoRenderizado = await marked.parse(texto);
+        this.contenidoRenderizado = await marked.parse(this.contenido);
         
         this.finalizarCarga();
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.contenido = "Error de conexión. Intenta nuevamente.";
+      error: (err) => {
+        console.error("❌ Error HTTP en la IA:", err);
+        this.contenido = "Error de conexión con el servidor de IA. Revisa la consola.";
         this.finalizarCarga();
         this.cdr.detectChanges();
       }
@@ -207,10 +235,8 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
   }
 
   openIA(customPrompt?: string) {
-    if (customPrompt) {
-      this.showModal = false;
-      this.sugerirIA(customPrompt);
-    }
+    this.showModal = false;
+    this.sugerirIA(customPrompt);
   }
 
   private finalizarCarga() {

@@ -2,7 +2,8 @@ import { Component, signal, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CicloDidacticoPresentacion } from '../../../components/expertoTematico/ciclo-didactico-presentacion/ciclo-didactico-presentacion';
 import { CicloDidacticoService } from '../../../services/expertoTematico/ciclo-didactico';
-import { SemillasService } from '../../../services/expertoTematico/semillas'; // Importamos el servicio de semillas
+import { SemillasService } from '../../../services/expertoTematico/semillas';
+import { CicloDataService } from '../../../services/expertoTematico/ciclo-data-service';
 
 @Component({
   selector: 'app-ciclo-didactico',
@@ -13,6 +14,7 @@ import { SemillasService } from '../../../services/expertoTematico/semillas'; //
 export class CicloDidactico implements OnInit {
   private route = inject(ActivatedRoute);
   private cicloService = inject(CicloDidacticoService);
+  private cicloData = inject(CicloDataService);
   private semillasService = inject(SemillasService);
   private router = inject(Router);
   
@@ -32,21 +34,25 @@ export class CicloDidactico implements OnInit {
 
     this.idSemilla.set(id);
     
-    // Aplicamos la misma regla de seguridad estricta
     this.semillasService.verificarEstadoRaps(id).subscribe({
       next: (res) => {
-        // Regla de seguridad: Si el backend indica error o no hay asignación
         if (res.status === 'error' || res.tieneAsignacion === false) {
           console.warn('🚩 [CicloDidactico] Acceso no autorizado para esta semilla. Redirigiendo...');
           this.router.navigate(['/dashboard/panel']);
           return;
         }
 
-        // Si la validación pasa, procedemos con la lógica del componente
         console.log('🚩 [CicloDidactico] Validación exitosa. Cargando ciclos...');
-        const ovaId = res.raps[0]?.ova_id;
-        if (ovaId) {
-          this.cargarCiclosPorOva(ovaId);
+        
+        // Extraemos el primer RAP de la lista de RAPs asignados que trae el backend
+        const rapData = res.raps[0]; 
+        
+        if (rapData) {
+          // ✅ 3. EL TRUCO MÁGICO: Guardamos los IDs en el estado global para que las etapas (Reflexión, etc.) puedan leerlos
+          // Usamos rapData.rap_id y rapData.ova_id porque así los llamaste en tu consulta SQL AS rap_id
+          this.cicloData.setSeleccion(0, rapData.rap_id, rapData.ova_id);
+          
+          this.cargarCiclosPorOva(rapData.ova_id);
         } else {
           this.tieneCicloDidactico.set(false);
         }
