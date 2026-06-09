@@ -250,10 +250,17 @@ async sugerirIA(customPrompt?: string) {
       this.archivos.push(files[i]);
     }
   }
-
   agregarLink(event: KeyboardEvent) {
     if (event.key === 'Enter' && this.nuevoLink.trim() !== '') {
-      this.links.push({ id: null, url: this.nuevoLink.trim() });
+      let urlFinal = this.nuevoLink.trim();
+
+      // Validación vital: Agregar https:// si el usuario olvidó ponerlo
+      if (!urlFinal.startsWith('http://') && !urlFinal.startsWith('https://')) {
+        urlFinal = 'https://' + urlFinal;
+      }
+
+      this.links.push({ id: null, url: urlFinal });
+      
       this.nuevoLink = ''; 
       event.preventDefault();
       this.cdr.detectChanges(); 
