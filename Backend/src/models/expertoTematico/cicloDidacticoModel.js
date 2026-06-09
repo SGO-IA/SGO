@@ -152,6 +152,11 @@ export const cicloModel = {
         ]);
     },
 
+    async borrarRecursosPorSeccion(seccionId) {
+        const query = `DELETE FROM recursos_r2 WHERE seccion_id = ?`;
+        await db.execute(query, [seccionId]);
+    },
+
     async borrarEnlacesPorSeccion(seccionId) {
         const query = `DELETE FROM enlaces_seccion WHERE seccion_id = ?`;
         await db.execute(query, [seccionId]);

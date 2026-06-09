@@ -98,9 +98,10 @@ async procesarGuardadoEtapa(cicloId, payload) {
         }
 
         // 4. Persistencia de Recursos R2
+        await cicloModel.borrarRecursosPorSeccion(seccionId);
         if (payload.recursos_adjuntos && payload.recursos_adjuntos.length > 0) {
             for (const recurso of payload.recursos_adjuntos) {
-                // Asegúrate de enviar el 'key' o 'keyR2' desde el frontend
+                // Ahora sí, insertamos la lista limpia
                 await cicloModel.guardarRecursoR2(
                     seccionId, 
                     recurso.nombre, 
