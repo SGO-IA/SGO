@@ -1,13 +1,68 @@
 <div class="bg-white p-8 rounded-[var(--radius-sena)] border border-gray-200 shadow-sm">
-  <h2 class="text-2xl font-black text-sena-black mb-6">Redacción de contextualizacion</h2>
+  <h2 class="text-2xl font-black text-sena-black mb-6">Redacción de Contextualización</h2>
 
-  <div class="mb-8">
-    <textarea [(ngModel)]="contenido" class="input-sena !h-48 pt-4" placeholder="Escribe aquí..."></textarea>
-    <button (click)="sugerirIA()" class="btn-sena mt-3 bg-sena-black"><i class="pi pi-sparkles"></i> Sugerir con IA</button>
+  <div class="mb-6">
+    <label class="block text-sm font-bold text-gray-700 mb-2">Título de la sección</label>
+    <input 
+      type="text" 
+      [(ngModel)]="titulo" 
+      class="input-sena w-full border-gray-300 focus:border-sena focus:ring-1 focus:ring-sena transition-all" 
+      placeholder="Ej: Contextualización sobre el ciclo didáctico...">
+  </div>
+
+  <div class="mb-8 relative">
+    @if (contenido && !loadingIA() && !modoEdicion) {
+      <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <article class="prose prose-sena max-w-none" [innerHTML]="contenidoRenderizado"></article>
+        <div class="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+          <button (click)="modoEdicion = true" class="text-sm text-gray-500 hover:text-sena font-semibold transition-colors">
+            <i class="pi pi-pencil mr-1"></i> Editar contenido
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (!contenido || loadingIA() || modoEdicion) { 
+      <textarea 
+        [(ngModel)]="contenido" 
+        [disabled]="loadingIA()"
+        class="input-sena w-full resize-y min-h-[200px] pt-4 transition-opacity duration-500"
+        [class.opacity-50]="loadingIA()"
+        [placeholder]="loadingIA() ? mensajeActual() : 'Escribe aquí o genera contenido con IA...'">
+      </textarea>
+
+      @if (modoEdicion) {
+        <button (click)="finalizarEdicion()" class="btn-sena mt-3 bg-sena-dark">
+          <i class="pi pi-check"></i> Guardar cambios y previsualizar
+        </button>
+      }
+    }
+
+    @if (loadingIA()) {
+      <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-10 backdrop-blur-[2px]">
+        <div class="relative mb-4">
+          <i class="pi pi-spinner pi-spin text-4xl text-sena"></i>
+        </div>
+        <p class="font-bold text-sena animate-in fade-in duration-700 text-center px-4">{{ mensajeActual() }}</p>
+      </div>
+    }
+
+    @if (!modoEdicion) {
+      <button 
+        (click)="showModal = true" 
+        [disabled]="loadingIA()"
+        class="btn-sena mt-3 bg-sena-black disabled:bg-gray-400 transition-colors">
+        <i class="pi pi-sparkles"></i> 
+        {{ contenido ? 'Regenerar con IA' : 'Sugerir con IA' }}
+      </button>
+    }
+
+    @if (showModal) {
+      <app-modal-ia (close)="showModal = false" (submit)="openIA($event)"></app-modal-ia>
+    }
   </div>
 
   <div class="grid md:grid-cols-2 gap-8">
-    
     <div>
       <label class="block text-sm font-bold text-gray-700 mb-2">Recursos (Archivos)</label>
       <div class="drop-zone-sena border-gray-300 mb-4">
@@ -18,10 +73,10 @@
         </label>
       </div>
       <div class="space-y-2">
-        @for (archivo of archivos; track archivo.name) {
+        @for (archivo of archivos; track $index) {
           <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg text-sm border">
             <span class="truncate"><i class="pi pi-file mr-2 text-sena"></i>{{ archivo.name }}</span>
-            <button (click)="archivos.splice($index, 1)" class="text-red-500"><i class="pi pi-trash"></i></button>
+            <button (click)="removerRecurso($index)" class="text-red-500 hover:text-red-700"><i class="pi pi-trash"></i></button>
           </div>
         }
       </div>
@@ -30,13 +85,13 @@
     <div>
       <label class="block text-sm font-bold text-gray-700 mb-2">Enlaces Externos</label>
       <input type="text" [(ngModel)]="nuevoLink" (keydown)="agregarLink($event)" 
-             class="input-sena" placeholder="Pega el link y presiona Enter...">
+             class="input-sena w-full" placeholder="Pega el link y presiona Enter...">
       
       <div class="flex flex-wrap gap-2 mt-4">
-        @for (link of links; track link) {
+        @for (link of links; track $index) {
           <div class="flex items-center gap-2 bg-sena-alpha text-sena px-3 py-1 rounded-full text-sm font-semibold border border-sena/20">
             <i class="pi pi-link text-xs"></i>
-            {{ link }}
+            {{ link.url }}
             <button (click)="removerLink($index)" class="hover:text-sena-dark"><i class="pi pi-times"></i></button>
           </div>
         }
@@ -45,6 +100,6 @@
   </div>
 
   <div class="mt-8 flex justify-end">
-    <button class="btn-sena text-lg px-10 py-3">Guardar contextualización</button>
+    <button (click)="guardarEtapa()" class="btn-sena text-lg px-10 py-3">Guardar contextualización</button>
   </div>
 </div>
