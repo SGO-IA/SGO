@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { EtapaBaseDirective } from '../../../../etapa-base';
 
 @Component({
   selector: 'app-apropiacion',
@@ -7,26 +8,18 @@ import { FormsModule } from '@angular/forms';
   imports: [FormsModule],
   templateUrl: './apropiacion.html',
 })
-export class Apropiacion {
-  contenido: string = '';
-  duracion: number = 60; // en minutos
-  archivos: File[] = [];
-
-  // Configuración de Test
+export class Apropiacion extends EtapaBaseDirective {
+  override tipoEtapaNombre = 'Apropiación';
+  
+  // Variables extra del componente
+  duracion: number = 60;
   testConfigurado: boolean = false;
 
-  onFileSelected(event: any) {
-    const files: FileList = event.target.files;
-    for (let i = 0; i < files.length; i++) {
-      this.archivos.push(files[i]);
-    }
-  }
-
+  // Si necesitas guardar campos extra, puedes sobrescribir el método de persistencia
+  // Pero lo ideal es que uses el título y contenido de la clase base
+  
   configurarTest() {
-    // Aquí abrirías un modal o navegarías a la config del test
-    console.log('Abriendo configurador de test...');
     this.testConfigurado = true;
+    this.cdr.detectChanges();
   }
-
-  sugerirIA() { /* Lógica IA */ }
 }

@@ -1,33 +1,22 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { EtapaBaseDirective } from '../../../../etapa-base';
 
 @Component({
   selector: 'app-transferencia',
   standalone: true,
   imports: [FormsModule],
   templateUrl: './transferencia.html',
-  styleUrl: './transferencia.css',
 })
-export class Transferencia {
-  contenido: string = '';
-  duracion: number = 60; // en minutos
-  archivos: File[] = [];
-
-  // Configuración de Test
+export class Transferencia extends EtapaBaseDirective {
+  override tipoEtapaNombre = 'Transferencia';
+  
+  // Variables extra
+  duracion: number = 60;
   testConfigurado: boolean = false;
 
-  onFileSelected(event: any) {
-    const files: FileList = event.target.files;
-    for (let i = 0; i < files.length; i++) {
-      this.archivos.push(files[i]);
-    }
-  }
-
   configurarTest() {
-    // Aquí abrirías un modal o navegarías a la config del test
-    console.log('Abriendo configurador de test...');
     this.testConfigurado = true;
+    this.cdr.detectChanges();
   }
-
-  sugerirIA() { /* Lógica IA */ }
 }
