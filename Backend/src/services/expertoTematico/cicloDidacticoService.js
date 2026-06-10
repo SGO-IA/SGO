@@ -25,7 +25,7 @@ export const cicloService = {
         return await cicloModel.obtenerCiclosConExpertoPorOva(ovaId);
     },
 
-    async obtenerEtapaCompleta(cicloId, tipoEtapaFrontend) {
+async obtenerEtapaCompleta(cicloId, tipoEtapaFrontend) {
         // 1. Mapeo inverso / directo del ENUM
         const mapaEtapas = {
             'Reflexión Inicial': 'Reflexion',
@@ -44,14 +44,17 @@ export const cicloService = {
                 titulo: '',
                 contenido_html: '',
                 enlaces_externos: [],
-                recursos_adjuntos: []
+                recursos_adjuntos: [],
+                test_generado: null // ✅ Cascarón nulo para el test
             };
         }
 
         // 3. Buscar data relacional en paralelo (Optimización de tiempo)
-        const [enlaces, recursos] = await Promise.all([
+        // ✅ Agregamos obtenerTestPorSeccion al array de promesas
+        const [enlaces, recursos, testIA] = await Promise.all([
             cicloModel.obtenerEnlacesPorSeccion(seccion.id),
-            cicloModel.obtenerRecursosPorSeccion(seccion.id)
+            cicloModel.obtenerRecursosPorSeccion(seccion.id),
+            cicloModel.obtenerTestPorSeccion(seccion.id) 
         ]);
 
         // 4. Construir y retornar el DTO consolidado
@@ -66,7 +69,17 @@ export const cicloService = {
                 url: rec.url_r2,
                 tipoArchivo: rec.tipo_archivo,
                 keyR2: rec.key_r2
-            }))
+            })),
+            // ✅ Mapeamos el test exactamente con la estructura que Angular espera
+            test_generado: testIA ? {
+                id: testIA.id,
+                nombre_test: testIA.nombre_test,
+                ponderacion: testIA.ponderacion,
+                // Nota: mysql2 a veces devuelve el JSON ya parseado, por seguridad validamos
+                preguntas: typeof testIA.preguntas_json === 'string' 
+                            ? JSON.parse(testIA.preguntas_json) 
+                            : testIA.preguntas_json
+            } : null
         };
     },
 

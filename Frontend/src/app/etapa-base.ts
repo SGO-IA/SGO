@@ -17,6 +17,9 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
   contenidoRenderizado: string = '';
   modoEdicion = false;
   seccionIdBD: number | null = null;
+  datosExtra: any = {};
+  testGenerado: any = null;
+  testConfigurado: boolean = false;
   
   protected cicloData = inject(CicloDataService);
   protected iaService = inject(IAService);
@@ -60,6 +63,11 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
           this.seccionIdBD = data.seccionId;
           this.titulo = data.titulo || '';
           this.contenido = data.contenido_html || '';
+
+          if (data.test_generado) {
+            this.testGenerado = data.test_generado;
+            this.testConfigurado = true;
+          }
           
           this.links = data.enlaces_externos?.map((enlace: any) => ({
             id: enlace.id, 
@@ -93,6 +101,8 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
       console.error(`🚩 [${this.tipoEtapaNombre}] No hay un cicloId definido.`);
       return;
     }
+
+    this.prepararDatosExtra();
 
     const archivosNuevos = this.archivos.filter(a => !a.isBackendFile);
 
@@ -130,6 +140,10 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
     }
   }
 
+  protected prepararDatosExtra() {
+    // Por defecto no hace nada, Apropiación lo sobrescribirá
+  }
+
   private ejecutarPersistenciaTexto(archivosInfo: any[]) {
     const cicloId = this.cicloData.cicloId();
     if (!cicloId) return;
@@ -140,12 +154,20 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
       enlaces_externos: this.links.map(l => l.url),
       recursos_adjuntos: archivosInfo, 
       titulo: this.titulo,
+      ...this.datosExtra
     };
 
     this.cicloService.guardarEtapa(cicloId, payloadBD).subscribe({
       next: (res) => {
         this.archivos = this.archivos.filter(a => a.isBackendFile);
         this.cdr.detectChanges();
+
+        if (this.testGenerado && this.seccionIdBD) {
+          this.iaService.guardarTest(this.seccionIdBD, this.testGenerado).subscribe({
+            next: () => console.log('Test guardado en BD correctamente'),
+            error: (err) => console.error('Error al guardar el test:', err)
+          });
+        }
         
         // Alerta de éxito con SweetAlert2
         Swal.fire({
@@ -241,6 +263,30 @@ async sugerirIA(customPrompt?: string) {
         this.contenido = "Error de conexión con el servidor de IA. Revisa la consola.";
         this.finalizarCarga();
         this.cdr.detectChanges();
+      }
+    });
+  }
+  
+  configurarTest(customPrompt?: string) {
+if (this.testGenerado) {
+    this.testConfigurado = true;
+    return;
+  }
+
+  this.loadingIA.set(true);
+  this.mensajeActual.set("Diseñando evaluación con IA...");
+
+  this.iaService.generarTest(this.contenido, customPrompt || "Genera una evaluación técnica.", this.datosExtra.duracion || 30).subscribe({
+    next: (res) => {
+      this.testGenerado = res.data;
+      this.testConfigurado = true;
+      this.loadingIA.set(false);
+      this.cdr.detectChanges();
+    },
+      error: (err) => {
+        console.error("Error generando test:", err);
+        this.loadingIA.set(false);
+        Swal.fire('Error', 'No se pudo generar el test.', 'error');
       }
     });
   }

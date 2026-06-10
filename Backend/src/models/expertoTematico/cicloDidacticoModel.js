@@ -109,6 +109,17 @@ export const cicloModel = {
         return rows;
     },
 
+    obtenerTestPorSeccion: async (seccionId) => {
+        const query = `
+            SELECT id, nombre_test, ponderacion, preguntas_json 
+            FROM tests_ia 
+            WHERE seccion_id = ? 
+            LIMIT 1
+        `;
+        const [rows] = await db.execute(query, [seccionId]);
+        return rows.length > 0 ? rows[0] : null;
+    },
+
     // Agrega 'titulo' a los argumentos de la función
     async crearSeccion(cicloId, tipoSeccion, contenidoHtml, titulo) {
         const query = `

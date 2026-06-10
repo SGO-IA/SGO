@@ -11,16 +11,15 @@ import { ModalIa } from '../modal-ia/modal-ia';
 })
 export class Apropiacion extends EtapaBaseDirective {
   override tipoEtapaNombre = 'Apropiación';
-  
-  // Variables extra del componente
   duracion: number = 60;
-  testConfigurado: boolean = false;
 
-  // Si necesitas guardar campos extra, puedes sobrescribir el método de persistencia
-  // Pero lo ideal es que uses el título y contenido de la clase base
-  
-  configurarTest() {
-    this.testConfigurado = true;
-    this.cdr.detectChanges();
+  override configurarTest() {
+    super.configurarTest();
+    // No toques this.testConfigurado aquí, el padre ya lo maneja al recibir la rpta del backend
+  }
+
+  protected override prepararDatosExtra() {
+    this.datosExtra = { duracion: this.duracion };
+    // No hace falta pasar test_data aquí, ya lo manejamos en la petición HTTP anidada del punto 1
   }
 }

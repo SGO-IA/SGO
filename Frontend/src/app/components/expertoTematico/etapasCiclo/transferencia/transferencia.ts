@@ -12,12 +12,4 @@ import { ModalIa } from '../modal-ia/modal-ia';
 export class Transferencia extends EtapaBaseDirective {
   override tipoEtapaNombre = 'Transferencia';
   
-  // Variables extra
-  duracion: number = 60;
-  testConfigurado: boolean = false;
-
-  configurarTest() {
-    this.testConfigurado = true;
-    this.cdr.detectChanges();
-  }
 }

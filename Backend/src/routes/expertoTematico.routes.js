@@ -7,6 +7,7 @@ import { RapsController } from '../controllers/expertoTematico/raps.controller.j
 import { cicloController } from '../controllers/expertoTematico/cicloDidactico.controller.js';
 import { IAController } from '../controllers/expertoTematico/ia.controller.js';
 import { materialController } from '../controllers/expertoTematico/r2.controller.js';
+import { TestIAController } from '../controllers/expertoTematico/TestIA.Controller.js';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -48,5 +49,9 @@ router.post('/secciones/:seccionId/recursos', upload.single('archivo'), material
 router.delete('/secciones/:seccionId/recursos/:recursoId', materialController.deleteRecurso);
 
 router.delete('/secciones/:seccionId/enlaces/:enlaceId', cicloController.deleteEnlace);
+
+router.post('/secciones/evaluacion/generar', TestIAController.generarTest);
+
+router.post('/secciones/:seccionId/evaluacion', TestIAController.guardarTest);
 
 export default router;
