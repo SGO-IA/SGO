@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EtapaBaseDirective } from '../../../../etapa-base';
+import { ModalIa } from '../modal-ia/modal-ia';
 
 @Component({
   selector: 'app-apropiacion',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, ModalIa],
   templateUrl: './apropiacion.html',
 })
 export class Apropiacion extends EtapaBaseDirective {
