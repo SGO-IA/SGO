@@ -1,0 +1,38 @@
+<div class="space-y-6 animate-in fade-in duration-500">
+  <div class="bg-white border border-gray-100 p-8 rounded-[2.5rem] shadow-[0_10px_30px_-15px_rgba(0,0,0,0.02)]">
+    
+    <div class="flex items-center gap-2">
+      <span class="text-[10px] font-black uppercase tracking-widest bg-sena-alpha text-sena px-3 py-1 rounded-md">
+        <i class="pi pi-verified text-[10px] mr-1"></i> Configuración Activa
+      </span>
+    </div>
+    
+    <h2 class="text-2xl font-black text-sena-black mt-4 tracking-tight">Estructura de Trabajo Asignada</h2>
+    <p class="text-xs text-gray-400 font-medium mt-1">Tienes bajo tu tutela de diseño pedagógico los siguientes Resultados de Aprendizaje (RAPs):</p>
+    
+    <div class="grid grid-cols-1 gap-3 mt-6">
+      @for (rap of raps(); track rap.id) {
+        <div class="flex items-start gap-4 p-5 rounded-2xl bg-gray-50/50 border border-gray-100/70 hover:border-sena/10 transition-all group">
+          <div class="w-9 h-9 rounded-xl bg-sena-black text-white flex items-center justify-center text-xs font-black group-hover:bg-sena transition-colors shrink-0">
+            {{ $index + 1 }}
+          </div>
+          <div class="min-w-0">
+            <span class="text-xs font-black text-sena uppercase tracking-wider">{{ rap.codigo_rap }}</span>
+            <p class="text-sm font-bold text-gray-800 mt-0.5 leading-snug">{{ rap.denominacion }}</p>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="mt-8 p-6 bg-sena-alpha/30 rounded-2xl border-2 border-dashed border-sena/30 flex flex-col items-center gap-3">
+      <i class="pi pi-info-circle text-sena text-2xl"></i>
+      <p class="text-sm text-sena-black font-bold uppercase tracking-wide text-center max-w-md">
+        ¿Listo para comenzar? 
+        <span class="block text-xs text-gray-600 font-medium normal-case mt-1 tracking-normal">
+          Para crear un nuevo Ciclo Didáctico, dirígete al <strong>menú lateral izquierdo</strong> y selecciona la opción <strong>Ciclo Didáctico</strong>.
+        </span>
+      </p>
+    </div>
+
+  </div>
+</div>

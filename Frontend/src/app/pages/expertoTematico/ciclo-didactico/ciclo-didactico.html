@@ -1,0 +1,109 @@
+<div class="p-4 sm:p-8 max-w-5xl mx-auto font-sans space-y-6">
+  
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gray-50/50 border border-gray-100 p-4 rounded-3xl">
+    <div class="min-w-0">
+      <h1 class="text-xl font-black text-sena-black tracking-tight">Constructor de Ciclo Didáctico</h1>
+      <p class="text-xs text-gray-400 font-medium">Estructure pedagógicamente las fases de formación técnica</p>
+    </div>
+
+    <button 
+      (click)="toggleAyuda()"
+      class="w-full sm:w-auto px-4 py-2 border-2 transition-all rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer"
+      [class.border-sena]="mostrarAyuda()"
+      [class.bg-sena-alpha]="mostrarAyuda()"
+      [class.text-sena-dark]="mostrarAyuda()"
+      [class.border-gray-200]="!mostrarAyuda()"
+      [class.bg-white]="!mostrarAyuda()"
+      [class.text-gray-500]="!mostrarAyuda()"
+      [class.hover:border-sena/30]="!mostrarAyuda()"
+    >
+      <i class="pi" [class.pi-question-circle]="!mostrarAyuda()" [class.pi-eye-slash]="mostrarAyuda()"></i> 
+      {{ mostrarAyuda() ? 'Ocultar Guía' : 'Ver Ayuda del Módulo' }}
+    </button>
+  </div>
+
+  <app-ciclo-didactico-presentacion 
+    [visible]="mostrarAyuda()" 
+    (onCerrar)="cerrarAyuda()" 
+  />
+
+  @if (!tieneCicloDidactico()) {
+    <div class="bg-white border border-gray-100 rounded-[2.5rem] p-12 sm:p-20 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
+      
+      <div class="w-16 h-16 rounded-full bg-sena-alpha text-sena flex items-center justify-center text-2xl mb-4 shadow-sm">
+        <i class="pi pi-folder-open"></i>
+      </div>
+
+      <h3 class="text-lg font-black text-sena-black tracking-tight">No hay un ciclo didáctico activo</h3>
+      <p class="text-xs text-gray-400 font-medium max-w-sm mt-1 mb-8 leading-relaxed">
+        Comience estructurando las fases formativas y actividades para los RAPs que tiene bajo su tutela pedagógica en esta semilla.
+      </p>
+
+      <button 
+        [routerLink]="['/dashboard', 'semilla', idSemilla(), 'ciclo-didactico', 'editor']"
+        class="w-full sm:w-auto px-6 py-3 bg-sena text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-sena-dark shadow-md shadow-sena/10 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
+      >
+        <i class="pi pi-plus-circle text-xs"></i> Crear tu primer ciclo didáctico
+      </button>
+
+    </div>
+  } @else {
+    <div class="flex items-center justify-between mt-8 mb-4 px-2">
+      <h2 class="text-lg font-bold text-gray-700">Ciclos configurados</h2>
+      <button 
+        [routerLink]="['/dashboard', 'semilla', idSemilla(), 'ciclo-didactico', 'editor']"
+        class="px-4 py-2 bg-sena text-white text-xs font-bold rounded-lg hover:bg-sena-dark flex items-center gap-2 transition-colors"
+      >
+        <i class="pi pi-plus"></i> Nuevo Ciclo
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in-95 duration-300">
+  @for (ciclo of ciclosActivos(); track ciclo.ciclo_id) {
+    <div class="group bg-white border border-gray-200 p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-sena/50 transition-all duration-300 flex flex-col relative overflow-hidden">
+      
+      <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sena to-sena-dark opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+      <div class="flex items-center justify-between mb-4">
+        <span class="bg-sena-alpha text-sena-dark text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest border border-sena/20">
+          {{ ciclo.nombre_fase }}
+        </span>
+        <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:text-sena group-hover:bg-sena-alpha transition-colors">
+          <i class="pi pi-book text-sm"></i>
+        </div>
+      </div>
+      
+      <div class="flex-grow">
+        <h3 class="font-black text-gray-800 text-lg mb-2 leading-tight group-hover:text-sena transition-colors">
+          {{ ciclo.titulo_ciclo }}
+        </h3>
+        
+        <p class="text-sm text-gray-500 mb-6 line-clamp-3 leading-relaxed">
+          {{ ciclo.descripcion_general || 'Sin descripción asignada a este ciclo.' }}
+        </p>
+      </div>
+
+      <div class="mt-auto pt-4 border-t border-gray-100">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xs shadow-inner">
+            <i class="pi pi-user"></i>
+          </div>
+          <p class="text-xs text-gray-600 font-semibold truncate">
+            {{ ciclo.experto_nombre }}
+          </p>
+        </div>
+        
+        <button 
+          [routerLink]="['/dashboard', 'semilla', idSemilla(), 'ciclo-didactico', 'editor']"
+          [queryParams]="{ cicloId: ciclo.ciclo_id, step: 'etapas' }"
+          class="w-full py-3 bg-gray-50 text-gray-700 font-bold rounded-xl border border-gray-200 hover:bg-sena hover:border-sena hover:text-white transition-all duration-300 flex justify-center items-center gap-2 text-xs uppercase tracking-widest group/btn"
+        >
+          Acceder al Editor 
+          <i class="pi pi-arrow-right text-sm transform group-hover/btn:translate-x-1 transition-transform"></i>
+        </button>
+      </div>
+    </div>
+  }
+</div>
+  }
+</div>

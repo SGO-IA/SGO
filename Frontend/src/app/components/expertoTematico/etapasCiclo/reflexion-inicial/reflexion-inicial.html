@@ -1,0 +1,132 @@
+<div class="bg-white p-8 rounded-[var(--radius-sena)] border border-gray-200 shadow-sm">
+  <h2 class="text-2xl font-black text-sena-black mb-6">Redacción de Reflexión Inicial</h2>
+
+  <div class="mb-6">
+    <label class="block text-sm font-bold text-gray-700 mb-2">Título de la sección</label>
+    <input 
+      type="text" 
+      [(ngModel)]="titulo" 
+      class="input-sena w-full border-gray-300 focus:border-sena focus:ring-1 focus:ring-sena transition-all" 
+      placeholder="Ej: Reflexión sobre la importancia de la IA...">
+  </div>
+
+  <div class="mb-8 relative">
+    @if (contenido && !loadingIA() && !modoEdicion) {
+      <div class="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+        <article 
+          class="prose prose-sena max-w-none" 
+          [innerHTML]="contenidoRenderizado">
+        </article>
+        
+        <div class="mt-6 pt-4 border-t border-gray-100 flex justify-end">
+          <button (click)="modoEdicion = true" class="text-sm text-gray-500 hover:text-sena font-semibold transition-colors">
+            <i class="pi pi-pencil mr-1"></i> Editar contenido
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (!contenido || loadingIA() || modoEdicion) { 
+      <textarea 
+        [(ngModel)]="contenido" 
+        [disabled]="loadingIA()"
+        class="input-sena w-full resize-y min-h-[200px] pt-4 transition-opacity duration-500"
+        [class.opacity-50]="loadingIA()"
+        [placeholder]="loadingIA() ? mensajeActual() : 'Escribe aquí o genera contenido con IA...'">
+      </textarea>
+
+      @if (modoEdicion) {
+        <button (click)="finalizarEdicion()" class="btn-sena mt-3 bg-sena-dark">
+          <i class="pi pi-check"></i> Guardar cambios y previsualizar
+        </button>
+      }
+    }
+
+    @if (loadingIA()) {
+      <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-10 backdrop-blur-[2px]">
+        <div class="relative mb-4">
+          <i class="pi pi-spinner pi-spin text-4xl text-sena"></i>
+        </div>
+        <p class="font-bold text-sena animate-in fade-in duration-700 text-center px-4">
+          {{ mensajeActual() }}
+        </p>
+      </div>
+    }
+
+    @if (!modoEdicion) {
+      <button 
+        (click)="showModal = true" 
+        [disabled]="loadingIA()"
+        class="btn-sena mt-3 bg-sena-black disabled:bg-gray-400 transition-colors">
+        <i class="pi pi-sparkles"></i> 
+        {{ contenido ? 'Regenerar con IA' : 'Sugerir con IA' }}
+      </button>
+    }
+
+    @if (showModal) {
+      <app-modal-ia
+        (close)="showModal = false" 
+        (submit)="openIA($event)">
+      </app-modal-ia>
+    }
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-8">
+    <div>
+      <label class="block text-sm font-bold text-gray-700 mb-2">Recursos (Archivos)</label>
+      <div class="drop-zone-sena border-gray-300 mb-4">
+        <input type="file" (change)="onFileSelected($event)" multiple class="hidden" id="fileUpload">
+        <label for="fileUpload" class="cursor-pointer flex flex-col items-center">
+          <i class="pi pi-cloud-upload text-3xl text-sena mb-2"></i>
+          <span class="text-sm text-gray-500">Haz clic para subir archivos</span>
+        </label>
+      </div>
+      <div class="space-y-2">
+        @for (archivo of archivos; track archivo.name) {
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg text-sm border">
+            <span class="truncate">
+              <i class="pi pi-file mr-2 text-sena"></i>{{ archivo.name }}
+            </span>
+            <button (click)="removerRecurso($index)" class="text-red-500 hover:text-red-700 transition-colors">
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-bold text-gray-700 mb-1">Enlaces Externos</label>
+      
+      <p class="text-xs text-gray-500 mb-3">
+        <i class="pi pi-info-circle mr-1"></i>
+        Presiona <strong>Enter</strong> para añadir a la lista. Haz clic en los enlaces agregados para probarlos.
+      </p>
+
+      <input type="text" [(ngModel)]="nuevoLink" (keydown)="agregarLink($event)" 
+             class="input-sena w-full" placeholder="https://ejemplo.com ...">
+      
+      <div class="flex flex-wrap gap-2 mt-4">
+        @for (link of links; track link.id || $index) {
+          <div class="flex items-center gap-2 bg-sena-alpha text-sena px-3 py-1 rounded-full text-sm font-semibold border border-sena/20">
+            <i class="pi pi-link text-xs"></i>
+            
+            <a [href]="link.url" target="_blank" rel="noopener noreferrer" class="hover:underline truncate max-w-xs">
+              {{ link.url }} 
+            </a>
+
+            <button (click)="removerLink($index)" class="hover:text-sena-dark ml-1" title="Eliminar enlace">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 flex justify-end">
+    <button (click)="guardarEtapa()" class="btn-sena text-lg px-10 py-3">
+      Guardar reflexión
+    </button>
+  </div>
+</div>

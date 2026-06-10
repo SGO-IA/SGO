@@ -1,0 +1,11 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-white p-6 rounded-2xl w-full max-w-lg shadow-xl animate-in zoom-in duration-200">
+    <h3 class="text-xl font-black text-sena-black mb-4">Instrucción personalizada</h3>
+    <p class="text-sm text-gray-500 mb-4">Ingresa instrucciones específicas para guiar la generación de esta actividad.</p>
+    <textarea [(ngModel)]="customPrompt" class="input-sena w-full h-32" placeholder="Ej: Enfócate en actividades prácticas sobre Angular..."></textarea>
+    <div class="flex justify-end gap-3 mt-6">
+        <button (click)="close.emit()" class="btn-sena bg-gray-200 text-gray-700">Cancelar</button>
+        <button (click)="submit.emit(customPrompt)" class="btn-sena bg-sena-black">Generar actividad</button>
+    </div>
+    </div>
+</div>

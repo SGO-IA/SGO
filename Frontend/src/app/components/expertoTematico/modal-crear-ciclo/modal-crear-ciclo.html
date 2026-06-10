@@ -1,0 +1,17 @@
+<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white p-8 rounded-2xl w-full max-w-lg shadow-2xl">
+        <h2 class="text-xl font-black text-gray-800 mb-2">Configurar Ciclo Didáctico</h2>
+        <p class="text-gray-500 text-sm mb-6">Define el título y descripción para este ciclo.</p>
+        
+        <input [(ngModel)]="data.titulo" placeholder="Título del ciclo (ej: Ciclo de Aprendizaje 1)" 
+               class="w-full border border-gray-200 p-3 rounded-xl mb-4 focus:ring-2 focus:ring-sena outline-none">
+        
+        <textarea [(ngModel)]="data.descripcion_general" placeholder="Descripción general del ciclo..." 
+                  class="w-full border border-gray-200 p-3 rounded-xl mb-6 h-32 focus:ring-2 focus:ring-sena outline-none"></textarea>
+        
+        <div class="flex justify-end gap-3">
+          <button (click)="cerrar.emit()" class="px-6 py-2 text-gray-500 font-bold hover:text-gray-800">Cancelar</button>
+          <button (click)="guardar.emit(data)" class="bg-sena text-white px-6 py-2 rounded-xl font-bold hover:bg-sena-dark">Crear Ciclo</button>
+        </div>
+      </div>
+    </div>

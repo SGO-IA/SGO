@@ -1,0 +1,98 @@
+@if (visible()) {
+  <div class="space-y-6 animate-in fade-in duration-300">
+    
+    <div class="bg-white border-2 border-sena/20 p-6 sm:p-8 rounded-[2.5rem] shadow-[0_15px_40px_-20px_rgba(57,169,0,0.1)] relative">
+      
+      <button 
+        (click)="cerrarAyuda()" 
+        class="absolute top-6 right-6 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-sena-black transition-all flex items-center justify-center cursor-pointer"
+        title="Cerrar guía"
+      >
+        <i class="pi pi-times text-xs"></i>
+      </button>
+
+      <div class="flex items-start gap-4 max-w-3xl mb-8">
+        <div class="w-12 h-12 rounded-2xl bg-sena-alpha text-sena flex items-center justify-center text-xl shrink-0 shadow-sm">
+          <i class="pi pi-question-circle"></i>
+        </div>
+        <div class="space-y-1">
+          <span class="text-[10px] font-black uppercase tracking-widest text-sena bg-sena-alpha px-2.5 py-0.5 rounded-md">
+            Manual de Operación SGO
+          </span>
+          <h2 class="text-xl font-black text-sena-black tracking-tight">Guía del Entorno del Ciclo Didáctico</h2>
+          <p class="text-xs text-gray-500 font-medium leading-relaxed">
+            Bienvenido al módulo de co-diseño. Aquí transformará los Resultados de Aprendizaje (RAPs) en Estructuras Didácticas válidas. Dispone de dos flujos vitales para construir el contenido de cada fase de forma segura.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <div class="p-5 rounded-3xl bg-gray-50/60 border border-gray-100 flex flex-col justify-between group hover:border-sena/20 transition-all">
+          <div class="space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-sena text-white flex items-center justify-center text-[10px] font-black">14</span>
+              <h3 class="text-sm font-black text-sena-black uppercase tracking-tight">Flujo Manual Independiente</h3>
+            </div>
+            <p class="text-xs text-gray-500 leading-relaxed font-medium">
+              Le permite redactar libremente el diseño pedagógico sin asistencia automatizada. El sistema le proveerá el control total de los campos informativos.
+            </p>
+            
+            <ul class="space-y-1.5 pt-2 border-t border-gray-100">
+              <li class="text-[11px] text-gray-600 flex items-center gap-2">
+                <i class="pi pi-check text-[9px] text-sena"></i> Apertura manual de campos por Fase seleccionada.
+              </li>
+              <li class="text-[11px] text-gray-600 flex items-center gap-2">
+                <i class="pi pi-check text-[9px] text-sena"></i> Carga nativa de archivos vinculados a la nube del SGO.
+              </li>
+              <li class="text-[11px] text-gray-600 flex items-center gap-2">
+                <i class="pi pi-check text-[9px] text-sena"></i> Persistencia defensiva ante fallos de red.
+              </li>
+            </ul>
+          </div>
+          
+          <div class="mt-4 pt-3 border-t border-gray-100 text-[10px] text-amber-600 font-bold flex items-center gap-1.5">
+            <i class="pi pi-exclamation-circle text-xs"></i> Título y descripción son obligatorios.
+          </div>
+        </div>
+
+        <div class="p-5 rounded-3xl bg-emerald-50/30 border border-emerald-100/60 flex flex-col justify-between group hover:border-sena/20 transition-all">
+          <div class="space-y-3">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-sena-light text-white flex items-center justify-center text-[10px] font-black">15</span>
+              <h3 class="text-sm font-black text-sena-black uppercase tracking-tight">Flujo Inteligente Asistido</h3>
+            </div>
+            <p class="text-xs text-gray-500 leading-relaxed font-medium">
+              Utiliza modelos generativos avanzados para proponer borradores de texto técnico y actividades pedagógicas coherentes con su programa de formación.
+            </p>
+            
+            <ul class="space-y-1.5 pt-2 border-t border-emerald-100/60">
+              <li class="text-[11px] text-gray-600 flex items-center gap-2">
+                <i class="pi pi-sparkles text-[9px] text-sena"></i> Ingesta y lectura del contexto de archivos de apoyo cargados.
+              </li>
+              <li class="text-[11px] text-gray-600 flex items-center gap-2">
+                <i class="pi pi-sparkles text-[9px] text-sena"></i> Propuesta inmediata de guías y contenidos.
+              </li>
+              <li class="text-[11px] text-gray-600 flex items-center gap-2">
+                <i class="pi pi-sparkles text-[9px] text-sena"></i> Flexibilidad total para limpiar, editar o re-intentar la IA.
+              </li>
+            </ul>
+          </div>
+          
+          <div class="mt-4 pt-3 border-t border-emerald-100/60 text-[10px] text-sena-dark font-bold flex items-center gap-1.5">
+            <i class="pi pi-info-circle text-xs"></i> Requiere material previo en la nube para dar contexto.
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mt-6 p-4 rounded-2xl bg-amber-50/60 border border-amber-200/50 flex items-start gap-2.5">
+        <i class="pi pi-shield text-amber-600 text-xs mt-0.5"></i>
+        <p class="text-[11px] text-amber-800 font-medium leading-normal">
+          <strong>Precondición del Sistema:</strong> Ambas operaciones requieren estrictamente que la semilla esté creada en SGO y los RAPs bajo su tutela estén vinculados de forma activa.
+        </p>
+      </div>
+
+    </div>
+  </div>
+}

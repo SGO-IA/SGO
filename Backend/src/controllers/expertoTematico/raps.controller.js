@@ -1,10 +1,11 @@
+// Protocolo SGO-Layered: Controller
 import { RapsService } from '../../services/expertoTematico/rapsService.js';
 
 export const RapsController = {
   verificarYObtenerRaps: async (req, res) => {
     try {
       const { semillaId } = req.params;
-      const expertoId = req.user.id; // Extraído de tu JWT/OAuth en checkAuth
+      const expertoId = req.user.id; 
 
       const resultado = await RapsService.chequearEstructuraTrabajo(expertoId, semillaId);
       
@@ -23,9 +24,10 @@ export const RapsController = {
   guardarAsignacionRaps: async (req, res) => {
     try {
       const { semillaId } = req.params;
-      const { rapIds } = req.body; // Array de IDs seleccionados: [1, 2, 3]
+      const { rapIds } = req.body; 
       const expertoId = req.user.id;
 
+      // Validación defensiva del cuerpo de la petición
       if (!rapIds || !Array.isArray(rapIds) || rapIds.length === 0) {
         return res.status(400).json({
           status: 'error',

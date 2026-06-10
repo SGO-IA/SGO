@@ -1,0 +1,17 @@
+<div class="p-6">
+    <label class="block text-xs font-black text-gray-400 uppercase mb-2">Seleccione un RAP para el ciclo</label>
+    
+    <pre class="text-xs text-red-500 mb-2">Debug de 1 RAP: {{ raps()[0] | json }}</pre>
+
+    <select 
+      (change)="onSelect($event)"
+      class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-sena outline-none"
+    >
+      <option value="" disabled selected>Elija un RAP vinculado...</option>
+      @for (rap of raps(); track rap.rap_id || rap.id) {
+          <option [value]="rap.rap_id || rap.id">
+            {{ rap.denominacion || rap.descripcion_rap }} 
+          </option>
+      }
+    </select>
+</div>

@@ -1,12 +1,24 @@
+// Protocolo SGO-Layered: Model
 import db from '../../config/dbConfig.js';
 
 export const RapsModel = {
   obtenerRapsAsignados: async (expertoId, semillaId) => {
     const query = `
-      SELECT r.id, r.codigo_rap, r.denominacion, r.competencia_id
+      SELECT 
+        r.id AS rap_id, 
+        r.codigo_rap, 
+        r.denominacion, 
+        r.competencia_id,
+        c.nombre AS competencia_nombre,
+        o.id AS ova_id,               -- AQUÍ OBTENEMOS EL ID DEL OVA
+        o.titulo AS ova_titulo
       FROM expertos_raps_trabajo ert
       INNER JOIN resultados_aprendizaje r ON ert.rap_id = r.id
+      INNER JOIN competencias c ON r.competencia_id = c.id
+      -- Relacionamos el OVA usando la competencia y la semilla
+      LEFT JOIN ovas o ON o.competencia_id = c.id AND o.semilla_id = ert.semilla_id
       WHERE ert.experto_id = ? AND ert.semilla_id = ?
+      ORDER BY r.codigo_rap ASC;
     `;
     const [rows] = await db.execute(query, [expertoId, semillaId]);
     return rows;
@@ -18,7 +30,9 @@ export const RapsModel = {
         r.id, 
         r.codigo_rap, 
         r.denominacion, 
+        c.id AS competencia_id,
         c.nombre AS competencia_nombre,
+        c.horas AS competencia_horas,
         u.id AS asignado_experto_id,
         u.nombre AS asignado_experto_nombre
       FROM semillas s
@@ -27,12 +41,17 @@ export const RapsModel = {
       LEFT JOIN expertos_raps_trabajo ert ON r.id = ert.rap_id AND ert.semilla_id = s.id
       LEFT JOIN usuarios u ON ert.experto_id = u.id
       WHERE s.id = ?
+      ORDER BY c.id, r.codigo_rap ASC;
     `;
     const [rows] = await db.execute(query, [semillaId]);
     return rows;
   },
 
   guardarSeleccionMasiva: async (expertoId, semillaId, rapIds) => {
+    // Conversión decimal explícita (Base 10) para resguardar la integridad de tipos en sgoDB (INT)
+    const idExperto = parseInt(expertoId, 10);
+    const idSemilla = parseInt(semillaId, 10);
+
     const valuesStatement = rapIds.map(() => '(?, ?, ?)').join(', ');
     const query = `
       INSERT IGNORE INTO expertos_raps_trabajo (experto_id, semilla_id, rap_id)
@@ -41,7 +60,7 @@ export const RapsModel = {
 
     const params = [];
     rapIds.forEach(rapId => {
-      params.push(expertoId, semillaId, rapId);
+      params.push(idExperto, idSemilla, parseInt(rapId, 10));
     });
 
     const [result] = await db.execute(query, params);
