@@ -76,6 +76,10 @@ jobs:
             echo "ANTHROPIC_MODEL=${{ secrets.ANTHROPIC_MODEL }}" >> Backend/.env
             echo "ANTHROPIC_MAX_TOKENS=${{ secrets.ANTHROPIC_MAX_TOKENS }}" >> Backend/.env
             echo "FRONTEND_URL=${{ secrets.FRONTEND_URL }}" >> Backend/.env
+            echo "R2_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }}" >> Backend/.env
+            echo "R2_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}" >> Backend/.env
+            echo "R2_ENDPOINT=${{ secrets.R2_ENDPOINT }}" >> Backend/.env
+            echo "R2_BUCKET_NAME=${{ secrets.R2_BUCKET_NAME }}" >> Backend/.env
             echo "REDIS_HOST=sgo-redis" >> Backend/.env
             echo "REDIS_PORT=6379" >> Backend/.env
             
