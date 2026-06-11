@@ -268,25 +268,50 @@ async sugerirIA(customPrompt?: string) {
   }
   
   configurarTest(customPrompt?: string) {
-if (this.testGenerado) {
-    this.testConfigurado = true;
-    return;
-  }
-
-  this.loadingIA.set(true);
-  this.mensajeActual.set("Diseñando evaluación con IA...");
-
-  this.iaService.generarTest(this.contenido, customPrompt || "Genera una evaluación técnica.", this.datosExtra.duracion || 30).subscribe({
-    next: (res) => {
-      this.testGenerado = res.data;
+    if (this.testGenerado) {
       this.testConfigurado = true;
-      this.loadingIA.set(false);
-      this.cdr.detectChanges();
-    },
+      return;
+    }
+
+    // 1. Extraemos el contexto de forma segura. 
+    // Priorizamos el contenido sin procesar, pero si está vacío (porque estamos en vista de lectura),
+    // usamos el contenido renderizado (limpiándole las etiquetas HTML para no marear a la IA).
+    let contextoParaIA = this.contenido;
+    if (!contextoParaIA || contextoParaIA.trim() === '') {
+        // Strip HTML tags for cleaner context
+        contextoParaIA = this.contenidoRenderizado ? this.contenidoRenderizado.replace(/<[^>]*>?/gm, '') : '';
+    }
+
+    // 2. Validación ruidosa en el frontend antes de golpear al servidor
+    if (!contextoParaIA || contextoParaIA.trim() === '') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Contenido vacío',
+            text: 'Debes generar o escribir las instrucciones de la actividad antes de configurar el test.',
+            confirmButtonColor: '#39A900'
+        });
+        return;
+    }
+
+    this.loadingIA.set(true);
+    this.mensajeActual.set("Diseñando evaluación con IA...");
+
+    // 3. Enviamos el contexto seguro al backend
+    this.iaService.generarTest(
+        contextoParaIA, 
+        customPrompt || "Genera una evaluación técnica.", 
+        this.datosExtra.duracion || 30
+    ).subscribe({
+      next: (res) => {
+        this.testGenerado = res.data;
+        this.testConfigurado = true;
+        this.loadingIA.set(false);
+        this.cdr.detectChanges();
+      },
       error: (err) => {
         console.error("Error generando test:", err);
         this.loadingIA.set(false);
-        Swal.fire('Error', 'No se pudo generar el test.', 'error');
+        Swal.fire('Error', 'No se pudo generar el test. Verifica la consola.', 'error');
       }
     });
   }
