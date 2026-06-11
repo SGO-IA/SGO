@@ -8,10 +8,13 @@ import { cicloController } from '../controllers/expertoTematico/cicloDidactico.c
 import { IAController } from '../controllers/expertoTematico/ia.controller.js';
 import { materialController } from '../controllers/expertoTematico/r2.controller.js';
 import { TestIAController } from '../controllers/expertoTematico/TestIA.Controller.js';
+import { verificarAuth } from '../middlewares/authMiddleware.js';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
+
+router.use(verificarAuth);
 
 // Ruta para que el experto vea sus semillas vinculadas
 router.get('/mis-semillas', expertoController.listarMisSemillas);
