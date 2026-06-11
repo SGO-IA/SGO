@@ -37,27 +37,31 @@ ngOnInit(): void {
       this.semillaId.set(id);
       
       console.log('🚩 [GestionarSemilla] Iniciando petición a verificarEstadoRaps...');
-      
-this.semillaService.verificarEstadoRaps(id).subscribe({
-  next: (res) => {
-    console.log('🚩 [GestionarSemilla] Respuesta recibida (next):', res);
-    
-    // REGLA DE SEGURIDAD ESTRICTA:
-    // Si status es 'error' O si no tiene asignación (caso semilla 89), expulsamos.
-    if (res.status === 'error' || res.tieneAsignacion === false) {
-      console.warn('🚩 [GestionarSemilla] Acceso no autorizado o datos inválidos. Redirigiendo...');
-      this.router.navigate(['/dashboard/panel']);
-      return;
-    }
-    
-    console.log('🚩 [GestionarSemilla] Validación exitosa. Cargando flujo inicial.');
-    this.cargarFlujoInicial();
-  },
-  error: (err) => {
-    console.error('🚩 [GestionarSemilla] Error HTTP:', err);
-    this.router.navigate(['/dashboard/panel']);
-  }
-});
+          
+    this.semillaService.verificarEstadoRaps(id).subscribe({
+      next: (res) => {
+        console.log('🚩 [GestionarSemilla] Respuesta recibida (next):', res);
+        
+        // ✅ REGLA DE SEGURIDAD CORREGIDA:
+        // Solo expulsamos si hay un error del servidor.
+        // Si no tiene asignación pero trae rapsDisponibles, DEBEMOS dejarlo pasar para que los elija.
+        if (res.status === 'error') {
+          console.warn('🚩 [GestionarSemilla] Error del servidor. Redirigiendo...');
+          this.router.navigate(['/dashboard/panel']);
+          return;
+        }
+
+        // Opcional: Validación extra por si la semilla ni siquiera existe o no tiene programa
+        if (res.tieneAsignacion === false && (!res.rapsDisponibles || res.rapsDisponibles.length === 0)) {
+            console.warn('🚩 [GestionarSemilla] Semilla sin RAPs disponibles. Redirigiendo...');
+            this.router.navigate(['/dashboard/panel']);
+            return;
+        }
+        
+        console.log('🚩 [GestionarSemilla] Validación exitosa. Cargando flujo inicial.');
+        this.cargarFlujoInicial();
+      },
+    });
     } else {
       console.error('🚩 [GestionarSemilla] No se encontró ID en la URL.');
       this.router.navigate(['/dashboard/panel']);
