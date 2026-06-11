@@ -1,3 +1,10 @@
+# [0.35.0](https://github.com/SGO-IA/SGO/compare/v0.34.3...v0.35.0) (2026-06-11)
+
+
+### Features
+
+* Merge pull request [#66](https://github.com/SGO-IA/SGO/issues/66) from SGO-IA/experto ([3394e08](https://github.com/SGO-IA/SGO/commit/3394e08399f14844e366f48ab03c6a83e24e616a))
+
 ## [0.34.3](https://github.com/SGO-IA/SGO/compare/v0.34.2...v0.34.3) (2026-06-10)
 
 
