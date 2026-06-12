@@ -323,11 +323,24 @@ async sugerirIA(customPrompt?: string) {
   }
 
   descartarTest() {
-    this.testGenerado = null;
-    this.testConfigurado = false;
-    this.modoEdicionTest = false;
-    this.cdr.detectChanges();
-  }
+    Swal.fire({
+      title: '¿Descartar evaluación?',
+      text: "Se eliminará el test generado y tendrás que volver a configurarlo. ¡Esta acción no se puede deshacer!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444', // Rojo Tailwind
+      cancelButtonColor: '#9ca3af',  // Gris Tailwind
+      confirmButtonText: 'Sí, descartar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.testGenerado = null;
+        this.testConfigurado = false;
+        this.modoEdicionTest = false;
+        this.cdr.detectChanges(); // Forzamos a repintar la vista sin el test
+      }
+    });
+  } 
 
   agregarPregunta() {
     if (!this.testGenerado) return;
@@ -343,8 +356,22 @@ async sugerirIA(customPrompt?: string) {
   eliminarPregunta(index: number) {
     if (!this.testGenerado) return;
     
-    this.testGenerado.preguntas.splice(index, 1);
-    this.cdr.detectChanges();
+    Swal.fire({
+      title: '¿Eliminar esta pregunta?',
+      text: "Se borrará el enunciado y sus opciones. No podrás recuperarla.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#9ca3af',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Solo si confirma, ejecutamos el borrado
+        this.testGenerado.preguntas.splice(index, 1);
+        this.cdr.detectChanges(); // Actualizamos la vista para que la pregunta desaparezca
+      }
+    });
   }
 
   finalizarEdicion() {

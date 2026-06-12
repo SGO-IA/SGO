@@ -141,10 +141,12 @@
             <span class="ml-2">{{ modoEdicionTest ? 'Terminar Edición' : 'Editar Test' }}</span>
           </button>
 
-          <button (click)="descartarTest()" 
-                  class="text-red-500 hover:text-red-700 text-sm font-bold flex items-center bg-red-50 px-3 py-2 rounded-lg transition-colors">
-            <i class="pi pi-trash mr-2"></i> Descartar
-          </button>
+          @if (modoEdicionTest) {
+            <button (click)="descartarTest()" 
+                    class="text-red-500 hover:text-red-700 text-sm font-bold flex items-center bg-red-50 px-3 py-2 rounded-lg transition-colors">
+              <i class="pi pi-trash mr-2"></i> Descartar
+            </button>
+          }
         </div>
       </div>
       
