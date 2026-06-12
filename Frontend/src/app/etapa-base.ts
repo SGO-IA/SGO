@@ -20,6 +20,7 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
   datosExtra: any = {};
   testGenerado: any = null;
   testConfigurado: boolean = false;
+  modoEdicionTest: boolean = false;
   
   protected cicloData = inject(CicloDataService);
   protected iaService = inject(IAService);
@@ -314,6 +315,36 @@ async sugerirIA(customPrompt?: string) {
         Swal.fire('Error', 'No se pudo generar el test. Verifica la consola.', 'error');
       }
     });
+  }
+  
+  toggleEdicionTest() {
+    this.modoEdicionTest = !this.modoEdicionTest;
+    this.cdr.detectChanges();
+  }
+
+  descartarTest() {
+    this.testGenerado = null;
+    this.testConfigurado = false;
+    this.modoEdicionTest = false;
+    this.cdr.detectChanges();
+  }
+
+  agregarPregunta() {
+    if (!this.testGenerado) return;
+    
+    this.testGenerado.preguntas.push({
+      enunciado: '',
+      opciones: ['', '', '', ''],
+      respuesta_correcta_index: 0
+    });
+    this.cdr.detectChanges();
+  }
+
+  eliminarPregunta(index: number) {
+    if (!this.testGenerado) return;
+    
+    this.testGenerado.preguntas.splice(index, 1);
+    this.cdr.detectChanges();
   }
 
   finalizarEdicion() {

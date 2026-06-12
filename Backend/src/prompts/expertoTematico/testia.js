@@ -24,8 +24,7 @@ export const generarPromptEvaluacionJSON = (contextoIA, instruccion, duracionEst
             "Option C text",
             "Option D text"
           ],
-          "respuesta_correcta_index": 0, // Integer (0 to 3) representing the correct option in the array
-          "retroalimentacion": "Brief explanation of why the correct answer is right"
+          "respuesta_correcta_index": 0 // Integer (0 to 3) representing the correct option in the array
         }
       ]
     }
