@@ -14,6 +14,7 @@ export abstract class EtapaBaseDirective implements OnInit, OnDestroy {
   nuevoLink: string = '';
   contenido: string = '';
   showModal = false;
+  showModalTest = false;
   contenidoRenderizado: string = '';
   modoEdicion = false;
   seccionIdBD: number | null = null;
