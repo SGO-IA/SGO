@@ -126,5 +126,41 @@ export const cicloController = {
             console.error('❌ Error en deleteEnlace Controller:', error);
             return res.status(500).json({ status: 'error', message: 'Error al eliminar el enlace.' });
         }
+    },
+
+    async getEstado(req, res) {
+        try {
+            const { cicloId } = req.params;
+
+            console.log(`🎮 [Controller] Verificando estado del ciclo ID: ${cicloId}`);
+            const estado = await cicloService.verificarEstadoCiclo(Number(cicloId));
+
+            return res.status(200).json({ ok: true, data: estado });
+
+        } catch (error) {
+            console.error('❌ [Controller] Error verificando estado del ciclo:', error.message);
+            return res.status(500).json({ ok: false, mensaje: error.message });
+        }
+    },
+
+    // POST /ciclos/:cicloId/finalizar
+    async finalizar(req, res) {
+        try {
+            const { cicloId } = req.params;
+
+            console.log(`🎮 [Controller] Finalizando ciclo ID: ${cicloId}`);
+            const resultado = await cicloService.finalizarCiclo(Number(cicloId));
+
+            return res.status(200).json({
+                ok: true,
+                mensaje: 'Ciclo didáctico finalizado correctamente.',
+                data: resultado
+            });
+
+        } catch (error) {
+            console.error('❌ [Controller] Error al finalizar ciclo:', error.message);
+            const status = error.message.includes('Faltan') || error.message.includes('etapas') ? 409 : 500;
+            return res.status(status).json({ ok: false, mensaje: error.message });
+        }
     }
 };

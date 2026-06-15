@@ -57,4 +57,33 @@ export class CicloDidacticoService {
   eliminarEnlace(seccionId: number, enlaceId: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/secciones/${seccionId}/enlaces/${enlaceId}`);
   }
+
+    getEstadoCiclo(cicloId: number): Observable<{
+    ok: boolean;
+    data: {
+      cicloId: number;
+      listo_para_finalizar: boolean;
+      tiene_todas_las_etapas: boolean;
+      secciones: {
+        seccion_id: number;
+        tipo_seccion: string;
+        titulo: string;
+        necesita_test: boolean;
+        tiene_test: boolean;
+        completa: boolean;
+      }[];
+    };
+  }> {
+    return this.http.get<any>(`${this.apiUrl}/ciclos/${cicloId}/estado`);
+  }
+
+  // Finaliza el ciclo didáctico (el experto presiona "Terminar")
+  // POST /expertoTematico/ciclos/:cicloId/finalizar
+  finalizarCiclo(cicloId: number): Observable<{
+    ok: boolean;
+    mensaje: string;
+    data: { cicloId: number; finalizado: boolean };
+  }> {
+    return this.http.post<any>(`${this.apiUrl}/ciclos/${cicloId}/finalizar`, {});
+  }
 }

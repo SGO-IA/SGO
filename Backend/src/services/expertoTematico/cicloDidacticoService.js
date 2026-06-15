@@ -1,5 +1,8 @@
 import { cicloModel } from '../../models/expertoTematico/cicloDidacticoModel.js';
 
+const ETAPAS_REQUERIDAS = ['Reflexion', 'Contextualizacion', 'Apropiacion', 'Transferencia'];
+const ETAPAS_CON_TEST   = ['Apropiacion', 'Transferencia'];
+
 export const cicloService = {
     async getDashboardExperto(expertoId) {
         return await cicloModel.obtenerDashboardPorExperto(expertoId);
@@ -140,5 +143,87 @@ async procesarGuardadoEtapa(cicloId, payload) {
 
     async eliminarEnlace(enlaceId) {
         return await cicloModel.eliminarEnlace(enlaceId);
+    },
+
+    async verificarEstadoCiclo(cicloId) {
+        const secciones = await cicloModel.getEstadoSecciones(cicloId);
+
+        if (!secciones.length) {
+            throw new Error(`No se encontraron secciones para el ciclo ${cicloId}`);
+        }
+
+        // 1. ¿Existen las 4 etapas Y tienen contenido real?
+        const tiposPresentes = secciones
+            .filter(s => s.tiene_contenido === 1)
+            .map(s => s.tipo_seccion);
+            
+        const tieneTodasLasEtapas = ETAPAS_REQUERIDAS.every(e => tiposPresentes.includes(e));
+
+        // 2. Detalle estricto por sección
+        const seccionesDetalle = secciones.map(s => {
+            const necesitaTest   = ETAPAS_CON_TEST.includes(s.tipo_seccion);
+            const tieneTest      = s.tiene_test > 0;
+            const tieneContenido = s.tiene_contenido === 1;
+            
+            // Una sección solo está completa si tiene texto Y (si no necesita test, o si lo necesita y lo tiene)
+            const completa = tieneContenido && (!necesitaTest || tieneTest);
+
+            return {
+                seccion_id:      s.seccion_id,
+                tipo_seccion:    s.tipo_seccion,
+                titulo:          s.titulo,
+                tiene_contenido: tieneContenido,
+                necesita_test:   necesitaTest,
+                tiene_test:      tieneTest,
+                completa
+            };
+        });
+
+        const cicloListo = tieneTodasLasEtapas && seccionesDetalle.every(s => s.completa);
+
+        return {
+            cicloId,
+            listo_para_finalizar:   cicloListo,
+            tiene_todas_las_etapas: tieneTodasLasEtapas,
+            secciones:              seccionesDetalle
+        };
+    },
+
+    async finalizarCiclo(cicloId) {
+        // Re-verificamos server-side antes de permitir la acción
+        const estado = await cicloService.verificarEstadoCiclo(cicloId);
+
+        if (!estado.listo_para_finalizar) {
+            // Filtramos qué es exactamente lo que falta para darle un buen mensaje al usuario
+            const sinContenido = estado.secciones
+                .filter(s => !s.tiene_contenido)
+                .map(s => s.tipo_seccion);
+
+            const sinTest = estado.secciones
+                .filter(s => s.tiene_contenido && s.necesita_test && !s.tiene_test)
+                .map(s => s.tipo_seccion);
+
+            let msg = '';
+            
+            if (!estado.tiene_todas_las_etapas) {
+                msg += 'El ciclo no tiene las 4 etapas requeridas. ';
+            }
+            if (sinContenido.length > 0) {
+                msg += `Falta redactar contenido en: ${sinContenido.join(', ')}. `;
+            }
+            if (sinTest.length > 0) {
+                msg += `Falta generar el test IA en: ${sinTest.join(', ')}.`;
+            }
+
+            throw new Error(msg.trim());
+        }
+
+        const result = await cicloModel.finalizarCiclo(cicloId);
+
+        if (result.affectedRows === 0) {
+            throw new Error(`No se encontró el ciclo ${cicloId} para finalizar.`);
+        }
+
+        return { cicloId, finalizado: true };
     }
 };
