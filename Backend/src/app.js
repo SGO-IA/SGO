@@ -7,6 +7,7 @@ import passport from './config/login.js';
 import adminRoutes from './routes/admin.routes.js';
 import expertoTematico from './routes/expertoTematico.routes.js';
 import coordinador from './routes/coordinador.routes.js';
+import rector from './routes/rector.routes.js';
 import loginRoutes from './routes/login.routes.js';
 
 const app = express();
@@ -51,5 +52,6 @@ app.use('/api/auth', loginRoutes); // Prefijo para autenticación
 app.use('/api/admin', adminRoutes);
 app.use('/api/expertoTematico', expertoTematico);
 app.use('/api/coordinador', coordinador);
+app.use('/api/rector', rector);
 
 export { app };

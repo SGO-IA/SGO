@@ -1,0 +1,95 @@
+<div class="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">
+  
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-black text-gray-800">Semillas en Revisión</h1>
+      <p class="text-sm sm:text-base text-gray-500 mt-1 sm:mt-2">Gestiona y aprueba las semillas finalizadas por los expertos temáticos.</p>
+    </div>
+    
+    <div class="w-full sm:w-auto bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2 sm:py-3 rounded-xl flex items-center justify-center sm:justify-start gap-2 font-bold shadow-sm">
+      <i class="pi pi-bell text-lg sm:text-xl animate-wiggle"></i>
+      <span class="text-sm sm:text-base">{{ semillasList().length }} Pendientes</span>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div class="flex flex-col items-center justify-center py-16 sm:py-20 animate-in fade-in duration-300 px-4 text-center">
+      <i class="pi pi-spin pi-spinner text-4xl sm:text-5xl text-sena mb-4"></i>
+      <p class="text-sm sm:text-base text-gray-500 font-medium">Consultando semillas listas para revisión...</p>
+    </div>
+  }
+
+  @else if (mensajeError()) {
+    <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-6 sm:p-8 text-center animate-in zoom-in duration-300 max-w-2xl mx-auto mx-4 sm:mx-auto">
+      <i class="pi pi-exclamation-triangle text-4xl sm:text-5xl text-red-500 mb-4"></i>
+      <h3 class="text-lg sm:text-xl font-black text-red-800 mb-2">¡Ups! Algo salió mal</h3>
+      <p class="text-sm sm:text-base text-red-600 mb-6">{{ mensajeError() }}</p>
+      <button (click)="cargarSemillasPendientes()" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-colors">
+        <i class="pi pi-refresh mr-2"></i> Reintentar
+      </button>
+    </div>
+  }
+
+  @else if (semillasList().length === 0) {
+    <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl p-8 sm:p-12 text-center animate-in fade-in duration-300 mx-4 sm:mx-0">
+      <div class="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-gray-100">
+        <i class="pi pi-check-circle text-3xl sm:text-4xl text-green-500"></i>
+      </div>
+      <h3 class="text-xl sm:text-2xl font-black text-gray-800 mb-2">Todo al día</h3>
+      <p class="text-sm sm:text-base text-gray-500 max-w-md mx-auto">Actualmente no hay semillas esperando revisión. Los expertos temáticos aún están trabajando en sus ciclos didácticos.</p>
+    </div>
+  }
+
+  @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 animate-in slide-in-from-bottom-4 duration-500">
+      @for (semilla of semillasList(); track semilla.semilla_id) {
+        <div class="group bg-white border border-gray-200 p-5 sm:p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-sena/50 transition-all duration-300 flex flex-col relative overflow-hidden h-full">
+          
+          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+          <div class="flex items-start justify-between mb-4 gap-2">
+            <span class="bg-gray-100 text-gray-600 text-[9px] sm:text-[10px] font-black px-2 sm:px-3 py-1.5 rounded-lg uppercase tracking-widest border border-gray-200 truncate max-w-[60%]">
+              {{ semilla.nivel_formacion || 'Programa' }}
+            </span>
+            <div class="shrink-0 flex items-center gap-1.5 bg-amber-50 text-amber-700 text-[9px] sm:text-[10px] font-black px-2 sm:px-3 py-1.5 rounded-lg uppercase tracking-widest border border-amber-200">
+              <i class="pi pi-clock text-[10px] sm:text-xs"></i> Pendiente
+            </div>
+          </div>
+          
+          <div class="flex-grow">
+            <h3 class="font-black text-gray-800 text-lg sm:text-xl mb-2 leading-tight group-hover:text-sena transition-colors line-clamp-2">
+              {{ semilla.nombre_semilla || 'Semilla sin nombre' }}
+            </h3>
+            
+            <p class="text-xs sm:text-sm text-gray-500 mb-4 font-medium flex items-start sm:items-center gap-2 line-clamp-2">
+              <i class="pi pi-briefcase mt-0.5 sm:mt-0 shrink-0"></i> 
+              <span>{{ semilla.programa_nombre }}</span>
+            </p>
+          </div>
+
+          <div class="bg-gray-50 rounded-xl p-3 sm:p-4 mb-5 border border-gray-100">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase">Código / Versión</span>
+              <span class="text-xs sm:text-sm font-black text-gray-800">{{ semilla.etiqueta_programa }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] sm:text-xs font-bold text-gray-500 uppercase">OVAs Completados</span>
+              <span class="text-xs sm:text-sm font-black text-sena bg-sena-alpha px-2 py-1 rounded-md">{{ semilla.total_ovas }} OVAs</span>
+            </div>
+          </div>
+
+          <div class="mt-auto">
+            <button 
+              (click)="revisarSemilla(semilla.semilla_id)"
+              class="w-full py-3 sm:py-3.5 bg-sena text-white font-bold rounded-xl shadow-md hover:bg-sena-dark hover:shadow-lg transition-all duration-300 flex justify-center items-center gap-2 text-xs sm:text-sm uppercase tracking-widest group/btn"
+            >
+              Revisar 
+              <i class="pi pi-arrow-right text-sm transform group-hover/btn:translate-x-1 transition-transform"></i>
+            </button>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+</div>
