@@ -189,12 +189,11 @@ async procesarGuardadoEtapa(cicloId, payload) {
         };
     },
 
-    async finalizarCiclo(cicloId) {
-        // Re-verificamos server-side antes de permitir la acción
+async finalizarCiclo(cicloId) {
+        // 1. Verificación rigurosa (tu lógica existente)
         const estado = await cicloService.verificarEstadoCiclo(cicloId);
 
         if (!estado.listo_para_finalizar) {
-            // Filtramos qué es exactamente lo que falta para darle un buen mensaje al usuario
             const sinContenido = estado.secciones
                 .filter(s => !s.tiene_contenido)
                 .map(s => s.tipo_seccion);
@@ -218,10 +217,44 @@ async procesarGuardadoEtapa(cicloId, payload) {
             throw new Error(msg.trim());
         }
 
+        // 2. Ejecutar finalización del ciclo
         const result = await cicloModel.finalizarCiclo(cicloId);
 
         if (result.affectedRows === 0) {
             throw new Error(`No se encontró el ciclo ${cicloId} para finalizar.`);
+        }
+
+        // ---------------------------------------------------------
+        // 3. ORQUESTACIÓN DEL EFECTO DOMINÓ (CASCADA)
+        // ---------------------------------------------------------
+        
+        // A. Validar el Padre (OVA)
+        const ovaId = await cicloModel.obtenerOvaIdPorCiclo(cicloId);
+        
+        if (ovaId) {
+            const ciclosPendientes = await cicloModel.contarCiclosPendientesPorOva(ovaId);
+            
+            if (ciclosPendientes === 0) {
+                // Todos los ciclos terminaron -> Finalizamos el OVA
+                await cicloModel.marcarOvaFinalizado(ovaId);
+                console.log(`✅ [Service] OVA ${ovaId} finalizado completamente.`);
+
+                // B. Validar el Abuelo (Semilla)
+                const semillaId = await cicloModel.obtenerSemillaIdPorOva(ovaId);
+                
+                if (semillaId) {
+                    const ovasPendientes = await cicloModel.contarOvasPendientesPorSemilla(semillaId);
+                    
+                    if (ovasPendientes === 0) {
+                        // Todos los OVAs terminaron -> La semilla pasa a revisión
+                        await cicloModel.marcarSemillaPendienteRector(semillaId);
+                        console.log(`🚀 [Service] Semilla ${semillaId} lista para revisión del coordinador.`);
+                        
+                        // OPCIONAL: Aquí podrías emitir un evento, enviar un email con Resend o Brevo, 
+                        // o guardar una notificación en la base de datos para el coordinador.
+                    }
+                }
+            }
         }
 
         return { cicloId, finalizado: true };

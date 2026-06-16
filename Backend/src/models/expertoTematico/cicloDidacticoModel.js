@@ -236,15 +236,53 @@ async obtenerCiclosConExpertoPorOva(ovaId) {
         return rows;
     },
 
-    async finalizarCiclo(cicloId) {
-        const query = `
-            UPDATE ciclos_didacticos
-            SET estado = 'finalizado'
-            WHERE id = ?
-        `;
-
-        console.log(`🗄️ [Model] Finalizando ciclo ID: ${cicloId}`);
+finalizarCiclo: async (cicloId) => {
+        const query = `UPDATE ciclos_didacticos SET estado = 'finalizado' WHERE id = ?`;
         const [result] = await db.execute(query, [cicloId]);
         return result;
+    },
+
+    obtenerOvaIdPorCiclo: async (cicloId) => {
+        const query = `SELECT ova_id FROM ciclos_didacticos WHERE id = ?`;
+        const [rows] = await db.execute(query, [cicloId]);
+        return rows.length ? rows[0].ova_id : null;
+    },
+
+    contarCiclosPendientesPorOva: async (ovaId) => {
+        // Cuenta cuántos ciclos de este OVA NO están finalizados
+        const query = `
+            SELECT COUNT(*) AS pendientes 
+            FROM ciclos_didacticos 
+            WHERE ova_id = ? AND estado != 'finalizado'
+        `;
+        const [rows] = await db.execute(query, [ovaId]);
+        return rows[0].pendientes;
+    },
+
+    marcarOvaFinalizado: async (ovaId) => {
+        const query = `UPDATE ovas SET estado = 'finalizado' WHERE id = ?`;
+        await db.execute(query, [ovaId]);
+    },
+
+    obtenerSemillaIdPorOva: async (ovaId) => {
+        const query = `SELECT semilla_id FROM ovas WHERE id = ?`;
+        const [rows] = await db.execute(query, [ovaId]);
+        return rows.length ? rows[0].semilla_id : null;
+    },
+
+    contarOvasPendientesPorSemilla: async (semillaId) => {
+        // Cuenta cuántos OVAs de esta semilla NO están finalizados
+        const query = `
+            SELECT COUNT(*) AS pendientes 
+            FROM ovas 
+            WHERE semilla_id = ? AND estado != 'finalizado'
+        `;
+        const [rows] = await db.execute(query, [semillaId]);
+        return rows[0].pendientes;
+    },
+
+    marcarSemillaPendienteRector: async (semillaId) => {
+        const query = `UPDATE semillas SET estado = 'pendiente_rector' WHERE id = ?`;
+        await db.execute(query, [semillaId]);
     }
 };
