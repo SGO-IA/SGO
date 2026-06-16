@@ -114,6 +114,14 @@ export const routes: Routes = [
       loadComponent: () => import('./pages/expertoTematico/confi-ciclo-didactico/confi-ciclo-didactico').then(m => m.ConfiCicloDidactico),
       title: 'S.G.O - Editor de Fase',
       data: { roles: [3] }
+    },
+
+    // Recto
+    {
+      path: 'rector',
+      loadComponent: () => import('./pages/rector/rector').then(m => m.Rector),
+      title: 'S.G.O - Rector',
+      data: { roles: [6] }
     }
     ]
   },

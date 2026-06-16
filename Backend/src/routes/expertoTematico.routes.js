@@ -57,4 +57,7 @@ router.post('/secciones/evaluacion/generar', TestIAController.generarTest);
 
 router.post('/secciones/:seccionId/evaluacion', TestIAController.guardarTest);
 
+router.get( '/ciclos/:cicloId/estado', cicloController.getEstado);
+router.post('/ciclos/:cicloId/finalizar', cicloController.finalizar);
+
 export default router;

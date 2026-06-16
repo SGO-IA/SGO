@@ -59,7 +59,7 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in zoom-in-95 duration-300">
-  @for (ciclo of ciclosActivos(); track ciclo.ciclo_id) {
+@for (ciclo of ciclosActivos(); track ciclo.ciclo_id) {
     <div class="group bg-white border border-gray-200 p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-sena/50 transition-all duration-300 flex flex-col relative overflow-hidden">
       
       <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sena to-sena-dark opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -68,9 +68,16 @@
         <span class="bg-sena-alpha text-sena-dark text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest border border-sena/20">
           {{ ciclo.nombre_fase }}
         </span>
-        <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:text-sena group-hover:bg-sena-alpha transition-colors">
-          <i class="pi pi-book text-sm"></i>
-        </div>
+        
+        @if (ciclo.estado === 'finalizado') {
+          <div class="flex items-center gap-1.5 bg-green-50 text-green-700 text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest border border-green-200" title="Ciclo terminado">
+            <i class="pi pi-check-circle text-xs"></i> Finalizado
+          </div>
+        } @else {
+          <div class="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-[10px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest border border-amber-200" title="En proceso de edición">
+            <i class="pi pi-cog pi-spin text-xs"></i> En Edición
+          </div>
+        }
       </div>
       
       <div class="flex-grow">
@@ -98,8 +105,11 @@
           [queryParams]="{ cicloId: ciclo.ciclo_id, step: 'etapas' }"
           class="w-full py-3 bg-gray-50 text-gray-700 font-bold rounded-xl border border-gray-200 hover:bg-sena hover:border-sena hover:text-white transition-all duration-300 flex justify-center items-center gap-2 text-xs uppercase tracking-widest group/btn"
         >
-          Acceder al Editor 
-          <i class="pi pi-arrow-right text-sm transform group-hover/btn:translate-x-1 transition-transform"></i>
+          {{ ciclo.estado === 'finalizado' ? 'Ver Detalles' : 'Acceder al Editor' }} 
+          <i class="pi text-sm transform group-hover/btn:translate-x-1 transition-transform" 
+             [class.pi-eye]="ciclo.estado === 'finalizado'" 
+             [class.pi-arrow-right]="ciclo.estado !== 'finalizado'">
+          </i>
         </button>
       </div>
     </div>

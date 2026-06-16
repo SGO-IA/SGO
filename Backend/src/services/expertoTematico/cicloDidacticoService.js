@@ -1,5 +1,8 @@
 import { cicloModel } from '../../models/expertoTematico/cicloDidacticoModel.js';
 
+const ETAPAS_REQUERIDAS = ['Reflexion', 'Contextualizacion', 'Apropiacion', 'Transferencia'];
+const ETAPAS_CON_TEST   = ['Apropiacion', 'Transferencia'];
+
 export const cicloService = {
     async getDashboardExperto(expertoId) {
         return await cicloModel.obtenerDashboardPorExperto(expertoId);
@@ -140,5 +143,120 @@ async procesarGuardadoEtapa(cicloId, payload) {
 
     async eliminarEnlace(enlaceId) {
         return await cicloModel.eliminarEnlace(enlaceId);
+    },
+
+    async verificarEstadoCiclo(cicloId) {
+        const secciones = await cicloModel.getEstadoSecciones(cicloId);
+
+        if (!secciones.length) {
+            throw new Error(`No se encontraron secciones para el ciclo ${cicloId}`);
+        }
+
+        // 1. ¿Existen las 4 etapas Y tienen contenido real?
+        const tiposPresentes = secciones
+            .filter(s => s.tiene_contenido === 1)
+            .map(s => s.tipo_seccion);
+            
+        const tieneTodasLasEtapas = ETAPAS_REQUERIDAS.every(e => tiposPresentes.includes(e));
+
+        // 2. Detalle estricto por sección
+        const seccionesDetalle = secciones.map(s => {
+            const necesitaTest   = ETAPAS_CON_TEST.includes(s.tipo_seccion);
+            const tieneTest      = s.tiene_test > 0;
+            const tieneContenido = s.tiene_contenido === 1;
+            
+            // Una sección solo está completa si tiene texto Y (si no necesita test, o si lo necesita y lo tiene)
+            const completa = tieneContenido && (!necesitaTest || tieneTest);
+
+            return {
+                seccion_id:      s.seccion_id,
+                tipo_seccion:    s.tipo_seccion,
+                titulo:          s.titulo,
+                tiene_contenido: tieneContenido,
+                necesita_test:   necesitaTest,
+                tiene_test:      tieneTest,
+                completa
+            };
+        });
+
+        const cicloListo = tieneTodasLasEtapas && seccionesDetalle.every(s => s.completa);
+
+        return {
+            cicloId,
+            listo_para_finalizar:   cicloListo,
+            tiene_todas_las_etapas: tieneTodasLasEtapas,
+            secciones:              seccionesDetalle
+        };
+    },
+
+async finalizarCiclo(cicloId) {
+        // 1. Verificación rigurosa (tu lógica existente)
+        const estado = await cicloService.verificarEstadoCiclo(cicloId);
+
+        if (!estado.listo_para_finalizar) {
+            const sinContenido = estado.secciones
+                .filter(s => !s.tiene_contenido)
+                .map(s => s.tipo_seccion);
+
+            const sinTest = estado.secciones
+                .filter(s => s.tiene_contenido && s.necesita_test && !s.tiene_test)
+                .map(s => s.tipo_seccion);
+
+            let msg = '';
+            
+            if (!estado.tiene_todas_las_etapas) {
+                msg += 'El ciclo no tiene las 4 etapas requeridas. ';
+            }
+            if (sinContenido.length > 0) {
+                msg += `Falta redactar contenido en: ${sinContenido.join(', ')}. `;
+            }
+            if (sinTest.length > 0) {
+                msg += `Falta generar el test IA en: ${sinTest.join(', ')}.`;
+            }
+
+            throw new Error(msg.trim());
+        }
+
+        // 2. Ejecutar finalización del ciclo
+        const result = await cicloModel.finalizarCiclo(cicloId);
+
+        if (result.affectedRows === 0) {
+            throw new Error(`No se encontró el ciclo ${cicloId} para finalizar.`);
+        }
+
+        // ---------------------------------------------------------
+        // 3. ORQUESTACIÓN DEL EFECTO DOMINÓ (CASCADA)
+        // ---------------------------------------------------------
+        
+        // A. Validar el Padre (OVA)
+        const ovaId = await cicloModel.obtenerOvaIdPorCiclo(cicloId);
+        
+        if (ovaId) {
+            const ciclosPendientes = await cicloModel.contarCiclosPendientesPorOva(ovaId);
+            
+            if (ciclosPendientes === 0) {
+                // Todos los ciclos terminaron -> Finalizamos el OVA
+                await cicloModel.marcarOvaFinalizado(ovaId);
+                console.log(`✅ [Service] OVA ${ovaId} finalizado completamente.`);
+
+                // B. Validar el Abuelo (Semilla)
+                const semillaId = await cicloModel.obtenerSemillaIdPorOva(ovaId);
+                
+                if (semillaId) {
+                    const ovasPendientes = await cicloModel.contarOvasPendientesPorSemilla(semillaId);
+                    
+                    if (ovasPendientes === 0) {
+                        // Todos los OVAs terminaron -> La semilla pasa a revisión
+                        await cicloModel.marcarSemillaPendienteRector(semillaId);
+                        console.log(`🚀 [Service] Semilla ${semillaId} lista para revisión del coordinador.`);
+                        
+                        // OPCIONAL: Aquí podrías emitir un evento, enviar un email con Resend o Brevo, 
+                        // o guardar una notificación en la base de datos para el coordinador.
+                    }
+                }
+            }
+        }
+
+        return { cicloId, finalizado: true };
     }
 };

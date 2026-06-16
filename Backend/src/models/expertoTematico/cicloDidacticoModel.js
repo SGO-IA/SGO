@@ -59,12 +59,13 @@ export const cicloModel = {
         return rows.length > 0 ? rows[0] : null; // Retornamos el objeto completo o null
     },
 
-    async obtenerCiclosConExpertoPorOva(ovaId) {
+async obtenerCiclosConExpertoPorOva(ovaId) {
         const query = `
             SELECT 
                 c.id AS ciclo_id,
                 c.titulo AS titulo_ciclo,
                 IF(CHAR_LENGTH(c.descripcion_general) > 100, CONCAT(LEFT(c.descripcion_general, 100), '...'), c.descripcion_general) AS descripcion_general,
+                c.estado, -- ✅ NUEVO: Traemos el estado del ciclo
                 f.nombre_fase,
                 GROUP_CONCAT(DISTINCT u.nombre SEPARATOR ', ') AS experto_nombre,
                 GROUP_CONCAT(DISTINCT u.correo SEPARATOR ', ') AS experto_correo
@@ -78,8 +79,11 @@ export const cicloModel = {
                 c.id, 
                 c.titulo, 
                 c.descripcion_general,
+                c.estado, -- ✅ NUEVO: Añadido al GROUP BY por reglas de MySQL
                 f.nombre_fase;
         `;
+        
+        console.log(`🗄️ [Model] Consultando ciclos para el OVA ID: ${ovaId}`);
         const [rows] = await db.execute(query, [ovaId]);
         return rows;
     },
@@ -206,5 +210,79 @@ export const cicloModel = {
     async eliminarEnlace(enlaceId) {
         const query = 'DELETE FROM enlaces_seccion WHERE id = ?';
         await db.execute(query, [enlaceId]);
+    },
+    // Finalizar un ciclo didactico
+    async getEstadoSecciones(cicloId) {
+        const query = `
+            SELECT 
+                cs.id          AS seccion_id,
+                cs.tipo_seccion,
+                cs.titulo,
+                CASE 
+                    WHEN cs.contenido_html IS NULL THEN 0
+                    WHEN TRIM(cs.contenido_html) = '' THEN 0
+                    ELSE 1
+                END AS tiene_contenido,
+                COUNT(DISTINCT ti.id) AS tiene_test
+            FROM ciclo_secciones cs
+            LEFT JOIN tests_ia ti ON ti.seccion_id = cs.id
+            WHERE cs.ciclo_id = ?
+            GROUP BY cs.id, cs.tipo_seccion, cs.titulo, cs.contenido_html
+            ORDER BY cs.orden ASC
+        `;
+
+        console.log(`🗄️ [Model] Consultando secciones del ciclo ID: ${cicloId}`);
+        const [rows] = await db.execute(query, [cicloId]);
+        return rows;
+    },
+
+finalizarCiclo: async (cicloId) => {
+        const query = `UPDATE ciclos_didacticos SET estado = 'finalizado' WHERE id = ?`;
+        const [result] = await db.execute(query, [cicloId]);
+        return result;
+    },
+
+    obtenerOvaIdPorCiclo: async (cicloId) => {
+        const query = `SELECT ova_id FROM ciclos_didacticos WHERE id = ?`;
+        const [rows] = await db.execute(query, [cicloId]);
+        return rows.length ? rows[0].ova_id : null;
+    },
+
+    contarCiclosPendientesPorOva: async (ovaId) => {
+        // Cuenta cuántos ciclos de este OVA NO están finalizados
+        const query = `
+            SELECT COUNT(*) AS pendientes 
+            FROM ciclos_didacticos 
+            WHERE ova_id = ? AND estado != 'finalizado'
+        `;
+        const [rows] = await db.execute(query, [ovaId]);
+        return rows[0].pendientes;
+    },
+
+    marcarOvaFinalizado: async (ovaId) => {
+        const query = `UPDATE ovas SET estado = 'finalizado' WHERE id = ?`;
+        await db.execute(query, [ovaId]);
+    },
+
+    obtenerSemillaIdPorOva: async (ovaId) => {
+        const query = `SELECT semilla_id FROM ovas WHERE id = ?`;
+        const [rows] = await db.execute(query, [ovaId]);
+        return rows.length ? rows[0].semilla_id : null;
+    },
+
+    contarOvasPendientesPorSemilla: async (semillaId) => {
+        // Cuenta cuántos OVAs de esta semilla NO están finalizados
+        const query = `
+            SELECT COUNT(*) AS pendientes 
+            FROM ovas 
+            WHERE semilla_id = ? AND estado != 'finalizado'
+        `;
+        const [rows] = await db.execute(query, [semillaId]);
+        return rows[0].pendientes;
+    },
+
+    marcarSemillaPendienteRector: async (semillaId) => {
+        const query = `UPDATE semillas SET estado = 'pendiente_rector' WHERE id = ?`;
+        await db.execute(query, [semillaId]);
     }
 };

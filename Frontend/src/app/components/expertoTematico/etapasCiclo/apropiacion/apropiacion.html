@@ -116,55 +116,107 @@
         </div>
       }
     </div>
-  </div> @if (testGenerado) {
+  </div>
+@if (testGenerado) {
     <div class="mt-8 p-8 bg-white border-2 border-sena/30 rounded-[var(--radius-sena)] shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500 relative overflow-hidden">
       <div class="absolute top-0 left-0 w-2 h-full bg-sena"></div>
       
       <div class="flex justify-between items-start mb-6 pl-4">
-        <div>
+        <div class="w-full mr-4">
           <span class="bg-sena-alpha text-sena text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest mb-2 inline-block">Test Generado por IA</span>
-          <h3 class="text-2xl font-black text-sena-black">
-            {{ testGenerado.nombre_test }}
-          </h3>
+          
+          @if (modoEdicionTest) {
+            <input type="text" [(ngModel)]="testGenerado.nombre_test" class="input-sena w-full text-2xl font-black text-sena-black mt-2" placeholder="Título de la evaluación">
+          } @else {
+            <h3 class="text-2xl font-black text-sena-black">
+              {{ testGenerado.nombre_test }}
+            </h3>
+          }
         </div>
-        <button (click)="testGenerado = null; testConfigurado = false;" class="text-red-500 hover:text-red-700 text-sm font-bold flex items-center bg-red-50 px-3 py-2 rounded-lg transition-colors">
-          <i class="pi pi-trash mr-2"></i> Descartar
-        </button>
+
+        <div class="flex gap-2 shrink-0">
+          <button (click)="toggleEdicionTest()" 
+                  class="text-blue-600 hover:text-blue-800 text-sm font-bold flex items-center bg-blue-50 px-3 py-2 rounded-lg transition-colors">
+            <i class="pi" [class.pi-pencil]="!modoEdicionTest" [class.pi-check]="modoEdicionTest"></i> 
+            <span class="ml-2">{{ modoEdicionTest ? 'Terminar Edición' : 'Editar Test' }}</span>
+          </button>
+
+          @if (modoEdicionTest) {
+            <button (click)="descartarTest()" 
+                    class="text-red-500 hover:text-red-700 text-sm font-bold flex items-center bg-red-50 px-3 py-2 rounded-lg transition-colors">
+              <i class="pi pi-trash mr-2"></i> Descartar
+            </button>
+          }
+        </div>
       </div>
       
-<div class="space-y-6 pl-4">
+      <div class="space-y-6 pl-4">
         @for (pregunta of testGenerado.preguntas; track $index; let pregIndex = $index) {
-          <div class="p-6 bg-gray-50 rounded-xl border border-gray-100 relative">
-            <span class="absolute -left-3 -top-3 bg-sena text-white w-8 h-8 flex items-center justify-center rounded-full font-black shadow-md">
+          <div class="p-6 bg-gray-50 rounded-xl border border-gray-100 relative transition-all" [class.border-blue-200]="modoEdicionTest">
+            
+            <span class="absolute -left-3 -top-3 bg-sena text-white w-8 h-8 flex items-center justify-center rounded-full font-black shadow-md z-10">
               {{ pregIndex + 1 }}
             </span>
-            <p class="font-bold text-gray-800 mb-4 text-lg ml-2">{{ pregunta.enunciado }}</p>
+            
+            @if (modoEdicionTest) {
+              <button (click)="eliminarPregunta(pregIndex)" class="absolute top-4 right-4 text-red-400 hover:text-red-600 transition-colors" title="Eliminar pregunta">
+                <i class="pi pi-trash text-lg"></i>
+              </button>
+            }
+            
+            @if (modoEdicionTest) {
+              <label class="block text-xs font-bold text-gray-500 mb-1 ml-2 mr-8 uppercase">Enunciado de la pregunta</label>
+              <textarea [(ngModel)]="pregunta.enunciado" class="input-sena w-full mb-4 ml-2 min-h-[80px]" placeholder="Escribe la pregunta..."></textarea>
+            } @else {
+              <p class="font-bold text-gray-800 mb-4 text-lg ml-2 pr-8">{{ pregunta.enunciado }}</p>
+            }
             
             <div class="grid gap-3 ml-2">
-              @for (opcion of pregunta.opciones; track $index; let optIndex = $index) {
-                <label class="flex items-center p-4 bg-white rounded-lg border-2 border-gray-100 cursor-pointer hover:border-sena transition-all"
-                       [class.border-sena]="optIndex === pregunta.respuesta_correcta_index"
-                       [class.bg-green-50]="optIndex === pregunta.respuesta_correcta_index">
-                       
-                  <input type="radio" [name]="'pregunta-' + pregIndex" [checked]="optIndex === pregunta.respuesta_correcta_index" class="mr-4 accent-sena h-5 w-5">
-                  
-                  <span class="text-gray-700 font-medium" [class.font-bold]="optIndex === pregunta.respuesta_correcta_index">{{ opcion }}</span>
-                  
-                  @if (optIndex === pregunta.respuesta_correcta_index) {
-                    <span class="ml-auto text-sena text-sm font-bold flex items-center">
-                      <i class="pi pi-check-circle mr-1"></i> Correcta
-                    </span>
-                  }
-                </label>
+              @if (modoEdicionTest) {
+                <label class="block text-xs font-bold text-gray-500 uppercase mt-2">Opciones de respuesta (Selecciona el círculo de la correcta)</label>
               }
-            </div>
-            
-            <div class="mt-4 ml-2 p-3 bg-blue-50 border border-blue-100 rounded-lg flex items-start">
-              <i class="pi pi-info-circle text-blue-500 mt-1 mr-2 text-lg"></i>
-              <p class="text-sm text-blue-800"><span class="font-bold">Retroalimentación IA:</span> {{ pregunta.retroalimentacion }}</p>
+
+              @for (opcion of pregunta.opciones; track $index; let optIndex = $index) {
+                
+                @if (modoEdicionTest) {
+                  <div class="flex items-center gap-3 p-2 bg-white rounded-lg border border-gray-200">
+                    <input type="radio" 
+                           [name]="'edit-pregunta-' + pregIndex" 
+                           [checked]="optIndex === pregunta.respuesta_correcta_index"
+                           (change)="pregunta.respuesta_correcta_index = optIndex"
+                           class="ml-2 accent-sena h-5 w-5 cursor-pointer">
+                    
+                    <input type="text" 
+                           [(ngModel)]="pregunta.opciones[optIndex]" 
+                           class="input-sena w-full py-2 text-sm" 
+                           [class.border-sena]="optIndex === pregunta.respuesta_correcta_index"
+                           [class.bg-green-50]="optIndex === pregunta.respuesta_correcta_index"
+                           placeholder="Texto de la opción">
+                  </div>
+                } @else {
+                  <label class="flex items-center p-4 bg-white rounded-lg border-2 border-gray-100 cursor-pointer hover:border-sena transition-all"
+                         [class.border-sena]="optIndex === pregunta.respuesta_correcta_index"
+                         [class.bg-green-50]="optIndex === pregunta.respuesta_correcta_index">
+                    <input type="radio" [name]="'pregunta-' + pregIndex" [checked]="optIndex === pregunta.respuesta_correcta_index" class="mr-4 accent-sena h-5 w-5">
+                    <span class="text-gray-700 font-medium" [class.font-bold]="optIndex === pregunta.respuesta_correcta_index">{{ opcion }}</span>
+                    @if (optIndex === pregunta.respuesta_correcta_index) {
+                      <span class="ml-auto text-sena text-sm font-bold flex items-center">
+                        <i class="pi pi-check-circle mr-1"></i> Correcta
+                      </span>
+                    }
+                  </label>
+                }
+              }
             </div>
           </div>
         }
+
+        @if (modoEdicionTest) {
+          <button (click)="agregarPregunta()" class="w-full py-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 font-bold hover:border-sena hover:text-sena transition-colors flex items-center justify-center bg-gray-50/50">
+            <i class="pi pi-plus-circle mr-2 text-xl"></i> Agregar nueva pregunta
+          </button>
+        }
+
       </div>
     </div>
   }
