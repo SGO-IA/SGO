@@ -3,7 +3,7 @@ import { recursoController } from '../controllers/recursos/recursos.controller.j
 
 const router = Router();
 
-// Endpoint público o protegido (puedes añadirle tus middlewares de sesión aquí en medio)
+router.head('/descargar/:id', recursoController.verificarArchivo);
 router.get('/descargar/:id', recursoController.descargarArchivo);
 
 export default router;

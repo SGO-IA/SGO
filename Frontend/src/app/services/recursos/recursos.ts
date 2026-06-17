@@ -20,4 +20,8 @@ export class RecursoService {
   obtenerUrlDescargaDirecta(id: number): string {
     return `${this.baseUrl}/descargar/${id}`;
   }
+
+  verificarRecurso(id: number): Observable<any> {
+    return this.http.head(`${this.baseUrl}/descargar/${id}`);
+  }
 }

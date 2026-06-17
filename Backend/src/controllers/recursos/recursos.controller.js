@@ -1,6 +1,15 @@
 import { RecursoService } from '../../services/recursos/r2_service.js';
 
 export const recursoController = {
+    async verificarArchivo(req, res) {
+        try {
+            const { id } = req.params;
+            const existe = await RecursoService.verificarExistencia(id);
+            return existe ? res.status(200).send() : res.status(404).send();
+        } catch (error) {
+            return res.status(500).send();
+        }
+    },
     async descargarArchivo(req, res) {
         try {
             const { id } = req.params;

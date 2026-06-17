@@ -1,4 +1,4 @@
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { RecursoModel } from '../../models/recursos/recursosModels.js';
 
@@ -13,6 +13,23 @@ const r2Client = new S3Client({
 });
 
 export class RecursoService {
+    static async verificarExistencia(id) {
+        const recurso = await RecursoModel.obtenerPorId(id);
+        if (!recurso || !recurso.key_r2) return false;
+
+        try {
+            // Verificamos si existe en R2 con HEAD
+            await r2Client.send(new HeadObjectCommand({
+                Bucket: process.env.R2_BUCKET_NAME,
+                Key: recurso.key_r2
+            }));
+            return true;
+        } catch (e) {
+            console.error("❌ ERROR DETALLADO:", e); // Esto te dirá si es falta de importación o un error de AWS
+            return false;
+        }
+    }
+
     static async generarUrlDescarga(id) {
         console.log(`⚙️ [Service] Procesando descarga para el recurso ID: ${id}`);
 

@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { CicloLectura, SeccionLectura, Semillasrector } from '../../../services/rector/semillas';
 import { MarkdownComponent, provideMarkdown } from 'ngx-markdown';
 import { RecursoService } from '../../../services/recursos/recursos';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-ciclo-lectura',
@@ -93,11 +94,23 @@ export class CicloLecturaComponent implements OnInit {
   }
 
   // En ciclo-lectura.ts
-  ejecutarDescarga(id: number): void {  
-    // Obtenemos la URL pública del backend
-    const urlDescarga = this.recursoService.obtenerUrlDescargaDirecta(id);
-    
-    // Abrimos en una pestaña nueva para no interrumpir la navegación del usuario
-    window.open(urlDescarga, '_blank');
-  }
+  ejecutarDescarga(id: number): void {
+  // 1. Primero verificamos que el recurso esté disponible
+  this.recursoService.verificarRecurso(id).subscribe({
+    next: () => {
+      // 2. Si todo está OK, procedemos a abrir la descarga
+      const urlDescarga = this.recursoService.obtenerUrlDescargaDirecta(id);
+      window.open(urlDescarga, '_blank');
+    },
+    error: () => {
+      // 3. Si hay error (404 o 500), mostramos la alerta
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de descarga',
+        text: 'El archivo no está disponible o ha ocurrido un error en el servidor.',
+        confirmButtonColor: '#3b82f6' // Ajusta al color de tu preferencia (ej. SENA blue)
+      });
+    }
+  });
+}
 }
