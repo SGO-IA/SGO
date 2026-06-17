@@ -1,0 +1,190 @@
+<div class="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto animate-in fade-in duration-300">
+
+    @if (cicloData(); as ciclo) {
+    <div class="mb-6 sm:mb-8 border-b border-gray-200 pb-6">
+        <button (click)="regresar()"
+            class="text-gray-500 hover:text-sena font-bold text-sm mb-4 flex items-center gap-1 transition-colors">
+            <i class="pi pi-arrow-left text-xs"></i> Salir del Modo Lectura
+        </button>
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-sena-alpha text-sena font-black text-[10px] px-2.5 py-1 rounded-md uppercase tracking-wider">
+                        {{ ciclo.nombre_fase }}
+                    </span>
+                    <span class="text-xs text-gray-400 font-medium">| OVA: {{ ciclo.ova_titulo }}</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-gray-800 leading-tight">
+                    {{ ciclo.ciclo_titulo }}
+                </h1>
+                <p class="text-sm text-gray-500 mt-1 italic">
+                    {{ ciclo.descripcion_general || 'Sin descripción general asignada.' }}
+                </p>
+            </div>
+
+            <div class="bg-gray-100 border border-gray-200 px-4 py-2 rounded-xl flex items-center gap-2 text-gray-600 font-bold self-start md:self-center text-xs uppercase tracking-widest">
+                <i class="pi pi-eye"></i> Modo Lectura
+            </div>
+        </div>
+    </div>
+    }
+
+    @if (cargando()) {
+    <div class="flex flex-col items-center justify-center py-20 text-center">
+        <i class="pi pi-spin pi-spinner text-5xl text-sena mb-4"></i>
+        <p class="text-gray-500 font-medium">Compilando transmedia pedagógica...</p>
+    </div>
+    }
+
+    @else if (mensajeError()) {
+    <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-8 text-center max-w-2xl mx-auto">
+        <i class="pi pi-exclamation-triangle text-5xl text-red-500 mb-4"></i>
+        <h3 class="text-xl font-black text-red-800 mb-2">Error de Apertura</h3>
+        <p class="text-red-600 mb-6">{{ mensajeError() }}</p>
+        <button (click)="cargarContenidoLectura(cicloId()!)"
+            class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl font-bold transition-colors">
+            Reintentar
+        </button>
+    </div>
+    }
+
+    @else {
+    <div class="flex flex-col gap-6">
+
+        <div class="w-full flex items-center justify-start sm:justify-center overflow-x-auto gap-2 pb-4 scrollbar-none border-b border-gray-100">
+            @for (etapa of etapasSena; track etapa.key) {
+            <button (click)="cambiarEtapa(etapa.key)"
+                class="flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap min-w-max border"
+                [class]="etapaActiva() === etapa.key 
+                    ? etapa.color + ' border-current shadow-sm' 
+                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-gray-800'">
+                <i class="pi" [class]="etapa.icon"></i>
+                <span>{{ etapa.label }}</span>
+            </button>
+            }
+        </div>
+
+        <div class="w-full min-w-0 bg-white border border-gray-200 rounded-3xl p-5 sm:p-6 lg:p-8 shadow-sm min-h-[500px] flex flex-col">
+
+            @if (seccionActual(); as seccion) {
+
+                <div class="mb-6">
+                    <h2 class="text-xl sm:text-2xl font-black text-gray-800">
+                        {{ seccion.titulo || 'Sección sin título configurado' }}
+                    </h2>
+                    <div class="w-12 h-1 bg-sena mt-2 rounded-full"></div>
+                </div>
+
+                @if (seccion.contenido_html) {
+                <markdown [data]="formatearMarkdown(seccion.contenido_html)"
+                    class="prose prose-sena max-w-none text-gray-700 text-sm sm:text-base leading-relaxed break-words marker:text-sena">
+                </markdown>
+                }
+
+                @if (seccion.recursos.length > 0 || seccion.enlaces.length > 0) {
+                <div class="mt-8 mb-6">
+                    <h3 class="font-black text-gray-800 text-lg mb-4 flex items-center gap-2">
+                        <i class="pi pi-paperclip text-sena"></i> Material de Apoyo (Estudiantes)
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        @for (recurso of seccion.recursos; track recurso.id) {
+                        <a [href]="recurso.url_r2" target="_blank"
+                            class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-sena hover:bg-sena-alpha/30 transition-colors group">
+                            <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                <i class="pi pi-file-pdf text-xl"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-bold text-gray-800 truncate group-hover:text-sena">
+                                    {{ recurso.nombre_archivo }}
+                                </p>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-widest">
+                                    {{ recurso.tipo_archivo || 'Documento' }}
+                                </p>
+                            </div>
+                            <i class="pi pi-download text-gray-400 group-hover:text-sena"></i>
+                        </a>
+                        }
+
+                        @for (enlace of seccion.enlaces; track enlace.id) {
+                        <a [href]="enlace.url" target="_blank"
+                            class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-sena hover:bg-sena-alpha/30 transition-colors group">
+                            <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                                <i class="pi pi-link text-xl"></i>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-bold text-gray-800 truncate group-hover:text-sena">
+                                    {{ enlace.etiqueta }}
+                                </p>
+                                <p class="text-xs text-gray-500 truncate">{{ enlace.url }}</p>
+                            </div>
+                            <i class="pi pi-external-link text-gray-400 group-hover:text-sena"></i>
+                        </a>
+                        }
+                    </div>
+                </div>
+                } @else {
+                <div class="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-100 text-center px-4 flex-grow mt-8">
+                    <i class="pi pi-file text-3xl text-gray-300 mb-2"></i>
+                    <p class="text-sm text-gray-500 font-medium">El experto temático no redactó contenido de desarrollo para esta etapa.</p>
+                </div>
+                }
+
+                @if (seccion.test) {
+                <div class="mt-8 animate-in slide-in-from-bottom-2 duration-300">
+                    <div class="bg-green-50/50 border border-green-200 rounded-2xl p-4 sm:p-6 mb-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                            <div class="flex items-center gap-2 text-green-800">
+                                <i class="pi pi-verified text-xl"></i>
+                                <h3 class="font-black text-base sm:text-lg">
+                                    {{ seccion.test.nombre || 'Cuestionario de Evaluación' }}
+                                </h3>
+                            </div>
+                            <span class="bg-green-100 text-green-800 text-xs font-black px-3 py-1 rounded-lg shrink-0 w-max">
+                                Ponderación: {{ seccion.test.ponderacion }}%
+                            </span>
+                        </div>
+
+                        <div class="space-y-4">
+                            @for (pregunta of seccion.test.preguntas; track $index) {
+                            <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                                <p class="font-bold text-gray-800 text-sm sm:text-base mb-3">
+                                    <span class="text-sena font-black">{{ $index + 1 }}.</span> {{ pregunta.pregunta || pregunta.enunciado }}
+                                </p>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    @for (opcion of pregunta.opciones; track opcion) {
+                                    <div class="p-2.5 rounded-lg text-xs sm:text-sm font-medium border transition-colors flex items-center gap-2"
+                                        [class]="opcion === pregunta.respuesta_correcta || opcion === pregunta.correcta
+                                            ? 'bg-green-50 border-green-300 text-green-800 font-bold' 
+                                            : 'bg-gray-50 border-gray-100 text-gray-600'">
+                                        <i class="pi text-xs shrink-0"
+                                            [class]="opcion === pregunta.respuesta_correcta || opcion === pregunta.correcta ? 'pi-check-circle text-green-600' : 'pi-circle text-gray-300'">
+                                        </i>
+                                        <span class="truncate" [title]="opcion">{{ opcion }}</span>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                }
+
+            } @else {
+                <div class="flex flex-col items-center justify-center py-20 text-center my-auto">
+                    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 text-gray-300 mb-4">
+                        <i class="pi pi-folder-open text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-black text-gray-700">Etapa no configurada</h3>
+                    <p class="text-sm text-gray-400 max-w-sm mt-1">Esta subsección aún no ha sido inicializada dentro de la estructura de este ciclo didáctico.</p>
+                </div>
+            }
+
+        </div>
+
+    </div>
+    }
+</div>

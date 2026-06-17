@@ -92,12 +92,4 @@
       }
     </div>
   }
-</div>
-
-@if (modalAbierto() && semillaSeleccionada() !== null) {
-  <app-modal-revision-semilla 
-    [semillaId]="semillaSeleccionada()!" 
-    (cerrar)="cerrarModal()"
-    (aprobar)="aprobarSemillaFinal($event)">
-  </app-modal-revision-semilla>
-}
+</div>  

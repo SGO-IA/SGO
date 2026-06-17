@@ -42,5 +42,38 @@ export const semillaRectorController = {
                 error: error.message 
             });
         }
+    },
+
+    async getOvasPorSemilla(req, res) {
+        try {
+            const { semillaId } = req.params;
+            const ovas = await semillaRectorService.listarOvasDeSemilla(Number(semillaId));
+            return res.status(200).json({ ok: true, data: ovas });
+        } catch (error) {
+            const status = error.message.includes('No se encontraron') ? 404 : 500;
+            return res.status(status).json({ ok: false, message: error.message });
+        }
+    },
+
+    async getCiclosPorOva(req, res) {
+        try {
+            const { ovaId } = req.params;
+            const ciclos = await semillaRectorService.listarCiclosDeOva(Number(ovaId));
+            return res.status(200).json({ ok: true, data: ciclos });
+        } catch (error) {
+            const status = error.message.includes('No se encontraron') ? 404 : 500;
+            return res.status(status).json({ ok: false, message: error.message });
+        }
+    },
+
+    async getModoLecturaCiclo(req, res) {
+        try {
+            const { cicloId } = req.params;
+            const lecturaCompleta = await semillaRectorService.armarModoLecturaCiclo(Number(cicloId));
+            return res.status(200).json({ ok: true, data: lecturaCompleta });
+        } catch (error) {
+            const status = error.message.includes('no existe') ? 404 : 500;
+            return res.status(status).json({ ok: false, message: error.message });
+        }
     }
 };

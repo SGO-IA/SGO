@@ -122,6 +122,18 @@ export const routes: Routes = [
       loadComponent: () => import('./pages/rector/rector').then(m => m.Rector),
       title: 'S.G.O - Rector',
       data: { roles: [6] }
+    },
+    { 
+      path: 'rector/semilla/:id/ovas', 
+      loadComponent: () => import('./components/rector/revisar-ovas/revisar-ovas').then(m => m.RevisionOvas),
+      title: 'OVAS',
+      data: { roles: [6] }
+    },
+    { 
+      path: 'rector/ciclo/:id/lectura', 
+      loadComponent: () => import('./components/rector/ciclo-lectura/ciclo-lectura').then(m => m.CicloLecturaComponent),
+      title: 'Modo Lectura - Ciclo Didáctico',
+      data: { roles: [6] }
     }
     ]
   },
