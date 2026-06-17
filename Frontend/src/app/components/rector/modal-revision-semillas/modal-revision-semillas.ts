@@ -1,21 +1,26 @@
 import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
 import { SemillaRadiografia, Semillasrector } from '../../../services/rector/semillas';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-modal-revision-semilla',
+  imports: [FormsModule],
   standalone: true,
   templateUrl: './modal-revision-semillas.html',
 })
 export class ModalRevisionSemilla implements OnInit {
   @Input({ required: true }) semillaId!: number;
   @Output() cerrar = new EventEmitter<void>();
-  @Output() aprobar = new EventEmitter<number>(); // Para cuando decidas hacer el endpoint de aprobar
+  @Output() aprobar = new EventEmitter<number>();
+  @Output() rechazar = new EventEmitter<{ id: number, motivo: string }>();
 
   private rectorService = inject(Semillasrector);
 
   cargando = signal<boolean>(true);
   error = signal<string | null>(null);
   detalle = signal<SemillaRadiografia | null>(null);
+  mostrandoRechazo = signal<boolean>(false);
+  motivoRechazo = signal<string>('');
 
   ngOnInit(): void {
     this.cargarRadiografia();
@@ -36,5 +41,19 @@ export class ModalRevisionSemilla implements OnInit {
         this.cargando.set(false);
       }
     });
+  }
+
+  iniciarRechazo() {
+    this.mostrandoRechazo.set(true);
+  }
+
+  cancelarRechazo() {
+    this.mostrandoRechazo.set(false);
+    this.motivoRechazo.set(''); // Limpiamos el campo por si se arrepiente
+  }
+
+  confirmarRechazo(id: number) {
+    if (this.motivoRechazo().trim().length < 15) return; // Validación básica
+    this.rechazar.emit({ id, motivo: this.motivoRechazo().trim() });
   }
 }
