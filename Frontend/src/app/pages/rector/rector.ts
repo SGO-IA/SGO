@@ -1,15 +1,16 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { SemillaPendiente, Semillasrector } from '../../services/rector/semillas';
 import { Router, RouterModule } from '@angular/router';
+import { ModalRevisionSemilla } from '../../components/rector/modal-revision-semillas/modal-revision-semillas';
 
 @Component({
   selector: 'app-rector',
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, ModalRevisionSemilla],
   templateUrl: './rector.html',
   styleUrl: './rector.css',
 })
-export class Rector {
+export class Rector implements OnInit{
   private rectorService = inject(Semillasrector);
   private router = inject(Router);
 
@@ -17,6 +18,8 @@ export class Rector {
   semillasList = signal<SemillaPendiente[]>([]);
   cargando = signal<boolean>(true);
   mensajeError = signal<string | null>(null);
+  modalAbierto = signal<boolean>(false);
+  semillaSeleccionada = signal<number | null>(null);
 
   ngOnInit(): void {
     this.cargarSemillasPendientes();
@@ -43,7 +46,18 @@ export class Rector {
 
   // Navega a la vista de detalle/revisión de la semilla
   revisarSemilla(id: number): void {
-    // Ajusta esta ruta según la estructura de tu enrutador para el rector
-    this.router.navigate(['/dashboard/rector/semilla', id, 'revision']);
+    // En lugar de hacer router.navigate, abrimos el modal
+    this.semillaSeleccionada.set(id);
+    this.modalAbierto.set(true);
+  }
+
+  cerrarModal(): void {
+    this.modalAbierto.set(false);
+    setTimeout(() => this.semillaSeleccionada.set(null), 200); // Limpia después de la animación
+  }
+
+  aprobarSemillaFinal(id: number): void {
+    console.log("Aprobar semilla:", id);
+    // Aquí luego llamarás al backend para UPDATE estado = 'aprobada'
   }
 }

@@ -1,0 +1,95 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+  <div class="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden">
+    
+    @if (cargando()) {
+      <div class="flex flex-col items-center justify-center py-20">
+        <i class="pi pi-spin pi-spinner text-5xl text-sena mb-4"></i>
+        <p class="text-gray-500 font-medium">Extrayendo radiografía de la semilla...</p>
+      </div>
+    }
+
+    @else if (error()) {
+      <div class="p-10 text-center">
+        <i class="pi pi-exclamation-triangle text-5xl text-red-500 mb-4"></i>
+        <h3 class="text-xl font-black text-red-800 mb-2">Error de consulta</h3>
+        <p class="text-red-600 mb-6">{{ error() }}</p>
+        <button (click)="cerrar.emit()" class="bg-gray-200 text-gray-800 px-6 py-2 rounded-xl font-bold">Cerrar</button>
+      </div>
+    }
+
+    @else if (detalle(); as data) {
+      <div class="bg-gray-50 border-b border-gray-200 p-6 sm:p-8 flex justify-between items-start shrink-0">
+        <div>
+          <span class="bg-amber-100 text-amber-800 text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest mb-3 inline-block">
+            Revisión Pendiente
+          </span>
+          <h2 class="text-2xl font-black text-gray-800 leading-tight">{{ data.nombre_semilla }}</h2>
+          <p class="text-sm text-gray-500 mt-1"><i class="pi pi-briefcase mr-1"></i> {{ data.programa_nombre }} ({{ data.etiqueta_programa }})</p>
+        </div>
+        <button (click)="cerrar.emit()" class="w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors shrink-0">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="p-6 sm:p-8 overflow-y-auto bg-white flex-grow">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="pi pi-users"></i></div>
+              <h3 class="font-black text-gray-800 text-lg">Equipo Experto ({{ data.total_expertos }})</h3>
+            </div>
+            
+            <div class="space-y-3">
+              @for (experto of data.expertos; track experto.experto_id) {
+                <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
+                    {{ experto.experto_nombre.charAt(0) }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-gray-800">{{ experto.experto_nombre }}</p>
+                    <p class="text-xs text-gray-500">{{ experto.experto_correo }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-8 h-8 rounded-lg bg-sena-alpha text-sena flex items-center justify-center"><i class="pi pi-book"></i></div>
+              <h3 class="font-black text-gray-800 text-lg">Estructura OVAs ({{ data.total_ovas }})</h3>
+            </div>
+            
+            <div class="space-y-3">
+              @for (ova of data.ovas; track ova.ova_id) {
+                <div class="bg-white border-2 border-gray-100 rounded-xl p-4 shadow-sm hover:border-sena/30 transition-colors">
+                  <div class="flex justify-between items-start mb-2">
+                    <h4 class="font-bold text-gray-800 text-sm line-clamp-1 flex-1 pr-2" [title]="ova.ova_titulo">{{ ova.ova_titulo }}</h4>
+                    <span class="bg-green-50 text-green-700 text-[9px] font-black px-2 py-1 rounded md uppercase tracking-widest border border-green-200 shrink-0">
+                      {{ ova.ova_estado }}
+                    </span>
+                  </div>
+                  <div class="flex items-start gap-2 text-xs text-gray-500 bg-gray-50 p-2 rounded-lg">
+                    <i class="pi pi-check-square mt-0.5 text-sena"></i>
+                    <p class="line-clamp-2"><strong>{{ ova.codigo_norma }}:</strong> {{ ova.competencia_nombre }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="bg-gray-50 border-t border-gray-200 p-6 flex justify-end gap-3 shrink-0">
+        <button (click)="cerrar.emit()" class="px-6 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-bold hover:bg-gray-100 transition-colors">
+          Cancelar
+        </button>
+        <button (click)="aprobar.emit(data.semilla_id)" class="px-8 py-2.5 rounded-xl bg-sena text-white font-bold hover:bg-sena-dark shadow-lg shadow-sena/20 transition-all flex items-center gap-2">
+          <i class="pi pi-verified"></i> Aprobar y Publicar
+        </button>
+      </div>
+    }
+  </div>
+</div>

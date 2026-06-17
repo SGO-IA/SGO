@@ -19,5 +19,28 @@ export const semillaRectorController = {
                 error: error.message 
             });
         }
+    },
+
+    async detalleParaRevision(req, res) {
+        try {
+            const { id } = req.params;
+            console.log(`🎮 [Controller] Obteniendo radiografía de la semilla ID: ${id}`);
+            
+            const detalleCompleto = await semillaRectorService.getDetalleRevision(Number(id));
+            
+            return res.status(200).json({
+                ok: true,
+                message: "Detalle de semilla obtenido correctamente",
+                data: detalleCompleto
+            });
+        } catch (error) {
+            console.error("❌ [Controller] Error en detalleParaRevision:", error);
+            const status = error.message.includes('No se encontró') ? 404 : 500;
+            return res.status(status).json({ 
+                ok: false,
+                message: "Error al obtener los detalles de la semilla", 
+                error: error.message 
+            });
+        }
     }
 };
