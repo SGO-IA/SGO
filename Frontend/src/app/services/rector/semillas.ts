@@ -153,4 +153,8 @@ export class Semillasrector {
   getModoLecturaCiclo(cicloId: number): Observable<LecturaResponse> {
     return this.http.get<LecturaResponse>(`${this.apiUrl}/ciclos/${cicloId}/lectura`);
   }
+
+  actualizarEstado(id: number, estado: string): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/recursos/semillas/${id}/estado`, { estado });
+  }
 }
