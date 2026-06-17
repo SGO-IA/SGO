@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CicloLectura, SeccionLectura, Semillasrector } from '../../../services/rector/semillas';
 import { MarkdownComponent, provideMarkdown } from 'ngx-markdown';
+import { RecursoService } from '../../../services/recursos/recursos';
 
 @Component({
   selector: 'app-ciclo-lectura',
@@ -15,6 +16,7 @@ export class CicloLecturaComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private rectorService = inject(Semillasrector);
+  private recursoService = inject(RecursoService);
 
   cicloId = signal<number | null>(null);
   cicloData = signal<CicloLectura | null>(null);
@@ -88,5 +90,14 @@ export class CicloLecturaComponent implements OnInit {
       
       // 3. Limpia espacios en blanco innecesarios al inicio y al final
       .trim();
+  }
+
+  // En ciclo-lectura.ts
+  ejecutarDescarga(id: number): void {  
+    // Obtenemos la URL pública del backend
+    const urlDescarga = this.recursoService.obtenerUrlDescargaDirecta(id);
+    
+    // Abrimos en una pestaña nueva para no interrumpir la navegación del usuario
+    window.open(urlDescarga, '_blank');
   }
 }
