@@ -95,5 +95,25 @@ export const semillaRectorService = {
             ...cabecera,
             secciones: seccionesFormateadas
         };
+    },
+
+    async procesarCambioEstado(id, estado, comentario) {
+        // 1. Validar contra el ENUM estricto de tu base de datos
+        const estadosValidos = ['aprobada', 'rechazada'];
+        if (!estadosValidos.includes(estado)) {
+            throw new Error('Estado no permitido por el sistema.');
+        }
+
+        // 2. Lógica de limpieza: Si es aprobada, no debe haber comentario de rechazo
+        const comentarioFinal = estado === 'rechazada' ? comentario : null;
+
+        // 3. Ejecutar actualización
+        const actualizado = await semillaRectorModel.actualizarEstado(id, estado, comentarioFinal);
+        
+        if (!actualizado) {
+            throw new Error('La semilla no existe o no pudo ser actualizada.');
+        }
+        
+        return { estadoNuevo: estado, comentario: comentarioFinal };
     }
 };

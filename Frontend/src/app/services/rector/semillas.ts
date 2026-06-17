@@ -154,7 +154,11 @@ export class Semillasrector {
     return this.http.get<LecturaResponse>(`${this.apiUrl}/ciclos/${cicloId}/lectura`);
   }
 
-  actualizarEstado(id: number, estado: string): Observable<any> {
-    return this.http.put(`${environment.apiUrl}/recursos/semillas/${id}/estado`, { estado });
+  actualizarEstado(id: number, estado: string, comentario?: string): Observable<any> {
+    // Cambia "/recursos/" por "/rector/"
+    return this.http.put(`${environment.apiUrl}/rector/semillas/${id}/estado`, { 
+      estado, 
+      comentario 
+    });
   }
 }

@@ -46,25 +46,47 @@ export class Rector implements OnInit{
     this.router.navigate(['/dashboard/rector/semilla', id, 'ovas']);
   }
 
-  cambiarEstadoSemilla(id: number, nuevoEstado: 'Aceptada' | 'Rechazada'): void {
-  Swal.fire({
-    title: `¿Confirmar ${nuevoEstado}?`,
-    text: `La semilla será marcada como ${nuevoEstado}.`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, confirmar',
-    cancelButtonText: 'Cancelar',
-    confirmButtonColor: nuevoEstado === 'Aceptada' ? '#22c55e' : '#ef4444'
-  }).then((result) => {
-    if (result.isConfirmed) {
-        // Llamada a tu servicio (debes tener este método creado en Semillasrector)
-        this.rectorService.actualizarEstado(id, nuevoEstado).subscribe({
+  cambiarEstadoSemilla(id: number, nuevoEstado: 'aprobada' | 'rechazada'): void {
+    const esRechazo = nuevoEstado === 'rechazada';
+
+    Swal.fire({
+      title: esRechazo ? 'Rechazar Semilla' : 'Aprobar Semilla',
+      text: esRechazo 
+        ? 'Por favor, indica el motivo del rechazo para que los expertos puedan corregirlo.' 
+        : '¿Estás seguro de aprobar esta semilla? Pasará a la siguiente fase.',
+      icon: esRechazo ? 'warning' : 'question',
+      input: esRechazo ? 'textarea' : undefined, // Solo pide texto si es rechazo
+      inputPlaceholder: 'Escribe el motivo del rechazo aquí...',
+      inputValidator: (value: string) => { 
+        if (esRechazo && !value) {
+          return '¡Debes escribir un motivo de rechazo!';
+        }
+        return null; // SweetAlert espera null si la validación es correcta
+      },
+      showCancelButton: true,
+      confirmButtonText: esRechazo ? 'Rechazar' : 'Aprobar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: esRechazo ? '#ef4444' : '#22c55e',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Extraemos el texto del textarea de SweetAlert
+        const comentario = esRechazo ? result.value : undefined;
+
+        this.rectorService.actualizarEstado(id, nuevoEstado, comentario).subscribe({
           next: () => {
-            Swal.fire('¡Éxito!', `La semilla ha sido ${nuevoEstado}.`, 'success');
-            this.cargarSemillasPendientes(); // Recarga la lista para quitar la semilla de "Pendientes"
+            Swal.fire(
+              '¡Procesado!', 
+              `La semilla ha sido ${nuevoEstado}.`, 
+              'success'
+            );
+            this.cargarSemillasPendientes(); // Recarga la tabla
           },
           error: (err) => {
-            Swal.fire('Error', 'No se pudo actualizar el estado.', 'error');
+            Swal.fire(
+              'Error', 
+              err.error?.message || 'No se pudo actualizar la semilla.', 
+              'error'
+            );
           }
         });
       }

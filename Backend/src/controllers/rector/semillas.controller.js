@@ -75,5 +75,40 @@ export const semillaRectorController = {
             const status = error.message.includes('no existe') ? 404 : 500;
             return res.status(status).json({ ok: false, message: error.message });
         }
+    },
+
+    async cambiarEstado(req, res) {
+        try {
+            const { id } = req.params;
+            const { estado, comentario } = req.body;
+
+            // Validación crucial de campos
+            if (!estado) {
+                return res.status(400).json({ ok: false, message: 'El estado es obligatorio.' });
+            }
+
+            if (estado === 'rechazada' && (!comentario || comentario.trim() === '')) {
+                return res.status(400).json({ 
+                    ok: false, 
+                    message: 'El motivo de rechazo es obligatorio para notificar a los expertos.' 
+                });
+            }
+
+            await semillaRectorService.procesarCambioEstado(id, estado, comentario);
+
+            return res.status(200).json({
+                ok: true,
+                message: `Semilla ${estado} exitosamente.`
+            });
+
+        } catch (error) {
+            console.error('❌ [Controller] Error al cambiar estado de semilla:', error);
+            const status = error.message.includes('permitido') ? 400 : 500;
+            
+            return res.status(status).json({ 
+                ok: false, 
+                message: error.message || 'Error interno del servidor.' 
+            });
+        }
     }
 };

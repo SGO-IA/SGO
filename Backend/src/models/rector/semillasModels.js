@@ -167,5 +167,19 @@ export const semillaRectorModel = {
         `;
         const [rows] = await db.execute(query, [cicloId]);
         return rows;
+    },
+
+    async actualizarEstado(id, estado, comentario) {
+        // Usamos parámetros preparados para evitar inyecciones SQL
+        const query = `
+            UPDATE semillas 
+            SET estado = ?, comentario_rector = ? 
+            WHERE id = ?
+        `;
+        
+        const [result] = await db.query(query, [estado, comentario, id]);
+        
+        // Retornamos true si se modificó alguna fila
+        return result.affectedRows > 0;
     }
 };
