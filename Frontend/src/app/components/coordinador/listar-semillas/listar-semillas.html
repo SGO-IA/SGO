@@ -65,17 +65,18 @@
         </h3>
       </div>
 
-      <div class="mt-5 pt-4 border-t border-gray-50 flex items-center justify-between text-gray-400">
+<div class="mt-5 pt-4 border-t border-gray-50 flex items-center justify-between text-gray-400">
         <span class="text-[11px] font-semibold flex items-center gap-1">
           <i class="pi pi-sliders-h text-xs"></i> Versión {{ semilla.programa_version }}
         </span>
         
         <button 
-          (click)="modalDetalle.abrirModalConSemilla(semilla.semilla_id)"
-          class="text-xs font-bold text-sena-dark hover:text-sena flex items-center gap-1 transition-colors cursor-pointer"
+          (click)="gestionarAccionSemilla(semilla)"
+          class="text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
+          [class]="semilla.estado === 'aprobada' ? 'text-emerald-600 hover:text-emerald-700' : 'text-sena-dark hover:text-sena'"
         >
-          <span>Gestionar</span>
-          <i class="pi pi-arrow-right text-[10px]"></i>
+          <span>{{ semilla.estado === 'aprobada' ? 'Publicar a Ficha' : 'Gestionar' }}</span>
+          <i [class]="semilla.estado === 'aprobada' ? 'pi pi-cloud-upload text-[10px]' : 'pi pi-arrow-right text-[10px]'"></i>
         </button>
       </div>
 
@@ -84,4 +85,6 @@
 
 </div>
 
+
 <app-detalle-semilla-component #modalDetalle></app-detalle-semilla-component>
+<app-modal-duplicar-semilla></app-modal-duplicar-semilla>

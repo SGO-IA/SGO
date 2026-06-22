@@ -89,13 +89,6 @@ export const routes: Routes = [
         data: { roles: [4] }
       },
 
-      {
-        path: 'publicar',
-        loadComponent: () => import('./pages/coordinador/publicar-semillas/publicar-semillas').then(m => m.PublicarSemillas),
-        title: 'S.G.O - Semillas',
-        data: { roles: [4] }
-      },
-
       // Experto tematico
       {
         path: 'panel',
