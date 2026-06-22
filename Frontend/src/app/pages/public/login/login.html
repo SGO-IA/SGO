@@ -41,21 +41,39 @@
 
       <div class="space-y-6">
         
-        <div class="space-y-4">
+        <form (ngSubmit)="iniciarSesionManual()" class="space-y-4">
           <div class="relative">
             <i class="pi pi-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            <input type="text" placeholder="Usuario o Correo" class="input-sena pl-12 py-4">
+            <input 
+              type="email" 
+              name="correo"
+              [(ngModel)]="correo"
+              [disabled]="cargandoManual"
+              placeholder="Correo electrónico" 
+              class="input-sena pl-12 py-4 w-full disabled:opacity-50"
+              required>
           </div>
           
           <div class="relative">
             <i class="pi pi-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-            <input type="password" placeholder="Contraseña" class="input-sena pl-12 py-4">
+            <input 
+              type="password" 
+              name="contrasena"
+              [(ngModel)]="contrasena"
+              [disabled]="cargandoManual"
+              placeholder="Contraseña" 
+              class="input-sena pl-12 py-4 w-full disabled:opacity-50"
+              required>
           </div>
 
-          <button class="w-full py-4 bg-sena text-white rounded-2xl font-bold text-sm shadow-lg shadow-sena-alpha hover:bg-sena-dark hover:-translate-y-0.5 transition-all duration-300">
-            Ingresar al Sistema
+          <button 
+            type="submit"
+            [disabled]="cargandoManual"
+            class="w-full py-4 bg-sena text-white rounded-2xl font-bold text-sm shadow-lg shadow-sena-alpha hover:bg-sena-dark hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none">
+            <i *ngIf="cargandoManual" class="pi pi-spin pi-spinner text-sm"></i>
+            <span>{{ cargandoManual ? 'Verificando...' : 'Ingresar al Sistema' }}</span>
           </button>
-        </div>
+        </form>
 
         <div class="relative py-2">
           <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-100"></div></div>
