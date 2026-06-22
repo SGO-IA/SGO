@@ -19,5 +19,96 @@ export const semillaRectorController = {
                 error: error.message 
             });
         }
+    },
+
+    async detalleParaRevision(req, res) {
+        try {
+            const { id } = req.params;
+            console.log(`🎮 [Controller] Obteniendo radiografía de la semilla ID: ${id}`);
+            
+            const detalleCompleto = await semillaRectorService.getDetalleRevision(Number(id));
+            
+            return res.status(200).json({
+                ok: true,
+                message: "Detalle de semilla obtenido correctamente",
+                data: detalleCompleto
+            });
+        } catch (error) {
+            console.error("❌ [Controller] Error en detalleParaRevision:", error);
+            const status = error.message.includes('No se encontró') ? 404 : 500;
+            return res.status(status).json({ 
+                ok: false,
+                message: "Error al obtener los detalles de la semilla", 
+                error: error.message 
+            });
+        }
+    },
+
+    async getOvasPorSemilla(req, res) {
+        try {
+            const { semillaId } = req.params;
+            const ovas = await semillaRectorService.listarOvasDeSemilla(Number(semillaId));
+            return res.status(200).json({ ok: true, data: ovas });
+        } catch (error) {
+            const status = error.message.includes('No se encontraron') ? 404 : 500;
+            return res.status(status).json({ ok: false, message: error.message });
+        }
+    },
+
+    async getCiclosPorOva(req, res) {
+        try {
+            const { ovaId } = req.params;
+            const ciclos = await semillaRectorService.listarCiclosDeOva(Number(ovaId));
+            return res.status(200).json({ ok: true, data: ciclos });
+        } catch (error) {
+            const status = error.message.includes('No se encontraron') ? 404 : 500;
+            return res.status(status).json({ ok: false, message: error.message });
+        }
+    },
+
+    async getModoLecturaCiclo(req, res) {
+        try {
+            const { cicloId } = req.params;
+            const lecturaCompleta = await semillaRectorService.armarModoLecturaCiclo(Number(cicloId));
+            return res.status(200).json({ ok: true, data: lecturaCompleta });
+        } catch (error) {
+            const status = error.message.includes('no existe') ? 404 : 500;
+            return res.status(status).json({ ok: false, message: error.message });
+        }
+    },
+
+    async cambiarEstado(req, res) {
+        try {
+            const { id } = req.params;
+            const { estado, comentario } = req.body;
+
+            // Validación crucial de campos
+            if (!estado) {
+                return res.status(400).json({ ok: false, message: 'El estado es obligatorio.' });
+            }
+
+            if (estado === 'rechazada' && (!comentario || comentario.trim() === '')) {
+                return res.status(400).json({ 
+                    ok: false, 
+                    message: 'El motivo de rechazo es obligatorio para notificar a los expertos.' 
+                });
+            }
+
+            await semillaRectorService.procesarCambioEstado(id, estado, comentario);
+
+            return res.status(200).json({
+                ok: true,
+                message: `Semilla ${estado} exitosamente.`
+            });
+
+        } catch (error) {
+            console.error('❌ [Controller] Error al cambiar estado de semilla:', error);
+            const status = error.message.includes('permitido') ? 400 : 500;
+            
+            return res.status(status).json({ 
+                ok: false, 
+                message: error.message || 'Error interno del servidor.' 
+            });
+        }
     }
 };

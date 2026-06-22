@@ -1,0 +1,150 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-200">
+  <div class="bg-white rounded-2xl sm:rounded-3xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden relative">
+    
+    @if (cargando()) {
+      <div class="flex flex-col items-center justify-center py-16 sm:py-20">
+        <i class="pi pi-spin pi-spinner text-4xl sm:text-5xl text-sena mb-4"></i>
+        <p class="text-sm sm:text-base text-gray-500 font-medium">Extrayendo radiografía de la semilla...</p>
+      </div>
+    }
+
+    @else if (error()) {
+      <div class="p-6 sm:p-10 text-center">
+        <i class="pi pi-exclamation-triangle text-4xl sm:text-5xl text-red-500 mb-4"></i>
+        <h3 class="text-lg sm:text-xl font-black text-red-800 mb-2">Error de consulta</h3>
+        <p class="text-sm sm:text-base text-red-600 mb-6">{{ error() }}</p>
+        <button (click)="cerrar.emit()" class="bg-gray-200 text-gray-800 w-full sm:w-auto px-6 py-3 sm:py-2 rounded-xl font-bold">Cerrar</button>
+      </div>
+    }
+
+    @else if (detalle(); as data) {
+      <div class="bg-gray-50 border-b border-gray-200 p-4 sm:p-6 lg:p-8 flex justify-between items-start shrink-0 gap-4">
+        <div class="min-w-0 flex-1">
+          <span class="bg-amber-100 text-amber-800 text-[9px] sm:text-[10px] font-black px-2 sm:px-3 py-1 rounded-lg uppercase tracking-widest mb-2 sm:mb-3 inline-block">
+            Revisión Pendiente
+          </span>
+          <h2 class="text-lg sm:text-xl lg:text-2xl font-black text-gray-800 leading-tight truncate" [title]="data.nombre_semilla">
+            {{ data.nombre_semilla }}
+          </h2>
+          <p class="text-xs sm:text-sm text-gray-500 mt-1 truncate" [title]="data.programa_nombre">
+            <i class="pi pi-briefcase mr-1 shrink-0"></i> {{ data.programa_nombre }} 
+            <span class="hidden sm:inline">({{ data.etiqueta_programa }})</span>
+          </p>
+        </div>
+        <button (click)="cerrar.emit()" class="w-8 h-8 sm:w-10 sm:h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors shrink-0">
+          <i class="pi pi-times text-sm sm:text-base"></i>
+        </button>
+      </div>
+
+      @if (!mostrandoRechazo()) {
+        <div class="p-4 sm:p-6 lg:p-8 overflow-y-auto bg-white flex-grow">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+            
+            <div>
+              <div class="flex items-center gap-2 mb-3 sm:mb-4">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="pi pi-users text-sm sm:text-base"></i></div>
+                <h3 class="font-black text-gray-800 text-base sm:text-lg">Equipo Experto ({{ data.total_expertos }})</h3>
+              </div>
+              
+              <div class="space-y-2 sm:space-y-3">
+                @for (experto of data.expertos; track experto.experto_id) {
+                  <div class="bg-gray-50 border border-gray-100 rounded-xl p-2.5 sm:p-3 flex items-center gap-3 min-w-0">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold shrink-0 text-sm sm:text-base">
+                      {{ experto.experto_nombre.charAt(0) }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-xs sm:text-sm font-bold text-gray-800 truncate" [title]="experto.experto_nombre">{{ experto.experto_nombre }}</p>
+                      <p class="text-[10px] sm:text-xs text-gray-500 truncate" [title]="experto.experto_correo">{{ experto.experto_correo }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center gap-2 mb-3 sm:mb-4">
+                <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-sena-alpha text-sena flex items-center justify-center"><i class="pi pi-book text-sm sm:text-base"></i></div>
+                <h3 class="font-black text-gray-800 text-base sm:text-lg">Estructura OVAs ({{ data.total_ovas }})</h3>
+              </div>
+              
+              <div class="space-y-2 sm:space-y-3">
+                @for (ova of data.ovas; track ova.ova_id) {
+                  <div class="bg-white border-2 border-gray-100 rounded-xl p-3 sm:p-4 shadow-sm hover:border-sena/30 transition-colors">
+                    <div class="flex justify-between items-start mb-2 gap-2 min-w-0">
+                      <h4 class="font-bold text-gray-800 text-xs sm:text-sm truncate flex-1" [title]="ova.ova_titulo">{{ ova.ova_titulo }}</h4>
+                      <span class="bg-green-50 text-green-700 text-[8px] sm:text-[9px] font-black px-1.5 sm:px-2 py-1 rounded-md uppercase tracking-widest border border-green-200 shrink-0">
+                        {{ ova.ova_estado }}
+                      </span>
+                    </div>
+                    <div class="flex items-start gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-500 bg-gray-50 p-2 rounded-lg">
+                      <i class="pi pi-check-square mt-0.5 text-sena shrink-0"></i>
+                      <p class="line-clamp-2 leading-tight"><strong>{{ ova.codigo_norma }}:</strong> {{ ova.competencia_nombre }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="bg-gray-50 border-t border-gray-200 p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 shrink-0">
+          
+          <button (click)="aprobar.emit(data.semilla_id)" class="w-full sm:w-auto px-8 py-3 sm:py-2.5 rounded-xl bg-sena text-white font-bold hover:bg-sena-dark shadow-lg shadow-sena/20 transition-all flex justify-center items-center gap-2 sm:order-2">
+            <i class="pi pi-verified"></i> Aprobar y Publicar
+          </button>
+
+          <button (click)="iniciarRechazo()" class="w-full sm:w-auto px-6 py-3 sm:py-2.5 rounded-xl border-2 border-red-200 text-red-600 font-bold hover:bg-red-50 hover:border-red-300 transition-colors flex items-center justify-center gap-2 sm:order-1">
+            <i class="pi pi-ban"></i> Rechazar
+          </button>
+          
+        </div>
+      }
+
+      @else {
+        <div class="p-6 sm:p-8 overflow-y-auto bg-white flex-grow flex flex-col justify-center animate-in slide-in-from-right-4 duration-300">
+          <div class="max-w-2xl mx-auto w-full">
+            <div class="flex items-center gap-3 mb-4 text-red-600">
+              <i class="pi pi-exclamation-circle text-3xl"></i>
+              <h3 class="text-xl font-black">Justificar Rechazo</h3>
+            </div>
+            
+            <p class="text-gray-500 text-sm mb-6">
+              Por favor, detalla los motivos por los cuales esta semilla no cumple con los estándares. Esta retroalimentación será enviada a los expertos temáticos para que realicen las correcciones.
+            </p>
+
+            <div class="relative">
+              <textarea 
+                [ngModel]="motivoRechazo()" 
+                (ngModelChange)="motivoRechazo.set($event)"
+                class="w-full bg-gray-50 border border-gray-300 rounded-xl p-4 min-h-[150px] focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all text-sm outline-none resize-none"
+                placeholder="Ej: Los test de la etapa de Apropiación no corresponden a los criterios de evaluación de la norma..."
+              ></textarea>
+              
+              <div class="absolute bottom-3 right-3 text-xs font-bold"
+                   [class.text-red-500]="motivoRechazo().trim().length < 15"
+                   [class.text-green-600]="motivoRechazo().trim().length >= 15">
+                {{ motivoRechazo().trim().length }} / 15 min.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 border-t border-gray-200 p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 shrink-0">
+          
+          <button 
+            (click)="confirmarRechazo(data.semilla_id)" 
+            [disabled]="motivoRechazo().trim().length < 15"
+            class="w-full sm:w-auto px-8 py-3 sm:py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-600/20 transition-all flex justify-center items-center gap-2 sm:order-2">
+            <i class="pi pi-send"></i> Enviar a Corrección
+          </button>
+
+          <button (click)="cancelarRechazo()" class="w-full sm:w-auto px-6 py-3 sm:py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-bold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 sm:order-1">
+            Cancelar
+          </button>
+          
+        </div>
+      }
+    }
+  </div>
+</div>

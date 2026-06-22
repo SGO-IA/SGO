@@ -1,0 +1,126 @@
+<div class="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto animate-in fade-in duration-300">
+  
+  <div class="mb-8">
+    <button (click)="volverASemillas()" class="text-gray-500 hover:text-sena font-bold text-sm mb-4 flex items-center gap-1 transition-colors">
+      <i class="pi pi-arrow-left text-xs"></i> Volver a semillas
+    </button>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-black text-gray-800">OVAs de la Semilla</h1>
+        <p class="text-sm sm:text-base text-gray-500 mt-1 sm:mt-2">Selecciona un OVA para revisar sus ciclos didácticos correspondientes.</p>
+      </div>
+      <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 sm:py-3 rounded-xl flex items-center justify-center sm:justify-start gap-2 font-bold shadow-sm w-full sm:w-auto">
+        <i class="pi pi-book text-lg sm:text-xl"></i>
+        <span class="text-sm sm:text-base">{{ ovasList().length }} OVAs</span>
+      </div>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div class="flex flex-col items-center justify-center py-16 sm:py-20 text-center">
+      <i class="pi pi-spin pi-spinner text-4xl sm:text-5xl text-sena mb-4"></i>
+      <p class="text-sm sm:text-base text-gray-500 font-medium">Extrayendo estructura de OVAs...</p>
+    </div>
+  }
+
+  @else if (mensajeError()) {
+    <div class="bg-red-50 border-2 border-red-200 rounded-2xl p-6 sm:p-8 text-center max-w-2xl mx-auto">
+      <i class="pi pi-exclamation-triangle text-4xl sm:text-5xl text-red-500 mb-4"></i>
+      <h3 class="text-lg sm:text-xl font-black text-red-800 mb-2">Error</h3>
+      <p class="text-sm sm:text-base text-red-600 mb-6">{{ mensajeError() }}</p>
+      <button (click)="cargarOvas(semillaId()!)" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-colors w-full sm:w-auto">
+        <i class="pi pi-refresh mr-2"></i> Reintentar
+      </button>
+    </div>
+  }
+
+@else {
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+      @for (ova of ovasList(); track ova.ova_id) {
+        
+        <div class="group bg-white border border-gray-200 p-5 sm:p-6 rounded-3xl shadow-sm hover:shadow-xl hover:border-sena/50 transition-all duration-500 flex flex-col relative overflow-hidden h-max">
+          
+          <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+          <div class="flex items-start justify-between mb-4 gap-2">
+            <span class="bg-gray-100 text-gray-600 text-[9px] sm:text-[10px] font-black px-2 sm:px-3 py-1.5 rounded-lg uppercase tracking-widest border border-gray-200">
+              OVA #{{ $index + 1 }}
+            </span>
+            <span class="bg-green-50 text-green-700 text-[9px] sm:text-[10px] font-black px-2 sm:px-3 py-1.5 rounded-lg uppercase tracking-widest border border-green-200 shrink-0">
+              {{ ova.ova_estado }}
+            </span>
+          </div>
+          
+          <div>
+            <h3 class="font-black text-gray-800 text-lg sm:text-xl mb-3 leading-tight group-hover:text-sena transition-colors line-clamp-2" [title]="ova.ova_titulo">
+              {{ ova.ova_titulo }}
+            </h3>
+            
+            <div class="bg-gray-50 rounded-xl p-3 sm:p-4 mb-4 border border-gray-100 text-xs sm:text-sm text-gray-600">
+              <p class="font-bold text-gray-800 mb-1"><i class="pi pi-bookmark text-sena mr-1"></i> Norma: {{ ova.codigo_norma }}</p>
+              <p class="line-clamp-2" [title]="ova.competencia_nombre">{{ ova.competencia_nombre }}</p>
+            </div>
+          </div>
+
+          <div class="mt-auto pt-2 flex items-center justify-between">
+            <div class="flex flex-col">
+              <span class="text-[10px] text-gray-500 uppercase font-bold">Ciclos Didácticos</span>
+              <span class="text-sm font-black text-gray-800">{{ ova.total_ciclos }} configurados</span>
+            </div>
+            
+            <button 
+              (click)="toggleCiclosDeOva(ova.ova_id)"
+              class="px-4 py-2 text-xs sm:text-sm font-black rounded-xl transition-all duration-300 flex items-center gap-2"
+              [class]="ovaExpandidoId() === ova.ova_id 
+                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' 
+                : 'bg-sena-alpha text-sena hover:bg-sena hover:text-white group/btn'"
+            >
+              {{ ovaExpandidoId() === ova.ova_id ? 'Ocultar' : 'Ver Ciclos' }}
+              <i class="pi transition-transform" 
+                 [class]="ovaExpandidoId() === ova.ova_id ? 'pi-chevron-up' : 'pi-chevron-down group-hover/btn:translate-y-0.5'">
+              </i>
+            </button>
+          </div>
+
+          @if (ovaExpandidoId() === ova.ova_id) {
+            <div class="mt-4 pt-4 border-t border-dashed border-gray-200 animate-in slide-in-from-top-2 fade-in duration-300">
+              
+              @if (cargandoCiclos()) {
+                <div class="flex justify-center items-center py-4">
+                  <i class="pi pi-spin pi-spinner text-2xl text-sena"></i>
+                </div>
+              } 
+              
+              @else if (ciclosList().length === 0) {
+                <p class="text-xs text-center text-gray-500 py-2 italic">Aún no hay ciclos en este OVA.</p>
+              }
+
+            @else {
+                <div class="flex flex-col gap-2 max-h-[260px] overflow-y-auto pr-1 scrollbar-thin">
+                  <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 sticky top-0 bg-white py-1">Estructura del OVA:</h4>
+                  
+                  @for (ciclo of ciclosList(); track ciclo.ciclo_id) {
+                    <div class="bg-gray-50 border border-gray-100 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-sena/30 transition-colors">
+                      <div class="min-w-0 flex-1">
+                        <span class="text-[10px] font-black text-sena uppercase">{{ ciclo.nombre_fase }}</span>
+                        <p class="text-sm font-bold text-gray-800 truncate" [title]="ciclo.ciclo_titulo">{{ ciclo.ciclo_titulo }}</p>
+                      </div>
+                      
+                      <button 
+                        (click)="verModoLectura(ciclo.ciclo_id)"
+                        class="shrink-0 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg hover:border-sena hover:text-sena shadow-sm transition-colors flex items-center justify-center gap-1"
+                      >
+                        <i class="pi pi-book"></i> Leer
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+      }
+    </div>
+  }
+</div>
