@@ -1,3 +1,10 @@
+# [0.38.0](https://github.com/SGO-IA/SGO/compare/v0.37.0...v0.38.0) (2026-06-22)
+
+
+### Features
+
+* Merge pull request [#71](https://github.com/SGO-IA/SGO/issues/71) from SGO-IA/rector ([171a5e7](https://github.com/SGO-IA/SGO/commit/171a5e7c7483e9b83a5b2843e66ce719ae7e2c95))
+
 # [0.37.0](https://github.com/SGO-IA/SGO/compare/v0.36.2...v0.37.0) (2026-06-16)
 
 
