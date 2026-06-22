@@ -136,7 +136,6 @@ export const semillaController = {
                 });
             }
 
-            // ── Ejecutar duplicación ─────────────────────────────────────────
             console.log(`🎮 [Controller] Duplicando semilla ${semillaOrigenId} → ficha ${fichaId}`);
 
             const resultado = await semillaService.duplicarSemilla({
@@ -145,26 +144,23 @@ export const semillaController = {
                 instructores,
                 correosAprendices,
             });
+            
+            const creados      = resultado.resumen.filter(a => a.estado === 'creado_y_matriculado');
+            const matriculados = resultado.resumen.filter(a => a.estado === 'matriculado');
 
-            // ── Aquí puedes disparar los correos (RF06) ──────────────────────
-            // Los aprendices con accion: 'creado_y_matriculado' necesitan correo con contraseña temporal
-            // Ejemplo: await EmailService.enviarCredenciales(resultado.aprendices)
-
-            const creados     = resultado.aprendices.filter(a => a.accion === 'creado_y_matriculado');
-            const matriculados = resultado.aprendices.filter(a => a.accion === 'matriculado');
-
-            console.log(`✅ [Controller] Semilla duplicada. ID nueva: ${resultado.nuevaSemillaId}`);
+            console.log(`✅ [Controller] Semilla duplicada con éxito.`);
             console.log(`   Aprendices nuevos: ${creados.length} | Existentes matriculados: ${matriculados.length}`);
 
             return res.status(201).json({
                 ok: true,
                 message: 'Semilla duplicada y ficha vinculada correctamente.',
                 data: {
-                    nuevaSemillaId: resultado.nuevaSemillaId,
-                    fichaId:        resultado.fichaId,
+                    // Si necesitas enviar el ID de la nueva semilla, debes asegurarte que 
+                    // semillaService lo esté devolviendo en el objeto final. 
+                    // Por ahora, enviaremos solo el resumen que sabemos que existe.
                     resumenAprendices: {
-                        total:       resultado.aprendices.length,
-                        creados:     creados.length,
+                        total:        resultado.resumen.length,
+                        creados:      creados.length,
                         matriculados: matriculados.length,
                     },
                 },

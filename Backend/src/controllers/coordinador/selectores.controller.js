@@ -3,11 +3,18 @@ import { coordinadorSelectoresService } from '../../services/coordinador/selecto
 export const selectoresController = {
     async getFichas(req, res) {
         try {
-            // Viene de /api/coordinador/fichas?programaId=1&sinSemilla=true
-            const { programaId } = req.query; 
+            const { programaId } = req.query;
+            console.log("Buscando fichas para el programa_id:", programaId); // 👈 Revisa la consola de Node
+            
+            // 🔥 Si no llega programaId, fallará silenciosamente
+            if (!programaId) {
+                 return res.status(400).json({ message: "programaId es requerido" });
+            }
+
             const fichas = await coordinadorSelectoresService.listarFichas(programaId);
-            return res.status(200).json(fichas); // El frontend espera el array directo
+            return res.status(200).json(fichas);
         } catch (error) {
+            console.error("Error cargando fichas:", error);
             return res.status(500).json({ message: "Error cargando fichas", error: error.message });
         }
     },

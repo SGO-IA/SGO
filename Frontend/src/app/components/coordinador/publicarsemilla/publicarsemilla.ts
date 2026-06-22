@@ -87,7 +87,7 @@ export class ModalDuplicarSemillaComponent {
     this.error.set('');
     this.exito.set(false);
     this.visible.set(true);
-
+    console.log("Cargando datos para el programa:", semilla.programa_id); // 👈 Agrega este log
     this.cargarDatos(semilla.programa_id);
   }
 

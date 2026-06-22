@@ -1,6 +1,9 @@
+import { Resend } from 'resend';
 import { semillaModel } from '../../models/coordinador/semillasModels.js';
 import db from '../../config/dbConfig.js';
+import { emailTemplates } from '../../utils/emailPlantillas.js';
 import bcrypt from 'bcrypt';
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const semillaService = {
     async crearNuevaSemillaConExpertos({ programa_id, nombre_semilla, expertos }) {
@@ -143,6 +146,7 @@ export const semillaService = {
 
         // ── Transacción ──────────────────────────────────────────────────────
         const conn = await db.getConnection();
+        let resultadosAprendices = [];
         try {
             await conn.beginTransaction();
 
@@ -241,16 +245,13 @@ export const semillaService = {
             }
 
             // 5. Procesar aprendices: crear cuenta si no existe, matricular siempre
-            const resultadosAprendices = [];
-
             for (const correo of correosAprendices) {
                 const usuarioExistente = await semillaModel.obtenerUsuarioPorCorreo(correo);
 
                 if (usuarioExistente) {
-                    // Ya existe → solo matricular
                     await semillaModel.matricularAprendiz(conn, {
                         aprendizId: usuarioExistente.id,
-                        fichaId,
+                        fichaId: fichaId,
                     });
                     resultadosAprendices.push({
                         correo,
@@ -258,36 +259,31 @@ export const semillaService = {
                         nombre: usuarioExistente.nombre,
                     });
                 } else {
-                    // No existe → crear cuenta con contraseña temporal
-                    const contrasenaTemp  = generarContrasenaTemp();
-                    const contrasenaHash  = await bcrypt.hash(contrasenaTemp, 10);
-                    const nombre          = correo.split('@')[0];
+                    const contrasenaTemp = generarContrasenaTemp();
+                    const contrasenaHash = await bcrypt.hash(contrasenaTemp, 10);
+                    const nombre = correo.split('@')[0];
 
                     const nuevoId = await semillaModel.crearUsuarioAprendiz(conn, {
                         nombre,
                         correo,
                         contrasena: contrasenaHash,
                     });
+                    
                     await semillaModel.matricularAprendiz(conn, {
                         aprendizId: nuevoId,
-                        fichaId,
+                        fichaId: fichaId,
                     });
+                    
                     resultadosAprendices.push({
                         correo,
-                        accion:        'creado_y_matriculado',
+                        accion: 'creado_y_matriculado',
                         nombre,
-                        contrasenaTemp, // el controller lo usa para enviar el correo
+                        contrasenaTemp, // Almacenado temporalmente en memoria para Resend
                     });
                 }
             }
 
             await conn.commit();
-
-            return {
-                nuevaSemillaId,
-                fichaId,
-                aprendices: resultadosAprendices,
-            };
 
         } catch (error) {
             await conn.rollback();
@@ -295,6 +291,35 @@ export const semillaService = {
         } finally {
             conn.release();
         }
+
+        if (resultadosAprendices.length > 0) {
+            // Mapeamos el array de datos hacia promesas nativas de Resend
+            const promesasEnvio = resultadosAprendices.map(async (aprendiz) => {
+                try {
+                    const template = emailTemplates.getAprendizTemplate(aprendiz.accion, aprendiz);
+                    
+                    await resend.emails.send({
+                        from: 'SGO SENA <soporte@solodeploy.com>',
+                        to: aprendiz.correo,
+                        subject: template.subject,
+                        html: template.html
+                    });
+                } catch (emailError) {
+                    // Captura fallas de envío individuales (ej. correos inexistentes)
+                    // sin romper la respuesta HTTP general del proceso de duplicación
+                    console.error(`❌ Fallo el envío de correo a ${aprendiz.correo}:`, emailError.message);
+                }
+            });
+
+            // Resolvemos de manera concurrente para alta velocidad de respuesta
+            await Promise.all(promesasEnvio);
+        }
+
+        return { 
+            ok: true, 
+            message: "Duplicación e inscripción completada con éxito.",
+            resumen: resultadosAprendices.map(r => ({ correo: r.correo, estado: r.accion }))
+        };
     },
 
 

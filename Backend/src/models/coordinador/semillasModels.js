@@ -43,6 +43,8 @@ export const semillaModel = {
                 p.version AS programa_version
             FROM semillas s
             INNER JOIN programas p ON s.programa_id = p.programa_id
+            -- ✅ AQUÍ ESTÁ LA MAGIA: Solo traemos las semillas originales
+            WHERE s.semilla_origen_id IS NULL 
             ORDER BY s.id DESC;
         `;
         const [rows] = await db.execute(query);
