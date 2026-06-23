@@ -24,6 +24,8 @@ router.post('/semillas/duplicar', semillaController.duplicarSemilla);
 router.get('/fichas', selectoresController.getFichas);
 router.get('/instructores', selectoresController.getInstructores);
 router.get('/programas/:programaId/competencias', selectoresController.getCompetencias);
-
-
+router.get('/fichas-aprendices', selectoresController.getFichasConAprendices);
+router.get('/programas', selectoresController.getProgramas);
+router.get('/centros', selectoresController.getCentros);
+router.post('/fichas', selectoresController.crearFicha);
 export default router;

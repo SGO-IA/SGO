@@ -1,1 +1,152 @@
-<p>fichas works!</p>
+<div class="min-h-screen bg-sena-gray-light p-4 sm:p-8 font-sans">
+  
+  <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
+    <div>
+      <h1 class="text-3xl font-black text-sena-black tracking-tight">Gestión de Fichas</h1>
+      <p class="text-sm text-gray-500 mt-1">Busca y administra los aprendices matriculados por ficha.</p>
+    </div>
+    
+    <div class="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
+      <div class="relative w-full lg:w-96">
+        <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        <input 
+          type="text" 
+          [(ngModel)]="busqueda" 
+          placeholder="Buscar por código o programa..." 
+          class="input-sena w-full shadow-sm">
+        
+        <button 
+          *ngIf="busqueda()" 
+          (click)="limpiarBusqueda()" 
+          class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-sena transition-colors">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <button (click)="modalCrear.abrir()" class="btn-sena w-full sm:w-auto justify-center shadow-sm">
+        <i class="pi pi-plus"></i> Nueva Ficha
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="cargando()" class="flex flex-col items-center justify-center py-20 opacity-70">
+    <i class="pi pi-spin pi-spinner text-4xl text-sena mb-4"></i>
+    <p class="text-sm text-sena-black font-semibold">Cargando fichas...</p>
+  </div>
+
+  <div *ngIf="error()" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl shadow-sm mb-6 animate-in fade-in">
+    <p class="text-red-700 font-medium flex items-center gap-2">
+      <i class="pi pi-exclamation-triangle"></i> {{ error() }}
+    </p>
+  </div>
+
+  <div *ngIf="!cargando() && !error() && !fichaSeleccionada()" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+    
+    <div 
+      *ngFor="let ficha of fichasFiltradas()" 
+      (click)="seleccionarFicha(ficha)"
+      class="bg-white rounded-[var(--radius-sena)] p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:border-sena transition-all duration-[var(--animate-fast)] cursor-pointer group animate-in fade-in slide-in-from-bottom-2">
+      
+      <div class="flex justify-between items-start mb-4">
+        <span class="bg-[var(--color-sena-alpha)] text-sena px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase">
+          {{ ficha.programaNombre }}
+        </span>
+        
+        <div class="bg-gray-50 border border-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1.5">
+          <i class="pi pi-users text-[10px] text-gray-400"></i>
+          <span>{{ ficha.totalAprendices }}</span>
+        </div>
+      </div>
+      
+      <h3 class="text-2xl font-black text-sena-black group-hover:text-sena transition-colors">
+        Ficha {{ ficha.codigoFicha }}
+      </h3>
+      
+      <p class="text-sm text-gray-400 mt-4 flex items-center gap-2 font-medium">
+        <i class="pi pi-arrow-right-arrow-left group-hover:translate-x-1 transition-transform"></i> 
+        Ver aprendices
+      </p>
+    </div>
+
+    <div *ngIf="fichasFiltradas().length === 0" class="col-span-full text-center py-16">
+      <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-gray-100">
+        <i class="pi pi-inbox text-3xl text-gray-300"></i>
+      </div>
+      <h3 class="text-lg font-bold text-sena-black">No hay resultados</h3>
+      <p class="text-sm text-gray-500">No encontramos ninguna ficha que coincida con tu búsqueda.</p>
+    </div>
+
+  </div>
+
+  <div *ngIf="fichaSeleccionada() as fichaSel" class="bg-white rounded-[var(--radius-sena)] shadow-sm border border-gray-100 p-6 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-gray-100 pb-6">
+      <div>
+        <button (click)="cerrarDetalle()" class="text-xs font-bold text-gray-400 hover:text-sena uppercase tracking-widest flex items-center gap-2 mb-3 transition-colors">
+          <i class="pi pi-arrow-left"></i> Volver al listado
+        </button>
+        <h2 class="text-3xl font-black text-sena-black flex items-center gap-3">
+          Ficha {{ fichaSel.codigoFicha }}
+        </h2>
+        <p class="text-sm text-gray-500 mt-1 font-medium">{{ fichaSel.programaNombre }}</p>
+      </div>
+      
+      <div class="bg-sena-gray-light px-5 py-3 rounded-2xl text-center border border-gray-200/50">
+        <p class="text-[10px] uppercase font-black text-gray-400 tracking-wider">Total Aprendices</p>
+        <p class="text-3xl font-black text-sena">{{ fichaSel.totalAprendices }}</p>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-gray-100">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-bold">
+            <th class="py-4 px-6">Aprendiz</th>
+            <th class="py-4 px-6">Correo Institucional</th>
+            <th class="py-4 px-6 text-center">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let aprendiz of fichaSel.aprendices" class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+            
+            <td class="py-4 px-6">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-[var(--color-sena-alpha)] text-sena flex items-center justify-center font-black text-sm">
+                  {{ aprendiz.nombre.charAt(0) | uppercase }}
+                </div>
+                <span class="font-semibold text-sena-black">{{ aprendiz.nombre }}</span>
+              </div>
+            </td>
+            
+            <td class="py-4 px-6 text-gray-600 text-sm font-medium">
+              {{ aprendiz.correo }}
+            </td>
+            
+            <td class="py-4 px-6 text-center">
+              <span *ngIf="aprendiz.activo" class="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 px-2.5 py-1 rounded-md text-xs font-bold">
+                <i class="pi pi-circle-fill text-[8px] text-green-500"></i> Activo
+              </span>
+              <span *ngIf="!aprendiz.activo" class="inline-flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-700 px-2.5 py-1 rounded-md text-xs font-bold">
+                <i class="pi pi-circle-fill text-[8px] text-red-500"></i> Inactivo
+              </span>
+            </td>
+
+          </tr>
+          
+          <tr *ngIf="fichaSel.aprendices.length === 0">
+            <td colspan="3" class="py-16 text-center">
+              <i class="pi pi-users text-4xl text-gray-200 mb-3"></i>
+              <p class="text-gray-500 font-medium">Esta ficha aún no tiene aprendices matriculados.</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <app-modal-crear-ficha 
+    #modalCrear 
+    (fichaCreada)="cargarDatos()">
+  </app-modal-crear-ficha>
+
+</div>

@@ -124,5 +124,50 @@ export const emailTemplates = {
         `
       };
     }
+  },
+  
+  getPlantillaMatriculaFicha(datos) {
+    const senaGreen = '#39A900';
+    const senaBlack = '#323232';
+    const urlLogin = `${process.env.FRONTEND_URL}/login`;
+    
+    let htmlCredenciales = '';
+    
+    if (datos.esNuevo) {
+        htmlCredenciales = `
+            <div style="background-color: #ffffff; border-left: 4px solid ${senaGreen}; border: 1px solid #eee; padding: 20px; border-radius: 8px; margin: 24px 0;">
+              <p style="margin: 0 0 12px 0; font-size: 11px; text-transform: uppercase; color: #9ca3af; font-weight: bold;">Credenciales de acceso provisionales</p>
+              <p style="margin: 6px 0; font-size: 14px; color: #323232;"><strong>Usuario / Correo:</strong> <span style="font-family: monospace;">${datos.correo}</span></p>
+              <p style="margin: 6px 0; font-size: 14px; color: #323232;"><strong>Contraseña temporal:</strong> <span style="font-family: monospace; background-color: #fef2f2; color: #dc2626; padding: 3px 8px; border-radius: 4px; font-weight: bold;">${datos.contrasenaTemp}</span></p>
+              <p style="margin-top: 10px; font-size: 12px; color: #ef4444;">Recuerda cambiar tu contraseña al ingresar.</p>
+            </div>
+        `;
+    }
+
+    return `
+      <div style="font-family: 'Poppins', sans-serif; border-top: 6px solid ${senaGreen}; padding: 30px; max-width: 600px; margin: auto; background-color: #f9f9f9; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h2 style="color: ${senaBlack}; font-weight: 700;">¡Hola, ${datos.nombre}!</h2>
+        <p style="color: #555; font-size: 16px; line-height: 1.6;">
+          Te informamos oficialmente que has sido matriculado en el sistema SGO y vinculado a la ficha de formación <strong>${datos.codigo_ficha}</strong>.
+        </p>
+        
+        <div style="background-color: #e0f2fe; border-left: 4px solid #0284c7; padding: 15px; margin: 20px 0; border-radius: 6px;">
+          <p style="color: #0369a1; font-size: 14px; margin: 0; font-weight: 500;">
+            <strong>Próximos pasos:</strong> Posteriormente serás vinculado a una de nuestras <strong>semillas</strong> para dar inicio formal al desarrollo de tu programa de formación. Te notificaremos cuando esto ocurra.
+          </p>
+        </div>
+
+        ${htmlCredenciales}
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${urlLogin}" style="background-color: ${senaGreen}; color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+            Ingresar a la Plataforma SGO
+          </a>
+        </div>
+        <p style="font-size: 0.85rem; color: #888; text-align: center; border-top: 1px solid #ddd; padding-top: 20px; margin-top: 30px;">
+          <strong>SGO - SENA Palmira</strong>
+        </p>
+      </div>
+    `;
   }
 };
