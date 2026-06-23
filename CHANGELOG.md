@@ -1,3 +1,10 @@
+# [0.39.0](https://github.com/SGO-IA/SGO/compare/v0.38.0...v0.39.0) (2026-06-23)
+
+
+### Features
+
+* Merge pull request [#72](https://github.com/SGO-IA/SGO/issues/72) from SGO-IA/coordinador ([3bc260c](https://github.com/SGO-IA/SGO/commit/3bc260c287f22e87e4cb74aef53175c89438768d))
+
 # [0.38.0](https://github.com/SGO-IA/SGO/compare/v0.37.0...v0.38.0) (2026-06-22)
 
 
