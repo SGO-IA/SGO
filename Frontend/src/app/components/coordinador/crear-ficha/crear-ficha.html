@@ -1,0 +1,110 @@
+<div *ngIf="visible()" class="fixed inset-0 z-50 flex items-center justify-center bg-sena-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+  
+  <div class="bg-white rounded-[var(--radius-sena)] w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    
+    <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+      <div>
+        <h3 class="text-xl font-black text-sena-black flex items-center gap-2">
+          <i class="pi pi-folder-plus text-sena"></i> Crear Nueva Ficha
+        </h3>
+        <p class="text-xs text-gray-500 mt-1">Los aprendices recibirán un correo automático con sus credenciales.</p>
+      </div>
+      <button (click)="cerrar()" [disabled]="cargando()" class="text-gray-400 hover:text-red-500 transition-colors bg-white rounded-full p-2 border border-gray-100 shadow-sm">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="p-8 overflow-y-auto space-y-6">
+      
+      <div *ngIf="error()" class="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium border border-red-100 flex items-center gap-2">
+        <i class="pi pi-exclamation-circle"></i> {{ error() }}
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <h4 class="text-xs font-black uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-2">Información de la Ficha</h4>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Código Ficha</label>
+              <input type="text" [(ngModel)]="codigo_ficha" class="input-sena py-2" placeholder="Ej: 2900123">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Caracterización</label>
+              <input type="text" [(ngModel)]="ficha_caracterizacion" class="input-sena py-2" placeholder="Ej: Ficha Sena">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Programa de Formación</label>
+            <select [(ngModel)]="programa_id" class="input-sena py-2 cursor-pointer">
+              <option [ngValue]="null" disabled>Selecciona un programa...</option>
+              <option *ngFor="let p of programas()" [value]="p.programa_id">{{ p.nombre }}</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Centro de Formación</label>
+            <select [(ngModel)]="centro_id" class="input-sena py-2 cursor-pointer">
+              <option [ngValue]="null" disabled>Selecciona un centro...</option>
+              <option *ngFor="let c of centros()" [value]="c.id">{{ c.nombre_centro }}</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Fecha Inicio</label>
+              <input type="date" [(ngModel)]="fecha_inicio" class="input-sena py-2">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Fecha Fin</label>
+              <input type="date" [(ngModel)]="fecha_fin" class="input-sena py-2">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Modalidad</label>
+            <select [(ngModel)]="modalidad" class="input-sena py-2 cursor-pointer">
+              <option value="Presencial">Presencial</option>
+              <option value="Virtual">Virtual</option>
+              <option value="Mixta">Mixta</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <h4 class="text-xs font-black uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-2">Matrícula de Aprendices</h4>
+          
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Correos Electrónicos</label>
+            <textarea 
+              [(ngModel)]="correosRaw" 
+              rows="9" 
+              class="input-sena py-3 resize-none font-mono text-sm leading-relaxed" 
+              placeholder="aprendiz1@misena.edu.co&#10;aprendiz2@misena.edu.co&#10;(Un correo por línea)"></textarea>
+          </div>
+
+          <div class="flex items-center justify-between text-xs bg-gray-50 p-3 rounded-lg border border-gray-100">
+            <span class="font-semibold text-gray-600">Total detectados: <span class="text-sena font-black">{{ correosLista().length }}</span></span>
+            <span *ngIf="correosInvalidos().length > 0" class="text-red-500 font-bold flex items-center gap-1">
+              <i class="pi pi-exclamation-triangle"></i> {{ correosInvalidos().length }} con error
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="px-8 py-5 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+      <button (click)="cerrar()" [disabled]="cargando()" class="px-6 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-200 transition-colors disabled:opacity-50">
+        Cancelar
+      </button>
+      <button 
+        (click)="guardarFicha()" 
+        [disabled]="!formularioValido() || cargando()"
+        class="btn-sena disabled:opacity-50 disabled:cursor-not-allowed">
+        <i *ngIf="cargando()" class="pi pi-spin pi-spinner"></i>
+        <span>{{ cargando() ? 'Creando y Matriculando...' : 'Crear Ficha' }}</span>
+      </button>
+    </div>
+  </div>
+</div>

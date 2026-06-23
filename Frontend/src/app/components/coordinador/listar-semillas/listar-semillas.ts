@@ -2,11 +2,12 @@ import { Component, inject, OnInit, signal, computed, Output, EventEmitter, View
 import { CommonModule } from '@angular/common';
 import { ProgramasService, SemillaLista } from '../../../services/coordinador/programas';
 import { DetalleSemillaComponent } from '../detalle-semilla-component/detalle-semilla-component';
+import { ModalDuplicarSemillaComponent } from '../publicarsemilla/publicarsemilla';
 
 @Component({
   selector: 'app-listar-semillas',
   standalone: true,
-  imports: [CommonModule, DetalleSemillaComponent],
+  imports: [CommonModule, DetalleSemillaComponent, ModalDuplicarSemillaComponent],
   templateUrl: './listar-semillas.html',
   styleUrl: './listar-semillas.css'
 })
@@ -16,6 +17,7 @@ export class ListarSemillasComponent implements OnInit {
   // Evento para avisarle al padre que abra el modal de creación
   @Output() onCrearSemilla = new EventEmitter<void>();
   @ViewChild('modalDetalle') modalDetalle!: DetalleSemillaComponent;
+  @ViewChild(ModalDuplicarSemillaComponent) modalPublicar!: ModalDuplicarSemillaComponent;
 
   // Signals de estado local
   public semillas = signal<SemillaLista[]>([]);
@@ -47,5 +49,23 @@ export class ListarSemillasComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  public gestionarAccionSemilla(semilla: any): void {
+    if (semilla.estado === 'aprobada') {
+      // 1. Clonamos la semilla y le agregamos la propiedad 'id' explícita
+      // porque el modal espera 'id' en lugar de 'semilla_id'
+      const semillaAdaptada = {
+        ...semilla,
+        id: semilla.semilla_id
+      };
+      
+      // 2. Llamamos al método correcto del modal (se llama 'abrir')
+      this.modalPublicar.abrir(semillaAdaptada); 
+      
+    } else {
+      // Para cualquier otro estado, abrimos el detalle normal
+      this.modalDetalle.abrirModalConSemilla(semilla.semilla_id);
+    }
   }
 }

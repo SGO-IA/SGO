@@ -1,7 +1,9 @@
-import { Routes } from '@angular/router';
+import { Router, Routes } from '@angular/router';
 import { authGuard } from './auth/guards/auth-guard';
 import { AuthCallback } from './pages/public/auth-callback/auth-callback';
 import { DashboardLayout } from './shared/dashboard-layout/dashboard-layout';
+import { LoginService } from './services/public/login-service';
+import { inject } from '@angular/core';
 
 
 export const routes: Routes = [
@@ -37,6 +39,38 @@ export const routes: Routes = [
     component: DashboardLayout,
     canActivate: [authGuard], // Protege todo el grupo
     children: [
+      {
+      path: '',
+      redirectTo: 'router-roles', // Apuntamos a un "puente" interno
+      pathMatch: 'full'
+    },
+      {
+      path: 'router-roles',
+        canActivate: [
+          () => {
+            const loginService = inject(LoginService);
+            const router = inject(Router);
+            const usuario = loginService.currentUser();
+
+            if (usuario) {
+              const vistaPorRol: Record<number, string> = {
+                1: '/dashboard/aprendiz',
+                2: '/dashboard/instructor',
+                3: '/dashboard/panel',
+                4: '/dashboard/semillas',
+                5: '/dashboard/usuarios',
+                6: '/dashboard/rector'
+              };
+              const rutaDestino = vistaPorRol[usuario.rol_id] || '/login';
+              router.navigate([rutaDestino]);
+              return false;
+            }
+            router.navigate(['/login']);
+            return false;
+          }
+        ],
+        loadComponent: () => import('@angular/core').then(m => m.Component)
+      },
       // Admin (Rol 5)
       {
         path: 'importar',
@@ -88,6 +122,12 @@ export const routes: Routes = [
         title: 'S.G.O - Semillas',
         data: { roles: [4] }
       },
+      {
+        path: 'fichas',
+        loadComponent: () => import('./pages/coordinador/fichas/fichas').then(m => m.Fichas),
+        title: 'S.G.O - fichas',
+        data: { roles: [4] }
+      },
 
       // Experto tematico
       {
@@ -134,6 +174,12 @@ export const routes: Routes = [
       loadComponent: () => import('./components/rector/ciclo-lectura/ciclo-lectura').then(m => m.CicloLecturaComponent),
       title: 'Modo Lectura - Ciclo Didáctico',
       data: { roles: [6] }
+    },
+    { 
+      path: 'aprendiz', 
+      loadComponent: () => import('./pages/aprendiz/inicio/inicio').then(m => m.Inicio),
+      title: 'Inicio',
+      data: { roles: [1] }
     }
     ]
   },

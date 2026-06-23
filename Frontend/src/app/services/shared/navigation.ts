@@ -23,9 +23,10 @@ export class NavigationService {
     // { label: 'Coordinación', icon: 'shield', route: '/dashboard/coordinador', roles: [4] },
     { label: 'Semillas', icon: 'file', route: '/dashboard/semillas', roles: [4] },
     { label: 'Expertos Tematicos', icon: 'users', route: '/dashboard/expertos', roles: [4] },
+    { label: 'Fichas', icon: 'users', route: '/dashboard/fichas', roles: [4] },
     // { label: 'Instructores', icon: 'users', route: '/dashboard/instructores', roles: [4] },
     { label: 'Experto Temático', icon: 'star', route: '/dashboard/panel', roles: [3] },
-    { label: 'Panel Rectoría', icon: 'chart-bar', route: '/dashboard/rector', roles: [6] }
+    { label: 'Panel Rectoría', icon: 'chart-bar', route: '/dashboard/rector', roles: [6] },
   ];
 
   // 🔔 Signal que lee el sidebar. Cambia de contenido dinámicamente.

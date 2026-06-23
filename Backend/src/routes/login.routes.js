@@ -11,6 +11,37 @@ router.get('/google', passport.authenticate('google', {
     prompt: 'select_account' 
 }));
 
+// Añade esta ruta en tu archivo de rutas de autenticación
+router.post('/login-local', (req, res, next) => {
+    // Llamamos a la estrategia local que acabamos de crear
+    passport.authenticate('local', (err, user, info) => {
+        if (err) {
+            return res.status(500).json({ autenticado: false, mensaje: "Error interno del servidor." });
+        }
+        
+        if (!user) {
+            // Retorna el mensaje de error definido en la estrategia (ej. Credenciales incorrectas)
+            return res.status(401).json({ autenticado: false, mensaje: info.message });
+        }
+
+        // Creamos la sesión manualmente
+        req.logIn(user, (loginErr) => {
+            if (loginErr) {
+                return res.status(500).json({ autenticado: false, mensaje: "Error al crear la sesión." });
+            }
+            
+            // Limpiamos la contraseña antes de mandar los datos al frontend
+            const { contrasena, ...usuarioLimpio } = user;
+            
+            return res.status(200).json({
+                autenticado: true,
+                mensaje: "Inicio de sesión exitoso.",
+                usuario: usuarioLimpio
+            });
+        });
+    })(req, res, next);
+});
+
 // 2. Obtener perfil actual
 router.get('/perfil', (req, res) => {
     if (req.isAuthenticated()) {
