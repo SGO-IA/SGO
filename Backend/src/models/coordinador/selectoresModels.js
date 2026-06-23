@@ -17,7 +17,7 @@ export const coordinadorSelectoresModel = {
         const query = `
             SELECT id, nombre, correo 
             FROM usuarios 
-            WHERE rol_id = 3 AND activo = 1
+            WHERE rol_id = 2 AND activo = 1
             ORDER BY nombre ASC;
         `;
         const [rows] = await db.execute(query);
