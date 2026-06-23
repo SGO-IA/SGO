@@ -122,6 +122,12 @@ export const routes: Routes = [
         title: 'S.G.O - Semillas',
         data: { roles: [4] }
       },
+      {
+        path: 'fichas',
+        loadComponent: () => import('./pages/coordinador/fichas/fichas').then(m => m.Fichas),
+        title: 'S.G.O - fichas',
+        data: { roles: [4] }
+      },
 
       // Experto tematico
       {
