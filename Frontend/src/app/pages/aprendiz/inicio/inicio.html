@@ -1,1 +1,99 @@
-<p>inicio works!</p>
+<div class="min-h-screen bg-sena-gray-light p-4 sm:p-8 font-sans custom-scrollbar">
+  
+  <div class="mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
+    <div class="flex items-center gap-4 mb-2">
+      <div>
+        <h1 class="text-3xl font-black text-sena-black tracking-tight">
+          ¡Hola, {{ nombreUsuario() }}!
+        </h1>
+        <p class="text-gray-500 font-medium">¿Qué entorno de formación exploraremos hoy?</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="relative w-full md:w-96 mb-8 z-10">
+    <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+    <input 
+      type="text" 
+      [(ngModel)]="busqueda" 
+      placeholder="Buscar por programa o ficha..." 
+      class="input-sena w-full shadow-sm bg-white border-none py-4">
+    
+    <button 
+      *ngIf="busqueda()" 
+      (click)="limpiarBusqueda()" 
+      class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-sena transition-colors">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <div *ngIf="cargando()" class="flex flex-col items-center justify-center py-20 opacity-70">
+    <i class="pi pi-spin pi-spinner text-4xl text-sena mb-4"></i>
+    <p class="text-sm text-sena-black font-semibold">Cargando tus entornos...</p>
+  </div>
+
+  <div *ngIf="error()" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-[var(--radius-sena)] shadow-sm mb-6 animate-in fade-in">
+    <p class="text-red-700 font-medium flex items-center gap-2">
+      <i class="pi pi-exclamation-triangle"></i> {{ error() }}
+    </p>
+  </div>
+
+  <div *ngIf="!cargando() && !error()" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    
+    <div 
+      *ngFor="let ficha of fichasFiltradas()" 
+      (click)="entrarEntorno(ficha)"
+      class="bg-white rounded-[var(--radius-sena)] border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-sena-alpha transition-all duration-300 cursor-pointer group overflow-hidden flex flex-col relative">
+      
+      <div class="h-2 w-full bg-gradient-to-r from-sena to-sena-light"></div>
+
+      <div class="p-6 flex-grow">
+        <div class="flex justify-between items-start mb-4">
+          <span 
+            class="px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase"
+            [ngClass]="{
+              'bg-blue-50 text-blue-600 border border-blue-100': ficha.estado_ficha === 'lectiva',
+              'bg-orange-50 text-orange-600 border border-orange-100': ficha.estado_ficha === 'productiva',
+              'bg-gray-100 text-gray-500 border border-gray-200': ficha.estado_ficha === 'finalizada'
+            }">
+            Etapa {{ ficha.estado_ficha }}
+          </span>
+          
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+            <i class="pi" [ngClass]="ficha.modalidad.toLowerCase() === 'presencial' ? 'pi-building' : 'pi-desktop'"></i>
+            {{ ficha.modalidad }}
+          </span>
+        </div>
+        
+        <div class="w-12 h-12 rounded-xl bg-[var(--color-sena-alpha)] text-sena flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+          <i class="pi pi-book text-xl"></i>
+        </div>
+
+        <h3 class="text-xl font-black text-sena-black leading-tight mb-1 group-hover:text-sena transition-colors line-clamp-2">
+          {{ ficha.nombre_programa }}
+        </h3>
+        <p class="text-sm font-bold text-gray-400 mb-6">Ficha: {{ ficha.codigo_ficha }}</p>
+      </div>
+
+      <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-50 flex items-center justify-between group-hover:bg-sena transition-colors duration-300">
+        <div class="text-[10px] uppercase font-bold tracking-wider text-gray-400 group-hover:text-white/80 transition-colors">
+          {{ ficha.nivel_formacion }}
+        </div>
+        <div class="text-sena font-black text-sm group-hover:text-white transition-colors flex items-center gap-2">
+          <span>Ingresar</span>
+          <i class="pi pi-arrow-right group-hover:translate-x-1 transition-transform"></i>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="fichasFiltradas().length === 0" class="col-span-full bg-white rounded-[var(--radius-sena)] p-12 text-center border border-dashed border-gray-200">
+      <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="pi pi-folder-open text-3xl text-gray-300"></i>
+      </div>
+      <h3 class="text-lg font-bold text-sena-black mb-1">No encontramos programas</h3>
+      <p class="text-sm text-gray-500" *ngIf="busqueda()">Intenta buscando con otras palabras clave.</p>
+      <p class="text-sm text-gray-500" *ngIf="!busqueda()">Actualmente no tienes fichas activas matriculadas en el sistema.</p>
+    </div>
+
+  </div>
+</div>
