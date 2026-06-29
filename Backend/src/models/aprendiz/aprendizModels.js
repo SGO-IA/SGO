@@ -22,5 +22,56 @@ export const aprendizModel = {
         
         const [rows] = await db.execute(query, [aprendizId]);
         return rows;
+    },
+
+    async verificarMatricula(aprendizId, fichaId) {
+        const query = `SELECT id FROM matriculas_aprendices WHERE aprendiz_id = ? AND ficha_id = ?`;
+        const [rows] = await db.execute(query, [aprendizId, fichaId]);
+        return rows.length > 0;
+    },
+
+    // Obtenemos los datos base de la semilla vinculada a la ficha
+    async getSemillaFicha(fichaId) {
+        // Aseguramos los nombres de los campos explícitamente
+        const query = `
+            SELECT s.id, s.nombre_semilla, p.nombre AS programa_nombre 
+            FROM fichas f 
+            INNER JOIN semillas s ON f.semilla_id = s.id 
+            INNER JOIN programas p ON f.programa_id = p.programa_id 
+            WHERE f.id = ?
+        `;
+        const [rows] = await db.execute(query, [fichaId]);
+        return rows[0];
+    },
+
+    // Obtenemos las OVAS activas de la semilla
+    async getOvas(semillaId) {
+        const query = `SELECT id, titulo, descripcion FROM ovas WHERE semilla_id = ? AND activo = 1`;
+        const [rows] = await db.execute(query, [semillaId]);
+        return rows;
+    },
+
+    // Obtenemos los ciclos de una OVA ordenados
+    async getCiclos(ovaId) {
+        const query = `SELECT id, titulo, descripcion_general, orden FROM ciclos_didacticos WHERE ova_id = ? ORDER BY orden ASC`;
+        const [rows] = await db.execute(query, [ovaId]);
+        return rows;
+    },
+
+    // Obtenemos las secciones, cruzando con recursos R2 y Tests mediante LEFT JOIN
+    async getSeccionesYRecursos(cicloId) {
+        const query = `
+            SELECT 
+                cs.id AS seccion_id, cs.tipo_seccion, cs.titulo, cs.contenido_html, cs.orden,
+                r.id AS recurso_id, r.nombre_archivo, r.url_r2, r.tipo_archivo,
+                t.id AS test_id, t.nombre_test, t.preguntas_json
+            FROM ciclo_secciones cs
+            LEFT JOIN recursos_r2 r ON cs.id = r.seccion_id
+            LEFT JOIN tests_ia t ON cs.id = t.seccion_id
+            WHERE cs.ciclo_id = ?
+            ORDER BY cs.orden ASC
+        `;
+        const [rows] = await db.execute(query, [cicloId]);
+        return rows;
     }
 };

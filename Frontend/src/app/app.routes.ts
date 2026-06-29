@@ -180,6 +180,12 @@ export const routes: Routes = [
       loadComponent: () => import('./pages/aprendiz/inicio/inicio').then(m => m.Inicio),
       title: 'Inicio',
       data: { roles: [1] }
+    },
+    { 
+      path: 'aprendiz/entorno/:id', 
+      loadComponent: () => import('./pages/aprendiz/entorno/entorno').then(m => m.EntornoAprendiz),
+      title: 'S.G.O - Aula Virtual',
+      data: { roles: [1] }
     }
     ]
   },

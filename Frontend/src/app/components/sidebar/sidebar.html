@@ -34,21 +34,54 @@
     </div>
   </div>
 
-  <ul class="flex-1 px-6 space-y-2 relative z-10 overflow-y-auto custom-scrollbar">
-    @for (option of menuFiltrado(); track option.route) {
-      <li>
-        <a [routerLink]="option.route" 
-          routerLinkActive="!bg-white !text-sena-black shadow-[0_10px_25px_-5px_rgba(57,169,0,0.15)] translate-x-1"
-          [routerLinkActiveOptions]="{exact: false}"
-          (click)="closeMobileMenu()"
-          class="flex items-center gap-3 px-4 py-3.5 rounded-[1.25rem] transition-all duration-300 group relative text-gray-400 hover:text-sena hover:bg-sena/5 font-sans">
-          
-          <i [class]="'pi pi-' + option.icon + ' text-lg'"></i>
-          <span class="text-sm font-bold tracking-tight">{{ option.label }}</span>
-        </a>
-      </li>
-    }
-  </ul>
+<ul class="flex-1 px-6 space-y-2 relative z-10 overflow-y-auto custom-scrollbar">
+  @for (option of menuFiltrado(); track option.label) {
+    <li>
+      <div 
+        (click)="option.children ? (option.isOpen = !option.isOpen) : option.accion?.()"
+        [ngClass]="{
+          'bg-sena/5 text-sena': option.isOpen,
+          'hover:bg-sena/5 text-gray-400': !option.isOpen
+        }"
+        class="flex items-center justify-between px-4 py-3.5 rounded-[1.25rem] transition-all duration-300 cursor-pointer group relative">
+        
+        <div class="flex items-center gap-3">
+          <i [class]="'pi pi-' + option.icon + ' text-sm'"></i>
+          <span class="text-xs font-black uppercase tracking-wider">{{ option.label }}</span>
+        </div>
+        
+        @if (option.children) {
+          <i class="pi pi-chevron-down text-[10px] transition-transform duration-300" [class.rotate-180]="option.isOpen"></i>
+        }
+      </div>
+
+      @if (option.isOpen && option.children) {
+        <div class="mt-2 ml-4 border-l-2 border-gray-100 pl-2 space-y-1">
+          @for (child of option.children; track child.label) {
+            <div 
+              (click)="child.isOpen = !child.isOpen"
+              class="flex items-center justify-between px-4 py-2.5 rounded-xl cursor-pointer text-[11px] font-bold text-gray-500 hover:text-sena hover:bg-sena/5">
+              <span>{{ child.label }}</span>
+              @if (child.children) { <i class="pi pi-chevron-down text-[8px]"></i> }
+            </div>
+
+            @if (child.isOpen && child.children) {
+              <div class="ml-4 mt-1 space-y-1">
+                @for (fase of child.children; track fase.label) {
+                  <button 
+                    (click)="fase.accion?.(); closeMobileMenu()"
+                    class="w-full text-left px-4 py-2 text-[10px] font-bold text-gray-400 hover:text-sena transition-all uppercase tracking-widest flex items-center gap-2">
+                    <i [class]="'pi pi-' + fase.icon"></i> {{ fase.label }}
+                  </button>
+                }
+              </div>
+            }
+          }
+        </div>
+      }
+    </li>
+  }
+</ul>
 
   <div class="p-6 border-t border-gray-50 bg-gray-50/30 backdrop-blur-md relative z-10">
     

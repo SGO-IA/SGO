@@ -71,8 +71,7 @@ export class Inicio implements OnInit {
   }
 
   entrarEntorno(ficha: FichaAprendiz) {
-    // 🚀 Aquí prepararemos el ruteo al Paso 2: Ver las Semillas y OVAS de esta ficha
-    // this.router.navigate(['/dashboard/aprendiz/entorno', ficha.ficha_id]);
+    this.router.navigate(['/dashboard/aprendiz/entorno', ficha.ficha_id]);
     console.log('Ingresando al entorno de la ficha:', ficha.codigo_ficha);
   }
 }
