@@ -29,28 +29,31 @@
         <i class="pi pi-folder-open text-gray-400"></i> Objetos Virtuales de Aprendizaje (OVAS)
       </h2>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div *ngFor="let ova of data.ovas; let i = index" 
-             class="bg-white p-6 rounded-[var(--radius-sena)] border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-lg bg-[var(--color-sena-alpha)] text-sena flex items-center justify-center font-black">
-              {{ i + 1 }}
+            class="bg-white p-6 rounded-[var(--radius-sena)] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col">
+            
+            <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-sena-alpha text-sena flex items-center justify-center font-black text-lg">
+                {{ i + 1 }}
             </div>
-            <h3 class="text-lg font-black text-sena-black leading-tight">{{ ova.titulo }}</h3>
-          </div>
-          <p class="text-sm text-gray-500 mb-4 line-clamp-3">{{ ova.descripcion }}</p>
-          
-          <div class="bg-gray-50 rounded-lg p-3 text-xs font-bold text-gray-400 flex justify-between items-center">
-            <span>Contiene {{ ova.ciclos.length }} Ciclos Didácticos</span>
-            <i class="pi pi-list"></i>
-          </div>
-        </div>
+            <div>
+                <h3 class="text-lg font-black text-sena-black leading-tight">{{ ova.titulo }}</h3>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                {{ ova.ciclos.length }} Ciclos Didácticos
+                </p>
+            </div>
+            </div>
 
-        <div *ngIf="data.ovas.length === 0" class="col-span-full text-center py-12">
-          <i class="pi pi-box text-4xl text-gray-300 mb-3"></i>
-          <p class="text-gray-500">Aún no hay OVAS publicadas para este entorno.</p>
+            <p class="text-sm text-gray-500 mb-6 flex-grow">{{ ova.descripcion }}</p>
+
+            <button 
+                    class="w-full py-3 rounded-xl bg-sena-black text-white font-black uppercase text-xs tracking-widest hover:bg-sena transition-all flex items-center justify-center gap-2">
+            <i class="pi pi-play"></i>
+            Realizar OVA
+            </button>
         </div>
-      </div>
+        </div>
 
     </div>
 
