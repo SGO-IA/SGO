@@ -29,11 +29,11 @@
         <i class="pi pi-folder-open text-gray-400"></i> Lecciones
       </h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div *ngFor="let ova of data.ovas; let i = index" 
             class="bg-white p-6 rounded-[var(--radius-sena)] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col">
             
-            <div class="flex items-center gap-3 mb-4">
+          <div class="flex items-center gap-3 mb-4">
             <div class="w-12 h-12 rounded-xl bg-sena-alpha text-sena flex items-center justify-center font-black text-lg">
                 {{ i + 1 }}
             </div>
@@ -43,18 +43,19 @@
                 {{ ova.ciclos.length }} Ciclos Didácticos
                 </p>
             </div>
-            </div>
+          </div>
 
-            <p class="text-sm text-gray-500 mb-6 flex-grow">{{ ova.descripcion }}</p>
+          <p class="text-sm text-gray-500 mb-6 flex-grow">{{ ova.descripcion }}</p>
 
-            <button 
-              (click)="verOva(ova)"
-              class="w-full py-3 rounded-xl bg-sena-black text-white font-black uppercase text-xs tracking-widest hover:bg-sena transition-all flex items-center justify-center gap-2">
-              <i class="pi pi-play"></i>
-              Desarrollar la leccion
-            </button>
+          <button 
+            (click)="verOva(ova)"
+            [disabled]="verificandoAcceso() === ova.id"
+            class="w-full py-3 rounded-xl bg-sena-black text-white font-black uppercase text-xs tracking-widest hover:bg-sena transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait">
+            <i class="pi" [ngClass]="verificandoAcceso() === ova.id ? 'pi-spin pi-spinner' : 'pi-play'"></i>
+            {{ verificandoAcceso() === ova.id ? 'Verificando...' : 'Desarrollar la lección' }}
+          </button>
         </div>
-        </div>
+      </div>
 
     </div>
 
@@ -70,4 +71,12 @@
     </div>
 
   </div>
+
+  <!-- 🚀 NUEVO: modal de test diagnóstico, fuera del flujo normal -->
+  <app-test-diagnostico-modal *ngIf="testDiagnosticoActivo() as test"
+                               [test]="test"
+                               (cerrar)="cerrarModalDiagnostico()"
+                               (aprobado)="manejarAprobacionDiagnostico()">
+  </app-test-diagnostico-modal>
+
 </div>

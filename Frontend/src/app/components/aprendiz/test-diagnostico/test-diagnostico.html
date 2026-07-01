@@ -1,0 +1,94 @@
+<div class="fixed inset-0 bg-sena-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-[var(--radius-sena)] shadow-2xl max-w-2xl w-full max-h-[88vh] overflow-hidden flex flex-col">
+    
+    <div class="px-6 py-5 bg-white border-b border-gray-100 flex items-center justify-between gap-4 shrink-0">
+      <div class="min-w-0">
+        <p class="text-[10px] font-black text-sena uppercase tracking-[0.15em] mb-0.5">Test Diagnóstico — Obligatorio</p>
+        <h3 class="text-lg font-black text-sena-black truncate">{{ test.nombre_test }}</h3>
+      </div>
+    </div>
+
+    <div class="px-6 py-3 bg-amber-50 border-b border-amber-100 shrink-0">
+      <p class="text-xs text-amber-700 font-medium flex items-center gap-2">
+        <i class="pi pi-lock"></i> Debes presentar este test para desbloquear la lección.
+      </p>
+    </div>
+
+    <div *ngIf="!enviado()" class="px-6 py-3 bg-gray-50/50 border-b border-gray-100 shrink-0">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          {{ cantidadRespondidas() }} de {{ test.preguntas.length }} respondidas
+        </span>
+        <span class="text-[10px] font-black text-sena">{{ porcentajeProgreso() }}%</span>
+      </div>
+      <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div class="h-full bg-sena rounded-full transition-all duration-300 ease-out" 
+             [style.width.%]="porcentajeProgreso()"></div>
+      </div>
+    </div>
+
+    <div class="overflow-y-auto flex-1 px-6 py-6">
+      <div *ngIf="!enviado()" class="space-y-7">
+        <div *ngFor="let pregunta of test.preguntas; let i = index">
+          <div class="flex items-start gap-3 mb-4">
+            <span class="shrink-0 w-7 h-7 rounded-lg bg-sena-alpha text-sena font-black text-xs flex items-center justify-center mt-0.5">
+              {{ i + 1 }}
+            </span>
+            <p class="font-bold text-sena-black leading-snug pt-1">{{ pregunta.enunciado }}</p>
+          </div>
+
+          <div class="space-y-2 ml-10">
+            <button *ngFor="let opcion of pregunta.opciones; let j = index"
+                    (click)="seleccionarRespuesta(i, j)"
+                    [ngClass]="{
+                      'bg-sena/5 border-sena text-sena-black': obtenerSeleccion(i) === j,
+                      'bg-white border-gray-100 text-gray-600 hover:border-sena/30 hover:bg-gray-50/50': obtenerSeleccion(i) !== j
+                    }"
+                    class="w-full flex items-center gap-3 text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all">
+              <span class="shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black border"
+                    [ngClass]="obtenerSeleccion(i) === j ? 'bg-sena text-white border-sena' : 'bg-gray-50 text-gray-400 border-gray-200'">
+                {{ letras[j] }}
+              </span>
+              <span class="flex-1">{{ opcion.texto }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultado -->
+      <div *ngIf="enviado() && resultado() as res" class="flex flex-col items-center text-center py-8">
+        <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+             [ngClass]="res.aprobado ? 'bg-green-50' : 'bg-red-50'">
+          <i [class]="res.aprobado ? 'pi pi-check-circle text-3xl text-green-500' : 'pi pi-times-circle text-3xl text-red-500'"></i>
+        </div>
+        <h3 class="text-xl font-black text-sena-black mb-1">
+          {{ res.aprobado ? '¡Test superado!' : 'Nivel bajo detectado' }}
+        </h3>
+        <p class="text-sm text-gray-500 font-medium mb-1">Puntaje: {{ res.puntaje.toFixed(0) }}%</p>
+        <p *ngIf="!res.aprobado" class="text-xs text-amber-600 font-medium max-w-sm mt-2">
+          Puedes continuar, pero te recomendamos reforzar los conceptos antes de avanzar.
+        </p>
+      </div>
+    </div>
+
+    <div class="px-6 py-4 border-t border-gray-100 bg-white shrink-0">
+      <button *ngIf="!enviado()" 
+              (click)="enviarTest()" 
+              [disabled]="!todasRespondidas() || enviando()"
+              [ngClass]="todasRespondidas() && !enviando() ? 'bg-sena hover:bg-sena-black cursor-pointer shadow-md shadow-sena/20' : 'bg-gray-200 cursor-not-allowed'"
+              class="w-full py-3.5 rounded-xl text-white font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+        <i *ngIf="enviando()" class="pi pi-spin pi-spinner"></i>
+        <span *ngIf="!enviando() && todasRespondidas()">Enviar y Continuar</span>
+        <span *ngIf="!enviando() && !todasRespondidas()">Responde todas las preguntas</span>
+        <span *ngIf="enviando()">Enviando...</span>
+      </button>
+
+      <button *ngIf="enviado()" 
+              (click)="continuar()" 
+              class="w-full py-3.5 rounded-xl bg-sena text-white font-black text-xs uppercase tracking-widest hover:bg-sena-black transition-all">
+        {{ resultado()?.aprobado ? 'Ir a la Lección' : 'Cerrar' }}
+      </button>
+    </div>
+
+  </div>
+</div>
