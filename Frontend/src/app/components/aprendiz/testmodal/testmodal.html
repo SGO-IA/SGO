@@ -1,0 +1,126 @@
+<div class="fixed inset-0 bg-sena-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+  <div class="bg-white rounded-[var(--radius-sena)] shadow-2xl max-w-2xl w-full max-h-[88vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+    
+    <!-- HEADER FIJO -->
+    <div class="px-6 py-5 bg-white border-b border-gray-100 flex items-center justify-between gap-4 shrink-0">
+      <div class="min-w-0">
+        <p class="text-[10px] font-black text-sena uppercase tracking-[0.15em] mb-0.5">Evaluación</p>
+        <h3 class="text-lg font-black text-sena-black truncate">{{ test.nombre_test }}</h3>
+      </div>
+      <button (click)="cerrarModal()" 
+              class="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-sena-black transition-colors">
+        <i class="pi pi-times text-sm"></i>
+      </button>
+    </div>
+
+    <!-- BARRA DE PROGRESO (solo mientras no se ha enviado) -->
+    <div *ngIf="preguntas.length && !enviado()" class="px-6 py-3 bg-gray-50/50 border-b border-gray-100 shrink-0">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          {{ cantidadRespondidas() }} de {{ preguntas.length }} respondidas
+        </span>
+        <span class="text-[10px] font-black text-sena">{{ porcentajeProgreso() }}%</span>
+      </div>
+      <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div class="h-full bg-sena rounded-full transition-all duration-300 ease-out" 
+             [style.width.%]="porcentajeProgreso()"></div>
+      </div>
+    </div>
+
+    <!-- CUERPO SCROLLEABLE -->
+    <div class="overflow-y-auto flex-1 px-6 py-6">
+
+      <div *ngIf="!preguntas.length" class="flex flex-col items-center justify-center py-16 text-center opacity-50">
+        <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-3"></i>
+        <p class="text-gray-500 font-bold text-sm">No se pudieron cargar las preguntas de este test.</p>
+      </div>
+
+      <div *ngIf="preguntas.length" class="space-y-7">
+        <div *ngFor="let pregunta of preguntas; let i = index">
+          
+          <div class="flex items-start gap-3 mb-4">
+            <span class="shrink-0 w-7 h-7 rounded-lg bg-sena-alpha text-sena font-black text-xs flex items-center justify-center mt-0.5">
+              {{ i + 1 }}
+            </span>
+            <p class="font-bold text-sena-black leading-snug pt-1">{{ pregunta.enunciado }}</p>
+          </div>
+          
+          <div class="space-y-2 ml-10">
+            <button *ngFor="let opcion of pregunta.opciones; let j = index"
+                    (click)="seleccionarRespuesta(i, j)"
+                    [disabled]="enviado()"
+                    [ngClass]="{
+                      'bg-sena/5 border-sena text-sena-black': !enviado() && obtenerSeleccion(i) === j,
+                      'bg-green-50 border-green-400 text-green-800': enviado() && j === pregunta.respuesta_correcta_index,
+                      'bg-red-50 border-red-300 text-red-700': enviado() && obtenerSeleccion(i) === j && j !== pregunta.respuesta_correcta_index,
+                      'bg-white border-gray-100 text-gray-600 hover:border-sena/30 hover:bg-gray-50/50': !enviado() && obtenerSeleccion(i) !== j,
+                      'opacity-50': enviado() && obtenerSeleccion(i) !== j && j !== pregunta.respuesta_correcta_index
+                    }"
+                    class="w-full flex items-center gap-3 text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all disabled:cursor-default">
+              
+              <span class="shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black border"
+                    [ngClass]="{
+                      'bg-sena text-white border-sena': !enviado() && obtenerSeleccion(i) === j,
+                      'bg-green-500 text-white border-green-500': enviado() && j === pregunta.respuesta_correcta_index,
+                      'bg-red-400 text-white border-red-400': enviado() && obtenerSeleccion(i) === j && j !== pregunta.respuesta_correcta_index,
+                      'bg-gray-50 text-gray-400 border-gray-200': !(
+                        (!enviado() && obtenerSeleccion(i) === j) ||
+                        (enviado() && j === pregunta.respuesta_correcta_index) ||
+                        (enviado() && obtenerSeleccion(i) === j && j !== pregunta.respuesta_correcta_index)
+                      )
+                    }">
+                {{ letras[j] }}
+              </span>
+
+              <span class="flex-1">{{ opcion }}</span>
+
+              <i *ngIf="enviado() && j === pregunta.respuesta_correcta_index" class="pi pi-check text-green-600 text-sm"></i>
+              <i *ngIf="enviado() && obtenerSeleccion(i) === j && j !== pregunta.respuesta_correcta_index" class="pi pi-times text-red-500 text-sm"></i>
+            </button>
+          </div>
+
+          <div *ngIf="enviado() && pregunta.retroalimentacion" 
+               class="ml-10 mt-3 p-3 bg-sena-alpha rounded-xl text-xs text-sena-black font-medium flex items-start gap-2">
+            <i class="pi pi-info-circle text-sena mt-0.5 shrink-0"></i>
+            <span>{{ pregunta.retroalimentacion }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER FIJO -->
+    <div *ngIf="preguntas.length" class="px-6 py-4 border-t border-gray-100 bg-white shrink-0">
+      
+      <button *ngIf="!enviado()" 
+              (click)="enviarTest()" 
+              [disabled]="!todasRespondidas()"
+              [ngClass]="todasRespondidas() ? 'bg-sena hover:bg-sena-black cursor-pointer shadow-md shadow-sena/20' : 'bg-gray-200 cursor-not-allowed'"
+              class="w-full py-3.5 rounded-xl text-white font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+        <span *ngIf="todasRespondidas()">Enviar Respuestas</span>
+        <span *ngIf="!todasRespondidas()">Responde todas las preguntas</span>
+        <i *ngIf="todasRespondidas()" class="pi pi-send text-xs"></i>
+      </button>
+
+      <!-- Resumen final dentro del footer -->
+      <div *ngIf="enviado() && resultado() as res" class="flex items-center gap-4">
+        <div class="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center"
+             [ngClass]="res.aprobado ? 'bg-green-50' : 'bg-red-50'">
+          <i [class]="res.aprobado ? 'pi pi-check-circle text-2xl text-green-500' : 'pi pi-times-circle text-2xl text-red-500'"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="text-sm font-black text-sena-black">
+            {{ res.aprobado ? '¡Aprobaste el test!' : 'No aprobaste todavía' }}
+          </h3>
+          <p class="text-xs text-gray-500 font-medium">Puntaje obtenido: {{ res.puntaje.toFixed(0) }}%</p>
+        </div>
+        <button (click)="cerrarModal()" 
+                class="shrink-0 px-6 py-3 rounded-xl bg-sena text-white font-black text-xs uppercase tracking-widest hover:bg-sena-black transition-all">
+          Continuar
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>

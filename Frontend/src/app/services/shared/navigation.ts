@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 export interface MenuOption {
+  id?: number;
   label: string;
   icon: string;
   route: string | null;
@@ -42,15 +43,27 @@ currentMenuOptions = signal<MenuOption[]>([]);
     this.detectarYAplicarMenu(this.router.url);
   }
 
-  detectarYAplicarMenu(url: string) {
+detectarYAplicarMenu(url: string) {
     if (url.includes('/dashboard/semilla/')) {
       const segmentos = url.split('/');
       const index = segmentos.indexOf('semilla');
       if (index !== -1 && segmentos[index + 1]) {
         this.setMenuInternoSemilla(segmentos[index + 1]);
       }
-    } else {
+    } 
+    // 🔥 EL SALVAVIDAS DEL SIDEBAR DEL APRENDIZ
+    else if (url.includes('/dashboard/aprendiz/entorno')) {
+      // Al entrar aquí, evitamos que se ejecute setMenuGlobal().
+      // El menú conservará el árbol de OVAS y Ciclos que cargamos desde la base de datos.
+      
+      // Opcional: Si implementaste el método para mantener abierto el acordeón, lo llamas aquí:
+      // this.autoExpandirMenuPorUrl(url); 
+    } 
+    // Para el resto de rutas de la plataforma, cargamos el menú global
+    else {
       this.setMenuGlobal();
+      // Limpiamos la selección activa para que no quede pegada si sale a otra vista
+      this.cicloSeleccionado.set(null);
     }
   }
 
@@ -86,7 +99,7 @@ setMenuEntornoAprendiz(ovas: any[]) {
       nivel: 0,
       isOpen: false,
       children: ova.ciclos.map((ciclo: any) => ({
-        // 2. CICLO (Nivel 1)
+        id: ciclo.id,
         label: ciclo.titulo,
         icon: 'sync',
         route: null,

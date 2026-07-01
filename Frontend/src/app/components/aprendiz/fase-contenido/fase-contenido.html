@@ -1,0 +1,80 @@
+<div class="animate-in slide-in-from-right-4 duration-300">
+  
+  <div class="flex items-center justify-between mb-6">
+    <button (click)="volver.emit()" class="text-gray-500 hover:text-sena font-bold text-xs uppercase tracking-widest flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-100 shadow-sm transition-colors">
+      <i class="pi pi-arrow-left"></i> Volver a los ciclos
+    </button>
+    
+    <span class="px-4 py-2 bg-sena-alpha text-sena font-black text-xs uppercase tracking-widest rounded-xl border border-sena/20">
+      <i class="pi pi-sync mr-1"></i> {{ faseNombre }}
+    </span>
+  </div>
+
+  <div class="bg-white rounded-[var(--radius-sena)] border border-gray-100 shadow-sm overflow-hidden">
+    
+    <div class="p-8 bg-gray-50/50 border-b border-gray-100">
+      <h2 class="text-3xl font-black text-sena-black mb-2">{{ cicloTitulo }}</h2>
+      
+      <h3 *ngIf="faseData?.titulo" class="text-xl font-bold text-sena-black mb-1">
+        {{ faseData!.titulo }}
+      </h3>
+      <h4 class="text-sm text-gray-500 font-medium uppercase tracking-wide">
+        Fase de {{ faseNombre }}
+      </h4>
+    </div>
+
+    <div class="p-8 min-h-[400px]">
+      
+      <markdown *ngIf="faseData?.contenido_html" 
+                [data]="faseData!.contenido_html"
+                class="prose prose-sena max-w-none prose-headings:text-sena-black prose-p:text-gray-600 prose-a:text-sena prose-strong:text-sena-black prose-li:text-gray-600 mb-12 block">
+      </markdown>
+
+      <div *ngIf="!faseData?.contenido_html" class="flex flex-col items-center justify-center py-12 opacity-50">
+        <i class="pi pi-folder-open text-5xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500 font-bold">El instructor aún no ha agregado contenido a esta fase.</p>
+      </div>
+
+      <div *ngIf="faseData?.recursos?.length" class="mt-8 pt-8 border-t border-gray-100">
+        <h4 class="font-black text-sena-black mb-4 flex items-center gap-2">
+          <i class="pi pi-paperclip text-sena"></i> Material de Apoyo
+        </h4>
+        <div class="flex flex-wrap gap-3">
+          <a *ngFor="let rec of faseData!.recursos" 
+             [href]="rec.url_r2" target="_blank" rel="noopener noreferrer"
+             class="flex items-center gap-3 bg-gray-50 px-5 py-3 rounded-xl text-sm font-bold text-gray-600 hover:bg-sena hover:text-white transition-all shadow-sm group">
+            <i class="pi text-lg" [ngClass]="getIconoArchivo(rec.tipo_archivo)"></i>
+            <span class="truncate max-w-[200px]">{{ rec.nombre_archivo }}</span>
+            <i class="pi pi-external-link text-xs opacity-50 group-hover:opacity-100"></i>
+          </a>
+        </div>
+      </div>
+
+      <div *ngIf="faseData?.tests?.length" class="mt-8 p-6 bg-sena-alpha rounded-2xl border border-sena/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h4 class="font-black text-sena flex items-center gap-2 mb-1">
+            <i class="pi pi-sparkles"></i> Evaluación de {{ faseNombre }}
+          </h4>
+          <p class="text-xs text-sena-black font-medium">
+            {{ faseData!.tests[0].nombre_test || 'Demuestra tus conocimientos para avanzar.' }}
+          </p>
+        </div>
+          <button (click)="iniciarTest.emit(faseData!.tests[0])"
+                  class="px-6 py-3 rounded-xl bg-sena text-white font-black text-xs uppercase tracking-widest hover:bg-sena-black transition-colors shadow-md shadow-sena/30 whitespace-nowrap">
+            Iniciar Test
+          </button>
+      </div>
+
+    </div>
+
+    <!-- Footer con navegación -->
+    <div class="px-8 py-6 bg-gray-50/50 border-t border-gray-100 flex justify-end">
+      <button (click)="siguiente.emit()" 
+              class="px-8 py-3 rounded-xl bg-sena text-white font-black text-xs uppercase tracking-widest hover:bg-sena-black transition-all shadow-md shadow-sena/30 flex items-center gap-2">
+        {{ esUltimaFase ? 'Finalizar Ciclo' : 'Siguiente Fase' }}
+        <i [class]="esUltimaFase ? 'pi pi-check' : 'pi pi-arrow-right'"></i>
+      </button>
+    </div>
+
+  </div>
+</div>

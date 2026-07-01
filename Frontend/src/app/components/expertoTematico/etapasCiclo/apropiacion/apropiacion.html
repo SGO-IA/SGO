@@ -101,19 +101,26 @@
       </div>
     </div>
 
-    <div class="bg-gray-50 p-6 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col justify-center items-center text-center">
+    <div class="bg-gray-50 p-6 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col justify-center items-center text-center relative">
       <i class="pi pi-file-check text-4xl text-sena mb-4"></i>
       <h3 class="font-black text-lg text-sena-black mb-2">Evaluación Asociada</h3>
       <p class="text-xs text-gray-500 mb-6">Configura el test para medir el aprendizaje de esta etapa.</p>
       
       @if (!testConfigurado) {
-        <button (click)="configurarTest()" class="btn-sena bg-sena text-white transition-colors hover:bg-sena-dark">
+        <button (click)="showModalTest = true" class="btn-sena bg-sena text-white transition-colors hover:bg-sena-dark">
           <i class="pi pi-cog"></i> Configurar Test
         </button>
       } @else {
         <div class="flex items-center gap-2 text-sena font-bold">
           <i class="pi pi-check-circle"></i> Test configurado correctamente
         </div>
+      }
+
+      @if (showModalTest) {
+        <app-modal-ia 
+          (close)="showModalTest = false" 
+          (submit)="showModalTest = false; configurarTest($event)">
+        </app-modal-ia>
       }
     </div>
   </div>

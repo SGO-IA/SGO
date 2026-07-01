@@ -37,14 +37,13 @@
 <ul class="flex-1 px-6 space-y-2 relative z-10 overflow-y-auto custom-scrollbar">
   @for (option of menuFiltrado(); track option.label) {
     <li>
-      <div 
-        (click)="option.children ? (option.isOpen = !option.isOpen) : option.accion?.()"
-        [ngClass]="{
-          'bg-sena/5 text-sena': option.isOpen,
-          'hover:bg-sena/5 text-gray-400': !option.isOpen
-        }"
-        class="flex items-center justify-between px-4 py-3.5 rounded-[1.25rem] transition-all duration-300 cursor-pointer group relative">
-        
+<div 
+  (click)="manejarClickOpcion(option)"
+  [ngClass]="{
+    'bg-sena/5 text-sena': option.isOpen,
+    'hover:bg-sena/5 text-gray-400': !option.isOpen
+  }"
+  class="flex items-center justify-between px-4 py-3.5 rounded-[1.25rem] transition-all duration-300 cursor-pointer group relative">        
         <div class="flex items-center gap-3">
           <i [class]="'pi pi-' + option.icon + ' text-sm'"></i>
           <span class="text-xs font-black uppercase tracking-wider">{{ option.label }}</span>
@@ -70,7 +69,12 @@
                 @for (fase of child.children; track fase.label) {
                   <button 
                     (click)="fase.accion?.(); closeMobileMenu()"
-                    class="w-full text-left px-4 py-2 text-[10px] font-bold text-gray-400 hover:text-sena transition-all uppercase tracking-widest flex items-center gap-2">
+                    [ngClass]="{
+                      'bg-sena text-white shadow-lg shadow-sena/20': navService.cicloSeleccionado()?.seccionActiva === fase.label && navService.cicloSeleccionado()?.id === child.id,
+                      'hover:bg-sena/5 text-gray-400': !(navService.cicloSeleccionado()?.seccionActiva === fase.label && navService.cicloSeleccionado()?.id === child.id)
+                    }"
+                    class="w-full text-left px-4 py-2 text-[10px] font-bold transition-all uppercase tracking-widest flex items-center gap-2 rounded-lg">
+                    
                     <i [class]="'pi pi-' + fase.icon"></i> {{ fase.label }}
                   </button>
                 }

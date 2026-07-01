@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AprendizGeneralService, EntornoData } from '../../../services/aprendiz/aprendiz-general';
 import { NavigationService } from '../../../services/shared/navigation';
 
@@ -13,7 +13,8 @@ import { NavigationService } from '../../../services/shared/navigation';
 export class EntornoAprendiz implements OnInit {
   private route = inject(ActivatedRoute);
   private aprendizSvc = inject(AprendizGeneralService);
-  public navService = inject(NavigationService); // Público para usarlo en el HTML
+  public navService = inject(NavigationService);
+  private router = inject(Router); 
   
   fichaId: string | null = null;
   
@@ -50,5 +51,21 @@ export class EntornoAprendiz implements OnInit {
         this.cargando.set(false);
       }
     });
+  }
+
+  verOva(ova: any) {
+    console.log('🎯 [Click] Botón Realizar OVA presionado. Datos del OVA:', ova);
+    
+    if (this.fichaId && ova.id) {
+      const urlDestino = `/dashboard/aprendiz/entorno/${this.fichaId}/ova/${ova.id}`;
+      console.log(`🚀 Intentando navegar de forma absoluta a: ${urlDestino}`);
+      
+      this.router.navigate(['/dashboard/aprendiz/entorno', this.fichaId, 'ova', ova.id]);
+    } else {
+      console.warn('⚠️ No se puede redireccionar porque falta fichaId o ova.id:', {
+        fichaId: this.fichaId,
+        ovaId: ova?.id
+      });
+    }
   }
 }

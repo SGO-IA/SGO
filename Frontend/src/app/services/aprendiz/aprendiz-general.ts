@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -92,6 +92,8 @@ export interface EntornoResponse {
 export class AprendizGeneralService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/aprendiz`;
+
+  entornoActualOvas = signal<Ova[]>([]);
 
   // 1. Obtener listado inicial de fichas
   getMisFichas(): Observable<FichasAprendizResponse> {
