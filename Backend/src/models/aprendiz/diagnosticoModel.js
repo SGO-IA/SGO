@@ -1,14 +1,12 @@
 import db from '../../config/dbConfig.js';
 
 export const diagnosticoModel = {
-    // Obtiene la competencia asociada a una OVA
     async obtenerCompetenciaDeOva(ovaId) {
         const query = `SELECT id, competencia_id, titulo FROM ovas WHERE id = ?`;
         const [rows] = await db.execute(query, [ovaId]);
         return rows[0];
     },
 
-    // Busca si existe un test diagnóstico ACTIVO para esa competencia
     async obtenerTestDiagnosticoPorCompetencia(competenciaId) {
         const query = `
             SELECT id, competencia_id, nombre_test, descripcion, preguntas_json 
@@ -20,7 +18,6 @@ export const diagnosticoModel = {
         return rows[0];
     },
 
-    // Verifica si el aprendiz ya presentó ese test diagnóstico
     async obtenerResultadoDiagnostico(aprendizId, testDiagnosticoId) {
         const query = `
             SELECT id, puntaje, nivel_sugerido, fecha_presentacion 
@@ -33,14 +30,26 @@ export const diagnosticoModel = {
         return rows[0];
     },
 
-    // Guarda el resultado del intento del aprendiz
-    async guardarResultadoDiagnostico(testDiagnosticoId, aprendizId, puntaje, nivelSugerido) {
+    async guardarResultadoDiagnostico(testDiagnosticoId, aprendizId, puntaje, nivelSugerido, analisisIA) {
         const query = `
             INSERT INTO resultados_diagnosticos 
-                (test_diagnostico_id, aprendiz_id, puntaje, nivel_sugerido) 
-            VALUES (?, ?, ?, ?)
+                (test_diagnostico_id, aprendiz_id, puntaje, nivel_sugerido, analisis_ia) 
+            VALUES (?, ?, ?, ?, ?)
         `;
-        const [result] = await db.execute(query, [testDiagnosticoId, aprendizId, puntaje, nivelSugerido]);
+
+        // JSON.stringify(undefined) devuelve undefined, no un string — por eso el guard explícito
+        const analisisParaGuardar = (analisisIA !== undefined && analisisIA !== null)
+            ? JSON.stringify(analisisIA)
+            : null;
+
+        const [result] = await db.execute(query, [
+            testDiagnosticoId,
+            aprendizId,
+            puntaje,
+            nivelSugerido,
+            analisisParaGuardar
+        ]);
+
         return { id: result.insertId, testDiagnosticoId, aprendizId, puntaje, nivelSugerido };
     }
 };

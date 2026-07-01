@@ -1,6 +1,6 @@
-import { Component, Input, Output, EventEmitter, signal, computed, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, computed, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DiagnosticoService, TestDiagnostico } from '../../../services/aprendiz/test-diagnostico';
+import { AnalisisIA, DiagnosticoService, TestDiagnostico } from '../../../services/aprendiz/test-diagnostico';
 
 interface RespuestaUsuario {
   preguntaIndex: number;
@@ -13,7 +13,7 @@ interface RespuestaUsuario {
   imports: [CommonModule],
   templateUrl: './test-diagnostico.html'
 })
-export class TestDiagnosticoModalComponent {
+export class TestDiagnosticoModalComponent implements OnDestroy {
   @Input({ required: true }) test!: TestDiagnostico;
   @Output() cerrar = new EventEmitter<void>();
   @Output() aprobado = new EventEmitter<void>();
@@ -26,6 +26,18 @@ export class TestDiagnosticoModalComponent {
   resultado = signal<{ aprobado: boolean; puntaje: number } | null>(null);
   errorEnvio = signal<string | null>(null);
   letras = ['A', 'B', 'C', 'D', 'E', 'F'];
+  analisis = signal<AnalisisIA | null>(null);
+
+  // 🚀 NUEVO: mensajes rotativos mientras la IA analiza
+  private mensajesAnalisis = [
+    'Corrigiendo tus respuestas...',
+    'Identificando tus fortalezas...',
+    'Detectando áreas de mejora...',
+    'Generando recomendaciones personalizadas...',
+    'Casi listo, un momento más...'
+  ];
+  mensajeActual = signal<string>(this.mensajesAnalisis[0]);
+  private intervaloMensajes: any = null;
 
   todasRespondidas = computed(() => {
     if (!this.test?.preguntas?.length) return false;
@@ -49,21 +61,43 @@ export class TestDiagnosticoModalComponent {
     return this.respuestas().find(r => r.preguntaIndex === preguntaIndex)?.opcionSeleccionada ?? null;
   }
 
+  // 🚀 NUEVO: rota los mensajes cada 2.2s mientras enviando() sea true
+  private iniciarRotacionMensajes() {
+    let index = 0;
+    this.mensajeActual.set(this.mensajesAnalisis[0]);
+
+    this.intervaloMensajes = setInterval(() => {
+      index = (index + 1) % this.mensajesAnalisis.length;
+      this.mensajeActual.set(this.mensajesAnalisis[index]);
+    }, 2200);
+  }
+
+  private detenerRotacionMensajes() {
+    if (this.intervaloMensajes) {
+      clearInterval(this.intervaloMensajes);
+      this.intervaloMensajes = null;
+    }
+  }
+
   enviarTest() {
     if (!this.todasRespondidas() || this.enviando()) return;
     this.enviando.set(true);
     this.errorEnvio.set(null);
+    this.iniciarRotacionMensajes(); // 🚀 NUEVO
 
     this.diagnosticoSvc.enviarResultadoDiagnostico(this.test.id, this.respuestas()).subscribe({
       next: (res) => {
         const puntaje = res.data.puntaje;
-        const aprobado = res.data.nivelSugerido !== 'bajo'; // 🔧 Ajusta tu criterio real de aprobación
+        const aprobado = res.data.nivelSugerido !== 'bajo';
+        this.analisis.set(res.data.analisisIA);
         this.resultado.set({ aprobado, puntaje });
         this.enviado.set(true);
         this.enviando.set(false);
+        this.detenerRotacionMensajes(); // 🚀 NUEVO
       },
       error: () => {
         this.enviando.set(false);
+        this.detenerRotacionMensajes(); // 🚀 NUEVO
         this.errorEnvio.set('No se pudo enviar el test. Intenta de nuevo.');
       }
     });
@@ -75,5 +109,10 @@ export class TestDiagnosticoModalComponent {
     } else {
       this.cerrar.emit();
     }
+  }
+
+  // 🚀 NUEVO: limpieza si el usuario cierra el modal a mitad del proceso
+  ngOnDestroy() {
+    this.detenerRotacionMensajes();
   }
 }

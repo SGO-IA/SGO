@@ -41,6 +41,15 @@ export interface EnviarRespuestaDiagnostico {
   opcionSeleccionada: number | null;
 }
 
+export interface AnalisisIA {
+  nivel_detectado: 'bajo' | 'medio' | 'alto';
+  resumen: string;
+  fortalezas: string[];
+  areas_mejora: string[];
+  recomendacion: string;
+  mensaje_motivacional: string;
+}
+
 export interface ResultadoDiagnosticoResponse {
   ok: boolean;
   data: {
@@ -51,6 +60,7 @@ export interface ResultadoDiagnosticoResponse {
     nivelSugerido: 'bajo' | 'medio' | 'alto';
     correctas: number;
     totalPreguntas: number;
+    analisisIA: AnalisisIA; // 🚀 NUEVO
   };
 }
 
