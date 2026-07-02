@@ -1,4 +1,5 @@
 import { aprendizModel } from '../../models/aprendiz/aprendizModels.js';
+import { MaterialService } from '../../services/expertoTematico/r2Services.js';
 
 export const aprendizService = {
     async listarMisFichas(aprendizId) {
@@ -41,17 +42,18 @@ export const aprendizService = {
                             titulo: row.titulo,
                             contenido_html: row.contenido_html,
                             recursos: [],
-                            tests: []
+                            tests: [],
+                            enlaces: []
                         };
                     }
 
-                    // Evitar duplicados si hay múltiples recursos y tests (producto cartesiano del LEFT JOIN)
                     if (row.recurso_id && !seccionesMap[row.tipo_seccion].recursos.some(r => r.id === row.recurso_id)) {
                         seccionesMap[row.tipo_seccion].recursos.push({
                             id: row.recurso_id,
                             nombre_archivo: row.nombre_archivo,
                             url_r2: row.url_r2,
-                            tipo_archivo: row.tipo_archivo
+                            tipo_archivo: row.tipo_archivo,
+                            key_r2: row.key_r2
                         });
                     }
 
@@ -60,6 +62,14 @@ export const aprendizService = {
                             id: row.test_id,
                             nombre_test: row.nombre_test,
                             preguntas_json: row.preguntas_json
+                        });
+                    }
+
+                    if (row.enlace_id && !seccionesMap[row.tipo_seccion].enlaces.some(e => e.id === row.enlace_id)) {
+                        seccionesMap[row.tipo_seccion].enlaces.push({
+                            id: row.enlace_id,
+                            url: row.enlace_url,
+                            etiqueta: row.enlace_etiqueta || 'Recurso externo'
                         });
                     }
                 });
@@ -72,5 +82,18 @@ export const aprendizService = {
             semilla,
             ovas
         };
+    },
+
+    async generarDescargaRecurso(recursoId) {
+        const recurso = await aprendizModel.obtenerRecursoPorId(recursoId);
+        if (!recurso) {
+            throw new Error('RECURSO_NO_ENCONTRADO');
+        }
+        if (!recurso.key_r2) {
+            throw new Error('RECURSO_SIN_KEY_R2'); // archivo subido antes de que existiera la key, o corrupto
+        }
+
+        const urlDescarga = await MaterialService.generarUrlDescarga(recurso.key_r2, recurso.nombre_archivo);
+        return urlDescarga;
     }
 };

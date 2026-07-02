@@ -63,15 +63,28 @@ export const aprendizModel = {
         const query = `
             SELECT 
                 cs.id AS seccion_id, cs.tipo_seccion, cs.titulo, cs.contenido_html, cs.orden,
-                r.id AS recurso_id, r.nombre_archivo, r.url_r2, r.tipo_archivo,
-                t.id AS test_id, t.nombre_test, t.preguntas_json
+                r.id AS recurso_id, r.nombre_archivo, r.url_r2, r.tipo_archivo, 
+                COALESCE(r.key_r2, r.keyR2) AS key_r2,
+                t.id AS test_id, t.nombre_test, t.preguntas_json,
+                e.id AS enlace_id, e.url AS enlace_url, e.etiqueta AS enlace_etiqueta
             FROM ciclo_secciones cs
             LEFT JOIN recursos_r2 r ON cs.id = r.seccion_id
             LEFT JOIN tests_ia t ON cs.id = t.seccion_id
+            LEFT JOIN enlaces_seccion e ON cs.id = e.seccion_id
             WHERE cs.ciclo_id = ?
             ORDER BY cs.orden ASC
         `;
         const [rows] = await db.execute(query, [cicloId]);
         return rows;
+    },
+
+    async obtenerRecursoPorId(recursoId) {
+        const query = `
+            SELECT id, seccion_id, nombre_archivo, COALESCE(key_r2, keyR2) AS key_r2, tipo_archivo
+            FROM recursos_r2 
+            WHERE id = ?
+        `;
+        const [rows] = await db.execute(query, [recursoId]);
+        return rows[0];
     }
 };

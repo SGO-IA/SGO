@@ -1,6 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SeccionDidactica } from '../../../services/aprendiz/aprendiz-general';
+import { AprendizGeneralService, SeccionDidactica } from '../../../services/aprendiz/aprendiz-general';
 import { MarkdownComponent } from 'ngx-markdown';
 
 @Component({
@@ -21,6 +21,8 @@ export class FaseContenidoComponent {
   @Output() siguiente = new EventEmitter<void>();
     @Output() iniciarTest = new EventEmitter<any>();
 
+  private aprendizSvc = inject(AprendizGeneralService);
+
   ngOnChanges() {
     console.log('faseData recibido en el hijo:', this.faseData);
   }
@@ -35,5 +37,9 @@ export class FaseContenidoComponent {
     if (tipoArchivo.includes('video')) return 'pi-video';
     
     return 'pi-file';
+  }
+
+  obtenerUrlDescarga(recursoId: number): string {
+    return this.aprendizSvc.obtenerUrlDescargaRecurso(recursoId);
   }
 }

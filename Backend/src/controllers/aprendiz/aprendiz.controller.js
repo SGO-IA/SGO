@@ -55,5 +55,26 @@ export const aprendizController = {
                 message: 'Error interno al construir el entorno.'
             });
         }
+    },
+
+    async descargarRecurso(req, res) {
+        try {
+            const { recursoId } = req.params;
+            const urlDescarga = await aprendizService.generarDescargaRecurso(recursoId);
+
+            // Redirige al navegador directamente a la URL firmada — el navegador descarga el archivo
+            return res.redirect(urlDescarga);
+        } catch (error) {
+            console.error('❌ Error generando descarga:', error);
+
+            if (error.message === 'RECURSO_NO_ENCONTRADO') {
+                return res.status(404).json({ ok: false, message: 'El recurso no existe.' });
+            }
+            if (error.message === 'RECURSO_SIN_KEY_R2') {
+                return res.status(422).json({ ok: false, message: 'Este archivo no tiene una referencia válida en el almacenamiento.' });
+            }
+
+            return res.status(500).json({ ok: false, message: 'Error al generar la descarga.' });
+        }
     }
 };

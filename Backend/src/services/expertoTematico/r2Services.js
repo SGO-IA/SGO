@@ -43,4 +43,16 @@ export class MaterialService {
         // Esto borra el archivo físicamente de Cloudflare
         await r2Client.send(new DeleteObjectCommand(deleteParams));
     }
+
+    static async generarUrlDescarga(key, nombreArchivoOriginal) {
+        const command = new GetObjectCommand({
+            Bucket: process.env.R2_BUCKET_NAME,
+            Key: key,
+            ResponseContentDisposition: `attachment; filename="${nombreArchivoOriginal}"`,
+        });
+
+        // La URL firmada expira en 5 minutos — tiempo de sobra para iniciar la descarga
+        const url = await getSignedUrl(r2Client, command, { expiresIn: 300 });
+        return url;
+    }
 }

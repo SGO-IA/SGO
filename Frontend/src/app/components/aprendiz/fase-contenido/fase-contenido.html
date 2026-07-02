@@ -41,11 +41,29 @@
         </h4>
         <div class="flex flex-wrap gap-3">
           <a *ngFor="let rec of faseData!.recursos" 
-             [href]="rec.url_r2" target="_blank" rel="noopener noreferrer"
-             class="flex items-center gap-3 bg-gray-50 px-5 py-3 rounded-xl text-sm font-bold text-gray-600 hover:bg-sena hover:text-white transition-all shadow-sm group">
+            [href]="obtenerUrlDescarga(rec.id)"
+            class="flex items-center gap-3 bg-gray-50 px-5 py-3 rounded-xl text-sm font-bold text-gray-600 hover:bg-sena hover:text-white transition-all shadow-sm group">
             <i class="pi text-lg" [ngClass]="getIconoArchivo(rec.tipo_archivo)"></i>
             <span class="truncate max-w-[200px]">{{ rec.nombre_archivo }}</span>
-            <i class="pi pi-external-link text-xs opacity-50 group-hover:opacity-100"></i>
+            <i class="pi pi-download text-xs opacity-50 group-hover:opacity-100"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- 🚀 NUEVO: Enlaces de referencia (no son archivos, son links externos) -->
+      <div *ngIf="faseData?.enlaces?.length" class="mt-6 pt-6 border-t border-gray-100">
+        <h4 class="font-black text-sena-black mb-4 flex items-center gap-2">
+          <i class="pi pi-link text-sena"></i> Enlaces de Referencia
+        </h4>
+        <div class="flex flex-col gap-2">
+          <a *ngFor="let enlace of faseData!.enlaces" 
+            [href]="enlace.url" target="_blank" rel="noopener noreferrer"
+            class="flex items-center justify-between gap-3 bg-blue-50/50 border border-blue-100 px-5 py-3 rounded-xl text-sm font-bold text-blue-700 hover:bg-blue-100 transition-all group">
+            <span class="flex items-center gap-3 min-w-0">
+              <i class="pi pi-globe text-blue-500 shrink-0"></i>
+              <span class="truncate">{{ enlace.etiqueta }}</span>
+            </span>
+            <i class="pi pi-arrow-up-right text-xs opacity-50 group-hover:opacity-100 shrink-0"></i>
           </a>
         </div>
       </div>

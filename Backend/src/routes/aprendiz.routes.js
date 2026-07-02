@@ -7,6 +7,7 @@ const router = Router();
 router.get('/mis-fichas', aprendizController.getMisFichas);
 router.get('/entorno/:fichaId', aprendizController.getEntornoFicha);
 router.get('/ova/:ovaId/acceso', diagnosticoController.verificarAcceso);
+router.get('/recursos/:recursoId/descargar', aprendizController.descargarRecurso);
 router.post('/diagnostico/:testDiagnosticoId/resultado', diagnosticoController.enviarResultado);
 
 export default router;

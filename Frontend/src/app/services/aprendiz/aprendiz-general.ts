@@ -41,8 +41,15 @@ export interface SeccionDidactica {
   id: number;
   titulo: string;
   contenido_html: string;
-  recursos: RecursoR2[];
-  tests: TestIA[];
+  recursos: {
+    id: number;
+    nombre_archivo: string;
+    url_r2: string;
+    tipo_archivo: string;
+    key_r2?: string;
+  }[];
+  tests: any[];
+  enlaces: EnlaceRecurso[];
 }
 
 export interface CicloDidactico {
@@ -84,7 +91,11 @@ export interface EntornoResponse {
   data: EntornoData;
 }
 
-// ────────────────────────────────────────────────────────────────────────────
+export interface EnlaceRecurso {
+  id: number;
+  url: string;
+  etiqueta: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -107,5 +118,9 @@ export class AprendizGeneralService {
     return this.http.get<EntornoResponse>(`${this.apiUrl}/entorno/${fichaId}`, {
       withCredentials: true
     });
+  }
+
+  obtenerUrlDescargaRecurso(recursoId: number): string {
+    return `${this.apiUrl}/recursos/${recursoId}/descargar`;
   }
 }
