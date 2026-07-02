@@ -91,6 +91,24 @@ export interface EstadisticasResponse {
   };
 }
 
+export interface AprendizPrioritarioIA {
+  nombre: string;
+  motivo: string;
+}
+
+export interface AnalisisGrupalIA {
+  resumen_general: string;
+  patrones_comunes: string[];
+  aprendices_prioritarios: AprendizPrioritarioIA[];
+  recomendacion_pedagogica: string;
+}
+
+export interface AnalisisGrupalResponse {
+  ok: boolean;
+  data: AnalisisGrupalIA;
+  message?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class InstructorGeneralService {
   private http = inject(HttpClient);
@@ -103,9 +121,15 @@ export class InstructorGeneralService {
   }
 
   getEstadisticas(fichaId: number, competenciaId: number, ovaId: number): Observable<EstadisticasResponse> {
-  return this.http.get<EstadisticasResponse>(
-    `${this.apiUrl}/ficha/${fichaId}/competencia/${competenciaId}/ova/${ovaId}/estadisticas`,
-    { withCredentials: true }
-  );
-}
+    return this.http.get<EstadisticasResponse>(
+      `${this.apiUrl}/ficha/${fichaId}/competencia/${competenciaId}/ova/${ovaId}/estadisticas`,
+      { withCredentials: true }
+    );
+  }
+
+  getAnalisisGrupalIA(fichaId: number, competenciaId: number, ovaId: number): Observable<AnalisisGrupalResponse> {
+    return this.http.get<AnalisisGrupalResponse>(
+      `${this.apiUrl}/ficha/${fichaId}/competencia/${competenciaId}/ova/${ovaId}/analisis-ia`
+    );
+  }
 }

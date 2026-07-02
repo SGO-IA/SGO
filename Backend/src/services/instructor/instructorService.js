@@ -1,4 +1,5 @@
 import { instructorModel } from '../../models/instructor/instructorModel.js';
+import { anthropic, anthropicConfig } from '../../config/claude.js';
 
 export const instructorService = {
     /**
@@ -198,5 +199,127 @@ export const instructorService = {
             ciclos: ciclos.map(c => ({ id: c.id, titulo: c.titulo, tests: c.tests })),
             aprendices: aprendicesDetalle
         };
+    },
+
+    async generarAnalisisGrupal(fichaId, competenciaId, ovaId) {
+    // 1. Estructura de la OVA (mismo patrón que ya usas en obtenerEstadisticasFichaCompetencia)
+    const estructuraRaw = await instructorModel.obtenerEstructuraOva(ovaId);
+
+    const ciclosMap = {};
+    estructuraRaw.forEach(row => {
+        if (!ciclosMap[row.ciclo_id]) {
+            ciclosMap[row.ciclo_id] = { id: row.ciclo_id, titulo: row.ciclo_titulo, tests: [] };
+        }
+        if (row.test_id && !ciclosMap[row.ciclo_id].tests.some(t => t.id === row.test_id)) {
+            ciclosMap[row.ciclo_id].tests.push({ id: row.test_id, nombre_test: row.nombre_test, fase: row.tipo_seccion });
+        }
+    });
+    const ciclos = Object.values(ciclosMap);
+    const testIds = ciclos.flatMap(c => c.tests.map(t => t.id));
+
+    // 2. Aprendices y sus resultados con analisis_ia
+    const aprendices = await instructorModel.obtenerAprendicesPorFicha(fichaId);
+    const aprendizIds = aprendices.map(a => a.id);
+
+    const [resultadosTests, resultadosDiagnostico] = await Promise.all([
+        instructorModel.obtenerResultadosTestsIAConAnalisis(aprendizIds, testIds),
+        instructorModel.obtenerResultadosDiagnosticoConAnalisis(aprendizIds, competenciaId)
+    ]);
+
+    if (!aprendizIds.length) {
+        throw new Error('No hay aprendices matriculados en esta ficha para analizar.');
     }
+
+    // 3. Resumen COMPACTO por aprendiz (solo lo que le sirve a la IA, nada de JSON crudo completo)
+    const resumenAprendices = aprendices.map(aprendiz => {
+        const testsDelAprendiz = resultadosTests
+            .filter(r => r.aprendiz_id === aprendiz.id)
+            .map(r => {
+                const test = ciclos.flatMap(c => c.tests).find(t => t.id === r.test_id);
+                let areasMejora = [];
+                try {
+                    const analisis = typeof r.analisis_ia === 'string' ? JSON.parse(r.analisis_ia) : r.analisis_ia;
+                    areasMejora = analisis?.areas_mejora?.slice(0, 5) || [];
+                } catch {
+                    // si no se puede parsear, seguimos sin esas áreas puntuales
+                }
+                return {
+                    fase: test?.fase,
+                    nombre_test: test?.nombre_test,
+                    puntaje: parseFloat(r.puntaje),
+                    aprobado: !!r.aprobado,
+                    areas_mejora: areasMejora
+                };
+            });
+
+        const diag = resultadosDiagnostico.find(d => d.aprendiz_id === aprendiz.id);
+        let diagAreas = [];
+        if (diag) {
+            try {
+                const analisis = typeof diag.analisis_ia === 'string' ? JSON.parse(diag.analisis_ia) : diag.analisis_ia;
+                diagAreas = analisis?.areas_mejora?.slice(0, 5) || [];
+            } catch {
+                // idem
+            }
+        }
+
+        return {
+            nombre: aprendiz.nombre,
+            diagnostico: diag
+                ? { puntaje: parseFloat(diag.puntaje), nivel: diag.nivel_sugerido, areas_mejora: diagAreas }
+                : null,
+            tests: testsDelAprendiz
+        };
+    });
+
+    // 4. Prompt
+    const prompt = `Eres un asistente pedagógico que ayuda a instructores del SENA a interpretar resultados de aprendizaje.
+
+A continuación tienes el resumen de un grupo de aprendices. Cada uno tiene su diagnóstico inicial (punto de partida antes de la OVA) y sus resultados en los tests de Apropiación y Transferencia, incluyendo las áreas de mejora detectadas.
+
+DATOS DEL GRUPO:
+${JSON.stringify(resumenAprendices, null, 2)}
+
+Con base en esta información, genera un análisis EXCLUSIVAMENTE en formato JSON (sin texto adicional antes o después, sin backticks de markdown) con esta estructura exacta:
+
+{
+  "resumen_general": "string, 2-3 frases sobre el estado general del grupo",
+  "patrones_comunes": ["array de 2-5 strings, conceptos donde varios aprendices comparten dificultad"],
+  "aprendices_prioritarios": [{"nombre": "string", "motivo": "string breve"}],
+  "recomendacion_pedagogica": "string, sugerencia concreta y accionable para la próxima sesión del instructor"
+}
+
+No inventes datos que no estén en la información proporcionada. Si el grupo es muy pequeño o no hay suficientes datos para detectar patrones reales, dilo explícitamente en resumen_general.`;
+
+    // 🔍 LOG de depuración: ver EXACTAMENTE qué se envía a la IA
+    console.log('\n========== 🤖 PROMPT ENVIADO A CLAUDE (Análisis Grupal) ==========');
+    console.log(prompt);
+    console.log('====================================================================\n');
+
+    const respuesta = await anthropic.messages.create({
+        model: anthropicConfig.model,
+        max_tokens: anthropicConfig.maxTokens,
+        messages: [{ role: 'user', content: prompt }]
+    });
+
+    const textoRespuesta = respuesta.content
+        .filter(block => block.type === 'text')
+        .map(block => block.text)
+        .join('\n');
+
+    console.log('========== 🤖 RESPUESTA CRUDA DE CLAUDE ==========');
+    console.log(textoRespuesta);
+    console.log('====================================================\n');
+
+    let analisis;
+    try {
+        const limpio = textoRespuesta.replace(/```json|```/g, '').trim();
+        analisis = JSON.parse(limpio);
+    } catch (err) {
+        console.error('❌ No se pudo parsear la respuesta de la IA como JSON:', err);
+        throw new Error('La IA no devolvió un formato válido. Intenta de nuevo.');
+    }
+
+    return analisis;
+}
 };

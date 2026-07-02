@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AprendizEstadistica, EstadisticasResponse, InstructorGeneralService } from '../../../services/instructor/general';
+import { AprendizEstadistica, EstadisticasResponse, AnalisisGrupalIA, InstructorGeneralService } from '../../../services/instructor/general';
 
 @Component({
   selector: 'app-estadisticas',
@@ -20,6 +20,12 @@ export class Estadisticas implements OnInit {
   aprendizSeleccionado = signal<AprendizEstadistica | null>(null);
   filtroEstado = signal<'todos' | 'completado' | 'en_progreso' | 'sin_iniciar'>('todos');
 
+  // 🤖 Estado del análisis grupal con IA
+  mostrarModalAnalisis = signal<boolean>(false);
+  analisisCargando = signal<boolean>(false);
+  analisisError = signal<string | null>(null);
+  analisisIA = signal<AnalisisGrupalIA | null>(null);
+
   fichaId!: number;
   competenciaId!: number;
   ovaId!: number;
@@ -31,7 +37,6 @@ export class Estadisticas implements OnInit {
     return d.aprendices.filter(a => a.estado === this.filtroEstado());
   });
 
-  // Para el donut chart: ángulos acumulados
   segmentosDonut = computed(() => {
     const r = this.data()?.resumen;
     if (!r || r.totalAprendices === 0) return [];
@@ -52,23 +57,17 @@ export class Estadisticas implements OnInit {
     });
   });
 
-ngOnInit() {
-  console.log('Params recibidos:', this.route.snapshot.paramMap.keys, {
-    fichaId: this.route.snapshot.paramMap.get('fichaId'),
-    competenciaId: this.route.snapshot.paramMap.get('competenciaId'),
-    ovaId: this.route.snapshot.paramMap.get('ovaId')
-  });
+  ngOnInit() {
+    this.fichaId = Number(this.route.snapshot.paramMap.get('fichaId'));
+    this.competenciaId = Number(this.route.snapshot.paramMap.get('competenciaId'));
+    this.ovaId = Number(this.route.snapshot.paramMap.get('ovaId'));
 
-  this.fichaId = Number(this.route.snapshot.paramMap.get('fichaId'));
-  this.competenciaId = Number(this.route.snapshot.paramMap.get('competenciaId'));
-  this.ovaId = Number(this.route.snapshot.paramMap.get('ovaId'));
-
-  if (this.fichaId && this.competenciaId && this.ovaId) {
-    this.cargarEstadisticas();
-  } else {
-    console.warn('⚠️ Faltan parámetros de ruta, no se puede cargar estadísticas');
+    if (this.fichaId && this.competenciaId && this.ovaId) {
+      this.cargarEstadisticas();
+    } else {
+      console.warn('⚠️ Faltan parámetros de ruta, no se puede cargar estadísticas');
+    }
   }
-}
 
   cargarEstadisticas() {
     this.cargando.set(true);
@@ -85,13 +84,12 @@ ngOnInit() {
     });
   }
 
-  // Coordenadas SVG para un arco de donut (círculo r=15.9, técnica de stroke-dasharray)
   arcoDash(porcentaje: number): string {
     return `${porcentaje} ${100 - porcentaje}`;
   }
 
   arcoOffset(inicio: number): number {
-    return 100 - inicio + 25; // +25 para empezar arriba (12 en punto)
+    return 100 - inicio + 25;
   }
 
   verDetalleAprendiz(aprendiz: AprendizEstadistica) {
@@ -100,6 +98,43 @@ ngOnInit() {
 
   cerrarDetalle() {
     this.aprendizSeleccionado.set(null);
+  }
+
+  // 🤖 Análisis grupal con IA
+  abrirAnalisisIA() {
+    this.mostrarModalAnalisis.set(true);
+    // Si ya lo generamos antes en esta sesión, no volvemos a llamar a la IA
+    if (this.analisisIA()) return;
+    this.generarAnalisisIA();
+  }
+
+  generarAnalisisIA() {
+    this.analisisCargando.set(true);
+    this.analisisError.set(null);
+
+    this.instructorSvc.getAnalisisGrupalIA(this.fichaId, this.competenciaId, this.ovaId).subscribe({
+      next: (res) => {
+        if (res.ok) {
+          this.analisisIA.set(res.data);
+        } else {
+          this.analisisError.set(res.message || 'No se pudo generar el análisis.');
+        }
+        this.analisisCargando.set(false);
+      },
+      error: (err) => {
+        console.error('Error generando análisis con IA:', err);
+        this.analisisError.set(err.error?.message || 'Error al conectar con el servicio de IA.');
+        this.analisisCargando.set(false);
+      }
+    });
+  }
+
+  reintentarAnalisis() {
+    this.generarAnalisisIA();
+  }
+
+  cerrarModalAnalisis() {
+    this.mostrarModalAnalisis.set(false);
   }
 
   claseEstado(estado: string): string {

@@ -119,5 +119,38 @@ export const instructorModel = {
         `;
         const [rows] = await db.execute(query, [...aprendizIds, competenciaId]);
         return rows;
-    }
+    },
+    
+    async obtenerResultadosTestsIAConAnalisis(aprendizIds, testIds) {
+    if (!aprendizIds.length || !testIds.length) return [];
+    const placeholdersAp = aprendizIds.map(() => '?').join(',');
+    const placeholdersTe = testIds.map(() => '?').join(',');
+    const query = `
+        SELECT r1.aprendiz_id, r1.test_id, r1.puntaje, r1.aprobado, r1.analisis_ia, r1.fecha_presentacion
+        FROM resultados_tests_ia r1
+        INNER JOIN (
+            SELECT aprendiz_id, test_id, MAX(fecha_presentacion) AS ultima_fecha
+            FROM resultados_tests_ia
+            WHERE aprendiz_id IN (${placeholdersAp}) AND test_id IN (${placeholdersTe})
+            GROUP BY aprendiz_id, test_id
+        ) r2 ON r1.aprendiz_id = r2.aprendiz_id AND r1.test_id = r2.test_id AND r1.fecha_presentacion = r2.ultima_fecha
+    `;
+    const [rows] = await db.execute(query, [...aprendizIds, ...testIds, ...aprendizIds, ...testIds]);
+    return rows;
+},
+
+// 🤖 NUEVO: diagnóstico con analisis_ia completo (para el análisis grupal con IA)
+async obtenerResultadosDiagnosticoConAnalisis(aprendizIds, competenciaId) {
+    if (!aprendizIds.length) return [];
+    const placeholders = aprendizIds.map(() => '?').join(',');
+    const query = `
+        SELECT r.aprendiz_id, r.puntaje, r.nivel_sugerido, r.analisis_ia, r.fecha_presentacion
+        FROM resultados_diagnosticos r
+        INNER JOIN tests_diagnosticos td ON r.test_diagnostico_id = td.id
+        WHERE r.aprendiz_id IN (${placeholders}) AND td.competencia_id = ?
+        ORDER BY r.fecha_presentacion DESC
+    `;
+    const [rows] = await db.execute(query, [...aprendizIds, competenciaId]);
+    return rows;
+}
 };
