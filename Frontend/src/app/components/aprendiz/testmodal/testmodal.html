@@ -1,0 +1,151 @@
+<div class="fixed inset-0 bg-sena-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+  <div class="bg-white rounded-[var(--radius-sena)] shadow-2xl max-w-2xl w-full max-h-[88vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+    
+    <div class="px-6 py-5 bg-white border-b border-gray-100 flex items-center justify-between gap-4 shrink-0">
+      <div class="min-w-0">
+        <p class="text-[10px] font-black text-sena uppercase tracking-[0.15em] mb-0.5">Evaluación</p>
+        <h3 class="text-lg font-black text-sena-black truncate">{{ test.nombre_test }}</h3>
+      </div>
+      <button *ngIf="!enviando()" (click)="cerrarModal()" 
+              class="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-sena-black transition-colors">
+        <i class="pi pi-times text-sm"></i>
+      </button>
+    </div>
+
+    <div *ngIf="preguntas.length && !enviado() && !enviando()" class="px-6 py-3 bg-gray-50/50 border-b border-gray-100 shrink-0">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+          {{ cantidadRespondidas() }} de {{ preguntas.length }} respondidas
+        </span>
+        <span class="text-[10px] font-black text-sena">{{ porcentajeProgreso() }}%</span>
+      </div>
+      <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div class="h-full bg-sena rounded-full transition-all duration-300 ease-out" 
+             [style.width.%]="porcentajeProgreso()"></div>
+      </div>
+    </div>
+
+    <div class="overflow-y-auto flex-1 px-6 py-6">
+
+      <div *ngIf="!preguntas.length" class="flex flex-col items-center justify-center py-16 text-center opacity-50">
+        <i class="pi pi-exclamation-circle text-4xl text-gray-300 mb-3"></i>
+        <p class="text-gray-500 font-bold text-sm">No se pudieron cargar las preguntas de este test.</p>
+      </div>
+
+      <!-- Estado 1: respondiendo -->
+      <div *ngIf="preguntas.length && !enviando() && !enviado()" class="space-y-7">
+        <div *ngFor="let pregunta of preguntas; let i = index">
+          <div class="flex items-start gap-3 mb-4">
+            <span class="shrink-0 w-7 h-7 rounded-lg bg-sena-alpha text-sena font-black text-xs flex items-center justify-center mt-0.5">
+              {{ i + 1 }}
+            </span>
+            <p class="font-bold text-sena-black leading-snug pt-1">{{ pregunta.enunciado }}</p>
+          </div>
+          
+          <div class="space-y-2 ml-10">
+            <button *ngFor="let opcion of pregunta.opciones; let j = index"
+                    (click)="seleccionarRespuesta(i, j)"
+                    [ngClass]="{
+                      'bg-sena/5 border-sena text-sena-black': obtenerSeleccion(i) === j,
+                      'bg-white border-gray-100 text-gray-600 hover:border-sena/30 hover:bg-gray-50/50': obtenerSeleccion(i) !== j
+                    }"
+                    class="w-full flex items-center gap-3 text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all">
+              <span class="shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black border"
+                    [ngClass]="obtenerSeleccion(i) === j ? 'bg-sena text-white border-sena' : 'bg-gray-50 text-gray-400 border-gray-200'">
+                {{ letras[j] }}
+              </span>
+              <span class="flex-1">{{ opcion }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado 2: analizando -->
+      <div *ngIf="enviando()" class="flex flex-col items-center justify-center py-16 text-center">
+        <div class="relative w-16 h-16 mb-6">
+          <div class="absolute inset-0 rounded-2xl bg-sena/10 animate-ping"></div>
+          <div class="relative w-16 h-16 rounded-2xl bg-sena-alpha border border-sena/20 flex items-center justify-center">
+            <i class="pi pi-sparkles text-2xl text-sena"></i>
+          </div>
+        </div>
+        <h3 class="text-sm font-black text-sena-black uppercase tracking-widest mb-2">Analizando tus respuestas</h3>
+        <p class="text-sm text-gray-500 font-medium">{{ mensajeActual() }}</p>
+        <div class="flex gap-1.5 mt-6">
+          <span class="w-1.5 h-1.5 rounded-full bg-sena animate-bounce" style="animation-delay: 0ms"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-sena animate-bounce" style="animation-delay: 150ms"></span>
+          <span class="w-1.5 h-1.5 rounded-full bg-sena animate-bounce" style="animation-delay: 300ms"></span>
+        </div>
+      </div>
+
+      <!-- Estado 3: resultado + análisis -->
+      <div *ngIf="enviado() && resultado() as res" class="py-2">
+        <div class="flex flex-col items-center text-center mb-6">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+               [ngClass]="res.aprobado ? 'bg-green-50' : 'bg-red-50'">
+            <i [class]="res.aprobado ? 'pi pi-check-circle text-3xl text-green-500' : 'pi pi-times-circle text-3xl text-red-500'"></i>
+          </div>
+          <h3 class="text-xl font-black text-sena-black mb-1">
+            {{ res.aprobado ? '¡Aprobaste el test!' : 'No aprobaste todavía' }}
+          </h3>
+          <p class="text-sm text-gray-500 font-medium">Puntaje: {{ res.puntaje.toFixed(0) }}%</p>
+        </div>
+
+        <div *ngIf="analisis() as a" class="space-y-4 text-left">
+          <div class="p-4 bg-gray-50 rounded-xl">
+            <p class="text-sm text-gray-700 font-medium">{{ a.resumen }}</p>
+          </div>
+
+          <div *ngIf="a.fortalezas.length" class="p-4 bg-green-50 rounded-xl">
+            <h4 class="text-xs font-black text-green-700 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <i class="pi pi-check"></i> Fortalezas
+            </h4>
+            <ul class="space-y-1">
+              <li *ngFor="let f of a.fortalezas" class="text-sm text-green-800">• {{ f }}</li>
+            </ul>
+          </div>
+
+          <div *ngIf="a.areas_mejora.length" class="p-4 bg-amber-50 rounded-xl">
+            <h4 class="text-xs font-black text-amber-700 uppercase tracking-widest mb-2 flex items-center gap-2">
+              <i class="pi pi-exclamation-triangle"></i> Áreas de mejora
+            </h4>
+            <ul class="space-y-1">
+              <li *ngFor="let am of a.areas_mejora" class="text-sm text-amber-800">• {{ am }}</li>
+            </ul>
+          </div>
+
+          <div class="p-4 bg-sena-alpha rounded-xl">
+            <h4 class="text-xs font-black text-sena uppercase tracking-widest mb-2 flex items-center gap-2">
+              <i class="pi pi-lightbulb"></i> Recomendación
+            </h4>
+            <p class="text-sm text-sena-black">{{ a.recomendacion }}</p>
+          </div>
+
+          <p class="text-center text-sm font-bold text-sena-black italic">{{ a.mensaje_motivacional }}</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div *ngIf="preguntas.length" class="px-6 py-4 border-t border-gray-100 bg-white shrink-0">
+      <p *ngIf="errorEnvio()" class="text-xs text-red-600 font-medium text-center mb-3">
+        <i class="pi pi-exclamation-triangle mr-1"></i>{{ errorEnvio() }}
+      </p>
+
+      <button *ngIf="!enviado() && !enviando()" 
+              (click)="enviarTest()" 
+              [disabled]="!todasRespondidas()"
+              [ngClass]="todasRespondidas() ? 'bg-sena hover:bg-sena-black cursor-pointer shadow-md shadow-sena/20' : 'bg-gray-200 cursor-not-allowed'"
+              class="w-full py-3.5 rounded-xl text-white font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+        <span *ngIf="todasRespondidas()">Enviar Respuestas</span>
+        <span *ngIf="!todasRespondidas()">Responde todas las preguntas</span>
+      </button>
+
+      <button *ngIf="enviado()" 
+              (click)="cerrarModal()" 
+              class="w-full py-3.5 rounded-xl bg-sena text-white font-black text-xs uppercase tracking-widest hover:bg-sena-black transition-all">
+        Continuar
+      </button>
+    </div>
+
+  </div>
+</div>

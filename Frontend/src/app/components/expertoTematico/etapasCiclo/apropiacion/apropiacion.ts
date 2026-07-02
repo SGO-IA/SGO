@@ -13,7 +13,7 @@ export class Apropiacion extends EtapaBaseDirective {
   override tipoEtapaNombre = 'Apropiación';
   duracion: number = 60;
 
-  override configurarTest() {
+  override configurarTest(customPrompt?: string) {    
     super.configurarTest();
     // No toques this.testConfigurado aquí, el padre ya lo maneja al recibir la rpta del backend
   }

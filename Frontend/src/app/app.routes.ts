@@ -180,7 +180,29 @@ export const routes: Routes = [
       loadComponent: () => import('./pages/aprendiz/inicio/inicio').then(m => m.Inicio),
       title: 'Inicio',
       data: { roles: [1] }
-    }
+    },
+    { 
+      path: 'aprendiz/entorno/:id', 
+      loadComponent: () => import('./pages/aprendiz/entorno/entorno').then(m => m.EntornoAprendiz),
+      title: 'S.G.O - Aula Virtual',
+      data: { roles: [1] }
+    },
+    { 
+      path: 'aprendiz/entorno/:fichaId/ova/:ovaId', 
+      loadComponent: () => import('./pages/aprendiz/entorno-ova/entorno-ova').then(m => m.EntornoOvaComponent) 
+    },
+    { 
+      path: 'instructor', 
+      loadComponent: () => import('./pages/instructor/inicio/inicio').then(m => m.Inicio),
+      title: 'S.G.O - Aula Virtual',
+      data: { roles: [2] }
+    },
+    { 
+      path: 'instructor/estadistica/:fichaId/:competenciaId/:ovaId', 
+      loadComponent: () => import('./pages/instructor/estadistica/estadistica').then(m => m.Estadisticas),
+      title: 'S.G.O - Estadísticas',
+      data: { roles: [2] }
+    },
     ]
   },
 

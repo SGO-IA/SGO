@@ -1,0 +1,117 @@
+<div class="min-h-screen bg-sena-gray-light p-4 sm:p-8 font-sans">
+  
+  <div *ngIf="cargando()" class="flex flex-col items-center justify-center py-20 opacity-70">
+    <i class="pi pi-spin pi-cog text-6xl text-sena mb-4"></i>
+    <p class="text-sm text-sena-black font-semibold">Cargando ciclo de aprendizaje...</p>
+  </div>
+
+  <div *ngIf="!cargando() && ovaData() as ova" class="max-w-5xl mx-auto">
+    
+    <div *ngIf="!navService.cicloSeleccionado()" class="animate-in fade-in slide-in-from-bottom-4">
+      
+      <div class="bg-white p-8 rounded-[var(--radius-sena)] shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-2 h-full bg-sena"></div>
+        <button [routerLink]="['/dashboard/aprendiz/entorno', fichaId]" class="text-gray-400 hover:text-sena font-bold text-xs uppercase tracking-widest flex items-center gap-2 mb-4 transition-colors">
+          <i class="pi pi-arrow-left"></i> Volver a OVAS
+        </button>
+        <h1 class="text-3xl md:text-4xl font-black text-sena-black mb-2">{{ ova.titulo }}</h1>
+        <p class="text-gray-500 font-medium">{{ ova.descripcion }}</p>
+      </div>
+
+      <h2 class="text-xl font-bold text-sena-black mb-4 flex items-center gap-2">
+        <i class="pi pi-sync text-sena"></i> Ruta de Aprendizaje
+      </h2>
+
+      <div class="grid grid-cols-1 gap-6">
+          <div *ngFor="let ciclo of ova.ciclos; let idx = index" 
+              class="bg-white p-6 rounded-[var(--radius-sena)] border shadow-sm flex flex-col md:flex-row gap-6 hover:shadow-md transition-shadow"
+              [ngClass]="ciclo.completado ? 'border-green-200' : 'border-gray-100'">
+            
+            <div class="md:w-1/3 border-b md:border-b-0 md:border-r border-gray-100 pb-4 md:pb-0 md:pr-6">
+              <div class="flex items-center gap-2 mb-1">
+                <div class="text-sena font-black text-sm uppercase tracking-widest">Ciclo {{ idx + 1 }}</div>
+                <i *ngIf="ciclo.completado" class="pi pi-check-circle text-green-500 text-sm"></i>
+              </div>
+              <h3 class="text-xl font-black text-sena-black mb-2">{{ ciclo.titulo }}</h3>
+              <p class="text-xs text-gray-500">{{ ciclo.descripcion_general }}</p>
+            </div>
+
+          <div class="md:w-2/3 flex flex-col justify-center">
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Fases de Desarrollo</p>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+              
+              <button (click)="abrirFase(ciclo, 'Reflexion')" class="py-3 px-2 rounded-xl bg-sena text-white hover:bg-sena-black font-bold text-[11px] uppercase tracking-wider flex flex-col items-center gap-1 transition-all shadow-md">
+                <i class="pi pi-book text-lg mb-1"></i> Reflexión
+              </button>
+              
+              <button (click)="abrirFase(ciclo, 'Contextualizacion')" class="py-3 px-2 rounded-xl bg-gray-50 text-gray-500 hover:bg-sena/10 hover:text-sena font-bold text-[11px] uppercase tracking-wider flex flex-col items-center gap-1 transition-all border border-gray-100">
+                <i class="pi pi-book text-lg mb-1"></i> Contexto
+              </button>
+
+              <button (click)="abrirFase(ciclo, 'Apropiacion')" 
+                      class="py-3 px-2 rounded-xl bg-gray-50 text-gray-500 hover:bg-sena/10 hover:text-sena font-bold text-[11px] uppercase tracking-wider flex flex-col items-center gap-1 transition-all border border-gray-100">
+                <i class="pi pi-check-circle text-lg mb-1"></i> Apropiación
+              </button>
+
+              <button (click)="abrirFase(ciclo, 'Transferencia')" 
+                      class="py-3 px-2 rounded-xl bg-gray-50 text-gray-500 hover:bg-sena/10 hover:text-sena font-bold text-[11px] uppercase tracking-wider flex flex-col items-center gap-1 transition-all border border-gray-100">
+                <i class="pi pi-send text-lg mb-1"></i> Transf.
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<div *ngIf="navService.cicloSeleccionado() as cicloActual">
+  
+<app-fase-contenido 
+  [cicloTitulo]="cicloActual.titulo"
+  [faseNombre]="cicloActual.seccionActiva"
+  [faseData]="cicloActual.secciones[cicloActual.seccionActiva]"
+  [esUltimaFase]="esUltimaFase()"
+  [finalizando]="finalizandoCiclo()"
+  (volver)="cerrarFase()"
+  (siguiente)="irASiguienteFase()"
+  (iniciarTest)="abrirTest($event)">
+</app-fase-contenido>
+
+<!-- 🚀 NUEVO: alerta de tests pendientes -->
+<div *ngIf="erroresFinalizacion() as pendientes" 
+     class="fixed inset-0 bg-sena-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-[var(--radius-sena)] shadow-2xl max-w-md w-full p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+        <i class="pi pi-exclamation-triangle text-amber-500"></i>
+      </div>
+      <h3 class="text-lg font-black text-sena-black">Ciclo incompleto</h3>
+    </div>
+    <p class="text-sm text-gray-500 font-medium mb-4">
+      Debes aprobar los siguientes tests antes de finalizar este ciclo:
+    </p>
+    <div class="space-y-2 mb-6">
+      <div *ngFor="let p of pendientes" class="p-3 bg-amber-50 rounded-xl border border-amber-100">
+        <p class="text-sm font-bold text-amber-800">{{ p.fase }}: {{ p.nombre_test }}</p>
+        <p class="text-xs text-amber-600 mt-0.5">
+          {{ p.intentado ? 'Puntaje obtenido: ' + p.puntaje + '% — no alcanzó el mínimo' : 'Aún no lo has presentado' }}
+        </p>
+      </div>
+    </div>
+    <button (click)="cerrarAlertaFinalizacion()" 
+            class="w-full py-3 rounded-xl bg-sena text-white font-black text-xs uppercase tracking-widest hover:bg-sena-black transition-all">
+      Entendido
+    </button>
+  </div>
+</div>
+
+</div>
+
+<!-- 🚀 NUEVO: fuera del div anterior, a nivel raíz -->
+<app-test-modal *ngIf="testActivo() as test" 
+                [test]="test"
+                (cerrar)="cerrarTest()"
+                (finalizado)="manejarFinalizacionTest($event)">
+</app-test-modal>
+
+  </div>
+</div>

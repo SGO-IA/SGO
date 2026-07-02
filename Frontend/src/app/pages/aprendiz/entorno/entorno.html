@@ -1,0 +1,87 @@
+<div class="min-h-screen bg-sena-gray-light p-4 sm:p-8 font-sans">
+  
+  <div *ngIf="cargando()" class="flex flex-col items-center justify-center py-20 opacity-70">
+    <i class="pi pi-spin pi-cog text-6xl text-sena mb-4"></i>
+    <p class="text-sm text-sena-black font-semibold">Cargando aula virtual...</p>
+  </div>
+
+  <div *ngIf="error()" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl shadow-sm mb-6 animate-in fade-in">
+    <p class="text-red-700 font-medium flex items-center gap-2">
+      <i class="pi pi-exclamation-triangle"></i> {{ error() }}
+    </p>
+  </div>
+
+  <div *ngIf="!cargando() && !error() && entorno() as data">
+    
+    <div *ngIf="!navService.cicloSeleccionado()" class="animate-in fade-in slide-in-from-bottom-4">
+      
+      <div class="bg-white p-8 rounded-[var(--radius-sena)] shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-2 h-full bg-sena"></div>
+        <h1 class="text-3xl md:text-4xl font-black text-sena-black mb-2 leading-tight">
+          {{ data.semilla?.nombre_semilla || 'Programa sin semilla asignada' }}
+        </h1>
+        <p class="text-gray-500 font-medium flex items-center gap-2">
+          <i class="pi pi-graduation-cap text-sena"></i> {{ data.semilla?.programa_nombre }}
+        </p>
+      </div>
+
+      <h2 class="text-xl font-bold text-sena-black mb-4 flex items-center gap-2">
+        <i class="pi pi-folder-open text-gray-400"></i> Lecciones
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div *ngFor="let ova of data.ovas; let i = index" 
+    class="bg-white p-6 rounded-[var(--radius-sena)] border shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col"
+    [ngClass]="ova.completado ? 'border-green-200' : 'border-gray-100'">
+    
+    <div class="flex items-center gap-3 mb-4">
+    <div class="w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg"
+         [ngClass]="ova.completado ? 'bg-green-50 text-green-600' : 'bg-sena-alpha text-sena'">
+        <i *ngIf="ova.completado" class="pi pi-check"></i>
+        <span *ngIf="!ova.completado">{{ i + 1 }}</span>
+    </div>
+    <div>
+        <h3 class="text-lg font-black text-sena-black leading-tight">{{ ova.titulo }}</h3>
+        <p class="text-[10px] font-bold uppercase tracking-widest"
+           [ngClass]="ova.completado ? 'text-green-500' : 'text-gray-400'">
+          {{ ova.completado ? 'Completada' : ova.ciclos.length + ' Ciclos Didácticos' }}
+        </p>
+    </div>
+    </div>
+
+    <p class="text-sm text-gray-500 mb-6 flex-grow">{{ ova.descripcion }}</p>
+
+    <button 
+      (click)="verOva(ova)"
+      [disabled]="verificandoAcceso() === ova.id"
+      class="w-full py-3 rounded-xl font-black uppercase text-xs tracking-widest transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait"
+      [ngClass]="ova.completado ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-sena-black hover:bg-sena text-white'">
+      <i class="pi" [ngClass]="verificandoAcceso() === ova.id ? 'pi-spin pi-spinner' : (ova.completado ? 'pi-eye' : 'pi-play')"></i>
+      {{ verificandoAcceso() === ova.id ? 'Verificando...' : (ova.completado ? 'Repasar Lección' : 'Desarrollar la lección') }}
+    </button>
+</div>
+      </div>
+
+    </div>
+
+    <div *ngIf="navService.cicloSeleccionado() as cicloActual" class="animate-in fade-in slide-in-from-bottom-4">
+      <div class="bg-white p-8 rounded-[var(--radius-sena)] shadow-sm border border-gray-100 mb-6">
+        <h1 class="text-3xl font-black text-sena-black mb-2">{{ cicloActual.titulo }}</h1>
+        <p class="text-gray-500 mb-6">{{ cicloActual.descripcion_general }}</p>
+        
+        <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl text-blue-600 font-medium">
+          <i class="pi pi-info-circle mr-2"></i> Aquí prepararemos el renderizado de Reflexión, Contextualización, Apropiación y Transferencia.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 🚀 NUEVO: modal de test diagnóstico, fuera del flujo normal -->
+  <app-test-diagnostico-modal *ngIf="testDiagnosticoActivo() as test"
+                               [test]="test"
+                               (cerrar)="cerrarModalDiagnostico()"
+                               (aprobado)="manejarAprobacionDiagnostico()">
+  </app-test-diagnostico-modal>
+
+</div>
