@@ -160,16 +160,29 @@
       
       <!-- Diagnóstico -->
       <div *ngIf="ap.diagnostico" class="p-4 rounded-xl border border-gray-100">
-        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Test Diagnóstico</p>
+        <div class="flex items-center justify-between mb-1">
+          <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Test Diagnóstico</p>
+          <span class="text-[9px] font-bold text-gray-300 uppercase tracking-widest">Punto de partida</span>
+        </div>
         <div class="flex items-center justify-between">
           <span class="text-sm font-black" [ngClass]="claseNivel(ap.diagnostico.nivel_sugerido)">
             Nivel {{ ap.diagnostico.nivel_sugerido }}
           </span>
           <span class="text-lg font-black text-sena-black">{{ ap.diagnostico.puntaje }}%</span>
         </div>
+        <p class="text-[11px] text-gray-400 mt-2 leading-relaxed">
+          Mide el conocimiento general de la competencia antes de iniciar la OVA. No refleja el avance logrado durante el proceso formativo.
+        </p>
       </div>
       <div *ngIf="!ap.diagnostico" class="p-4 rounded-xl bg-gray-50 text-center text-xs text-gray-400 font-medium">
         No ha presentado el test diagnóstico.
+      </div>
+
+      <!-- Separador visual entre diagnóstico y avance real -->
+      <div class="flex items-center gap-3">
+        <div class="h-px flex-1 bg-gray-100"></div>
+        <span class="text-[9px] font-bold text-gray-300 uppercase tracking-widest">Avance en la OVA</span>
+        <div class="h-px flex-1 bg-gray-100"></div>
       </div>
 
       <!-- Ciclos -->
