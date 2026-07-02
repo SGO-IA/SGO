@@ -1,0 +1,196 @@
+<div class="min-h-screen bg-sena-gray-light p-4 sm:p-8 font-sans">
+
+  <div *ngIf="cargando()" class="flex flex-col items-center justify-center py-20 opacity-70">
+    <i class="pi pi-spin pi-cog text-6xl text-sena mb-4"></i>
+    <p class="text-sm text-sena-black font-semibold">Cargando estadísticas...</p>
+  </div>
+
+  <div *ngIf="!cargando() && data() as d" class="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4">
+
+    <button (click)="router.navigate(['/dashboard/instructor'])" 
+            class="text-gray-400 hover:text-sena font-bold text-xs uppercase tracking-widest flex items-center gap-2 mb-6 transition-colors">
+      <i class="pi pi-arrow-left"></i> Volver al panel
+    </button>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+      <!-- Donut chart -->
+      <div class="bg-white p-6 rounded-[var(--radius-sena)] border border-gray-100 shadow-sm flex flex-col items-center">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 self-start">Estado General</p>
+        
+        <svg viewBox="0 0 42 42" class="w-40 h-40 -rotate-90">
+          <circle cx="21" cy="21" r="15.9" fill="none" stroke="#f3f4f6" stroke-width="4"></circle>
+          <circle *ngFor="let seg of segmentosDonut()" 
+                  cx="21" cy="21" r="15.9" fill="none" 
+                  [attr.stroke]="seg.color" 
+                  stroke-width="4"
+                  [attr.stroke-dasharray]="arcoDash(seg.porcentaje)"
+                  [attr.stroke-dashoffset]="arcoOffset(seg.inicio)"
+                  stroke-linecap="round">
+          </circle>
+        </svg>
+
+        <div class="text-center -mt-24 mb-16">
+          <p class="text-3xl font-black text-sena-black">{{ d.resumen.totalAprendices }}</p>
+          <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Aprendices</p>
+        </div>
+
+        <div class="flex flex-col gap-2 w-full">
+          <div class="flex items-center justify-between text-xs">
+            <span class="flex items-center gap-2 font-bold text-gray-600"><span class="w-2.5 h-2.5 rounded-full bg-green-500"></span> Completado</span>
+            <span class="font-black text-sena-black">{{ d.resumen.completados }}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="flex items-center gap-2 font-bold text-gray-600"><span class="w-2.5 h-2.5 rounded-full bg-gray-300"></span> Sin iniciar</span>
+            <span class="font-black text-sena-black">{{ d.resumen.sinIniciar }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Promedio general -->
+      <div class="bg-white p-6 rounded-[var(--radius-sena)] border border-gray-100 shadow-sm flex flex-col justify-center items-center text-center">
+        <div class="w-16 h-16 rounded-2xl bg-sena-alpha text-sena flex items-center justify-center mb-4">
+          <i class="pi pi-chart-line text-2xl"></i>
+        </div>
+        <p class="text-4xl font-black text-sena-black">
+          {{ d.resumen.promedioGeneral !== null ? d.resumen.promedioGeneral + '%' : '—' }}
+        </p>
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Promedio de Puntaje en Tests</p>
+      </div>
+
+      <!-- Ciclos de la OVA -->
+      <div class="bg-white p-6 rounded-[var(--radius-sena)] border border-gray-100 shadow-sm">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Ciclos de la OVA</p>
+        <div class="space-y-2">
+          <div *ngFor="let ciclo of d.ciclos" class="flex items-center justify-between text-sm">
+            <span class="font-bold text-sena-black truncate">{{ ciclo.titulo }}</span>
+            <span class="text-[10px] font-bold text-gray-400">{{ ciclo.tests.length }} test(s)</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Filtros -->
+    <div class="flex items-center gap-2 mb-4">
+      <button (click)="filtroEstado.set('todos')" 
+              [ngClass]="filtroEstado() === 'todos' ? 'bg-sena-black text-white' : 'bg-white text-gray-500 border border-gray-100'"
+              class="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all">
+        Todos ({{ d.resumen.totalAprendices }})
+      </button>
+      <button (click)="filtroEstado.set('completado')" 
+              [ngClass]="filtroEstado() === 'completado' ? 'bg-green-500 text-white' : 'bg-white text-gray-500 border border-gray-100'"
+              class="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all">
+        Completados ({{ d.resumen.completados }})
+      </button>
+      <button (click)="filtroEstado.set('sin_iniciar')" 
+              [ngClass]="filtroEstado() === 'sin_iniciar' ? 'bg-gray-400 text-white' : 'bg-white text-gray-500 border border-gray-100'"
+              class="px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all">
+        Sin Iniciar ({{ d.resumen.sinIniciar }})
+      </button>
+    </div>
+
+    <!-- Tabla de aprendices -->
+    <div class="bg-white rounded-[var(--radius-sena)] border border-gray-100 shadow-sm overflow-hidden">
+      <div *ngFor="let ap of aprendicesFiltrados(); let last = last" 
+           (click)="verDetalleAprendiz(ap)"
+           class="p-5 flex items-center justify-between gap-4 hover:bg-gray-50/50 cursor-pointer transition-colors"
+           [ngClass]="!last ? 'border-b border-gray-100' : ''">
+        
+        <div class="flex items-center gap-4 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-sena-alpha text-sena flex items-center justify-center font-black text-sm shrink-0">
+            {{ ap.nombre.charAt(0) }}
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-black text-sena-black truncate">{{ ap.nombre }}</p>
+            <p class="text-xs text-gray-400 truncate">{{ ap.correo }}</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-6 shrink-0">
+          <div class="hidden sm:block w-32">
+            <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-1">
+              <div class="h-full rounded-full transition-all" 
+                   [ngClass]="ap.estado === 'completado' ? 'bg-green-500' : 'bg-sena'"
+                   [style.width.%]="ap.porcentajeAvance"></div>
+            </div>
+            <p class="text-[9px] font-bold text-gray-400 text-right">{{ ap.ciclosCompletados }}/{{ ap.totalCiclos }} ciclos</p>
+          </div>
+
+          <div class="text-center w-16">
+            <p class="text-sm font-black" [ngClass]="ap.promedioPuntaje !== null && ap.promedioPuntaje < 60 ? 'text-red-500' : 'text-sena-black'">
+              {{ ap.promedioPuntaje !== null ? ap.promedioPuntaje + '%' : '—' }}
+            </p>
+            <p class="text-[9px] font-bold text-gray-400 uppercase">Promedio</p>
+          </div>
+
+          <span class="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border" 
+                [ngClass]="claseEstado(ap.estado)">
+            {{ ap.estado.replace('_', ' ') }}
+          </span>
+
+          <i class="pi pi-chevron-right text-gray-300 text-xs"></i>
+        </div>
+      </div>
+
+      <div *ngIf="!aprendicesFiltrados().length" class="p-12 text-center text-gray-400">
+        No hay aprendices en este filtro.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal de detalle del aprendiz -->
+<div *ngIf="aprendizSeleccionado() as ap" 
+     class="fixed inset-0 bg-sena-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-[var(--radius-sena)] shadow-2xl max-w-xl w-full max-h-[85vh] overflow-hidden flex flex-col">
+    
+    <div class="p-6 border-b border-gray-100 flex items-center justify-between shrink-0">
+      <div>
+        <h3 class="text-lg font-black text-sena-black">{{ ap.nombre }}</h3>
+        <p class="text-xs text-gray-400">{{ ap.correo }}</p>
+      </div>
+      <button (click)="cerrarDetalle()" class="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-50">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="overflow-y-auto flex-1 p-6 space-y-5">
+      
+      <!-- Diagnóstico -->
+      <div *ngIf="ap.diagnostico" class="p-4 rounded-xl border border-gray-100">
+        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Test Diagnóstico</p>
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-black" [ngClass]="claseNivel(ap.diagnostico.nivel_sugerido)">
+            Nivel {{ ap.diagnostico.nivel_sugerido }}
+          </span>
+          <span class="text-lg font-black text-sena-black">{{ ap.diagnostico.puntaje }}%</span>
+        </div>
+      </div>
+      <div *ngIf="!ap.diagnostico" class="p-4 rounded-xl bg-gray-50 text-center text-xs text-gray-400 font-medium">
+        No ha presentado el test diagnóstico.
+      </div>
+
+      <!-- Ciclos -->
+      <div *ngFor="let ciclo of ap.ciclos" class="p-4 rounded-xl border" 
+           [ngClass]="ciclo.completado ? 'border-green-200 bg-green-50/30' : 'border-gray-100'">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm font-black text-sena-black">{{ ciclo.titulo }}</p>
+          <i class="pi" [ngClass]="ciclo.completado ? 'pi-check-circle text-green-500' : 'pi-circle text-gray-300'"></i>
+        </div>
+
+        <div *ngIf="ciclo.tests.length" class="space-y-2">
+          <div *ngFor="let test of ciclo.tests" class="flex items-center justify-between text-xs">
+            <span class="text-gray-500 font-medium">{{ test.fase }}: {{ test.nombre_test }}</span>
+            <span class="font-black" 
+                  [ngClass]="!test.intentado ? 'text-gray-300' : (test.aprobado ? 'text-green-600' : 'text-red-500')">
+              {{ test.intentado ? test.puntaje + '%' : 'Sin intentar' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
