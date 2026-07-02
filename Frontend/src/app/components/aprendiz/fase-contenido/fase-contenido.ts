@@ -15,6 +15,7 @@ export class FaseContenidoComponent {
   @Input({ required: true }) faseNombre!: string;
   @Input() faseData?: SeccionDidactica;
   @Input() esUltimaFase: boolean = false;
+    @Input() finalizando: boolean = false;
 
 
   @Output() volver = new EventEmitter<void>();

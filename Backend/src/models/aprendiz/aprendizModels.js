@@ -86,5 +86,16 @@ export const aprendizModel = {
         `;
         const [rows] = await db.execute(query, [recursoId]);
         return rows[0];
+    },
+
+    async obtenerProgresoCiclosPorOva(aprendizId, ovaId) {
+        const query = `
+            SELECT pc.ciclo_id, pc.completado, pc.fecha_completado
+            FROM progreso_ciclos pc
+            INNER JOIN ciclos_didacticos cd ON pc.ciclo_id = cd.id
+            WHERE pc.aprendiz_id = ? AND cd.ova_id = ? AND pc.completado = 1
+        `;
+        const [rows] = await db.execute(query, [aprendizId, ovaId]);
+        return rows;
     }
 };

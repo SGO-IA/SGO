@@ -65,6 +65,7 @@ export interface CicloDidactico {
     Transferencia?: SeccionDidactica;
     [key: string]: SeccionDidactica | undefined;
   };
+  completado: boolean;
 }
 
 export interface Ova {
@@ -72,6 +73,7 @@ export interface Ova {
   titulo: string;
   descripcion: string;
   ciclos: CicloDidactico[];
+  completado: boolean;
 }
 
 export interface SemillaEntorno {
@@ -96,6 +98,53 @@ export interface EnlaceRecurso {
   url: string;
   etiqueta: string;
 }
+
+export interface AnalisisTestFase {
+  resumen: string;
+  fortalezas: string[];
+  areas_mejora: string[];
+  recomendacion: string;
+  mensaje_motivacional: string;
+}
+
+export interface RespuestaTestFase {
+  preguntaIndex: number;
+  opcionSeleccionada: number | null;
+}
+
+export interface ResultadoTestFaseResponse {
+  ok: boolean;
+  data: {
+    id: number;
+    testId: number;
+    aprendizId: number;
+    puntaje: number;
+    aprobado: boolean;
+    correctas: number;
+    totalPreguntas: number;
+    analisisIA: AnalisisTestFase;
+  };
+}
+
+export interface TestPendiente {
+  fase: string;
+  nombre_test: string;
+  intentado: boolean;
+  puntaje: number | null;
+}
+
+export interface FinalizarCicloErrorResponse {
+  ok: false;
+  error: string;
+  message: string;
+  pendientes: TestPendiente[];
+}
+
+export interface FinalizarCicloResponse {
+  ok: true;
+  data: { completado: boolean; pendientes: TestPendiente[] };
+}
+
 
 @Injectable({
   providedIn: 'root',
@@ -122,5 +171,21 @@ export class AprendizGeneralService {
 
   obtenerUrlDescargaRecurso(recursoId: number): string {
     return `${this.apiUrl}/recursos/${recursoId}/descargar`;
+  }
+
+  enviarResultadoTestFase(testId: number, respuestas: RespuestaTestFase[]): Observable<ResultadoTestFaseResponse> {
+    return this.http.post<ResultadoTestFaseResponse>(
+      `${this.apiUrl}/test/${testId}/resultado`,
+      { respuestas },
+      { withCredentials: true }
+    );
+  }
+
+  finalizarCiclo(cicloId: number): Observable<FinalizarCicloResponse> {
+    return this.http.post<FinalizarCicloResponse>(
+      `${this.apiUrl}/ciclo/${cicloId}/finalizar`,
+      {},
+      { withCredentials: true }
+    );
   }
 }

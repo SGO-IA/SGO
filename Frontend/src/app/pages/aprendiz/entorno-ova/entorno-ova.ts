@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { AprendizGeneralService, Ova } from '../../../services/aprendiz/aprendiz-general';
+import { AprendizGeneralService, Ova, TestPendiente } from '../../../services/aprendiz/aprendiz-general';
 import { NavigationService } from '../../../services/shared/navigation';
 import { FaseContenidoComponent } from '../../../components/aprendiz/fase-contenido/fase-contenido';
 import { TestModalComponent } from '../../../components/aprendiz/testmodal/testmodal';
@@ -82,7 +82,7 @@ export class EntornoOvaComponent implements OnInit {
     this.navService.cicloSeleccionado.set(null);
   }
 
-    irASiguienteFase() {
+irASiguienteFase() {
     const cicloActual = this.navService.cicloSeleccionado();
     if (!cicloActual) return;
 
@@ -90,15 +90,52 @@ export class EntornoOvaComponent implements OnInit {
     const esUltima = indiceActual === ORDEN_FASES.length - 1;
 
     if (esUltima) {
-      // Llegó al final del ciclo: vuelve a la vista de ciclos
-      this.cerrarFase();
+      this.validarYFinalizarCiclo(cicloActual);
       return;
     }
 
     const siguienteFase = ORDEN_FASES[indiceActual + 1];
     this.navService.cicloSeleccionado.set({ ...cicloActual, seccionActiva: siguienteFase });
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+}
+
+// 🚀 NUEVO
+finalizandoCiclo = signal<boolean>(false);
+erroresFinalizacion = signal<TestPendiente[] | null>(null);
+
+validarYFinalizarCiclo(cicloActual: any) {
+    this.finalizandoCiclo.set(true);
+    this.erroresFinalizacion.set(null);
+
+    this.aprendizSvc.finalizarCiclo(cicloActual.id).subscribe({
+      next: () => {
+        this.finalizandoCiclo.set(false);
+
+        // 🚀 NUEVO: refleja el cambio localmente sin esperar un refetch completo
+        const ova = this.ovaData();
+        if (ova) {
+          const ciclo = ova.ciclos.find(c => c.id === cicloActual.id);
+          if (ciclo) ciclo.completado = true;
+          ova.completado = ova.ciclos.every(c => c.completado);
+          this.ovaData.set({ ...ova });
+        }
+
+        this.cerrarFase();
+      },
+      error: (err) => {
+        this.finalizandoCiclo.set(false);
+        if (err.error?.error === 'CICLO_INCOMPLETO') {
+          this.erroresFinalizacion.set(err.error.pendientes);
+        } else {
+          console.error('Error inesperado al finalizar ciclo:', err);
+        }
+      }
+    });
+}
+
+cerrarAlertaFinalizacion() {
+    this.erroresFinalizacion.set(null);
+}
 
   // 🚀 NUEVO: determina si la fase actual es la última del recorrido
   esUltimaFase(): boolean {

@@ -23,13 +23,18 @@
       </h2>
 
       <div class="grid grid-cols-1 gap-6">
-        <div *ngFor="let ciclo of ova.ciclos; let idx = index" class="bg-white p-6 rounded-[var(--radius-sena)] border border-gray-100 shadow-sm flex flex-col md:flex-row gap-6 hover:shadow-md transition-shadow">
-          
-          <div class="md:w-1/3 border-b md:border-b-0 md:border-r border-gray-100 pb-4 md:pb-0 md:pr-6">
-            <div class="text-sena font-black text-sm uppercase tracking-widest mb-1">Ciclo {{ idx + 1 }}</div>
-            <h3 class="text-xl font-black text-sena-black mb-2">{{ ciclo.titulo }}</h3>
-            <p class="text-xs text-gray-500">{{ ciclo.descripcion_general }}</p>
-          </div>
+          <div *ngFor="let ciclo of ova.ciclos; let idx = index" 
+              class="bg-white p-6 rounded-[var(--radius-sena)] border shadow-sm flex flex-col md:flex-row gap-6 hover:shadow-md transition-shadow"
+              [ngClass]="ciclo.completado ? 'border-green-200' : 'border-gray-100'">
+            
+            <div class="md:w-1/3 border-b md:border-b-0 md:border-r border-gray-100 pb-4 md:pb-0 md:pr-6">
+              <div class="flex items-center gap-2 mb-1">
+                <div class="text-sena font-black text-sm uppercase tracking-widest">Ciclo {{ idx + 1 }}</div>
+                <i *ngIf="ciclo.completado" class="pi pi-check-circle text-green-500 text-sm"></i>
+              </div>
+              <h3 class="text-xl font-black text-sena-black mb-2">{{ ciclo.titulo }}</h3>
+              <p class="text-xs text-gray-500">{{ ciclo.descripcion_general }}</p>
+            </div>
 
           <div class="md:w-2/3 flex flex-col justify-center">
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Fases de Desarrollo</p>
@@ -60,15 +65,44 @@
 
 <div *ngIf="navService.cicloSeleccionado() as cicloActual">
   
-  <app-fase-contenido 
-    [cicloTitulo]="cicloActual.titulo"
-    [faseNombre]="cicloActual.seccionActiva"
-    [faseData]="cicloActual.secciones[cicloActual.seccionActiva]"
-    [esUltimaFase]="esUltimaFase()"
-    (volver)="cerrarFase()"
-    (siguiente)="irASiguienteFase()"
-    (iniciarTest)="abrirTest($event)">
-  </app-fase-contenido>
+<app-fase-contenido 
+  [cicloTitulo]="cicloActual.titulo"
+  [faseNombre]="cicloActual.seccionActiva"
+  [faseData]="cicloActual.secciones[cicloActual.seccionActiva]"
+  [esUltimaFase]="esUltimaFase()"
+  [finalizando]="finalizandoCiclo()"
+  (volver)="cerrarFase()"
+  (siguiente)="irASiguienteFase()"
+  (iniciarTest)="abrirTest($event)">
+</app-fase-contenido>
+
+<!-- 🚀 NUEVO: alerta de tests pendientes -->
+<div *ngIf="erroresFinalizacion() as pendientes" 
+     class="fixed inset-0 bg-sena-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-[var(--radius-sena)] shadow-2xl max-w-md w-full p-6">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+        <i class="pi pi-exclamation-triangle text-amber-500"></i>
+      </div>
+      <h3 class="text-lg font-black text-sena-black">Ciclo incompleto</h3>
+    </div>
+    <p class="text-sm text-gray-500 font-medium mb-4">
+      Debes aprobar los siguientes tests antes de finalizar este ciclo:
+    </p>
+    <div class="space-y-2 mb-6">
+      <div *ngFor="let p of pendientes" class="p-3 bg-amber-50 rounded-xl border border-amber-100">
+        <p class="text-sm font-bold text-amber-800">{{ p.fase }}: {{ p.nombre_test }}</p>
+        <p class="text-xs text-amber-600 mt-0.5">
+          {{ p.intentado ? 'Puntaje obtenido: ' + p.puntaje + '% — no alcanzó el mínimo' : 'Aún no lo has presentado' }}
+        </p>
+      </div>
+    </div>
+    <button (click)="cerrarAlertaFinalizacion()" 
+            class="w-full py-3 rounded-xl bg-sena text-white font-black text-xs uppercase tracking-widest hover:bg-sena-black transition-all">
+      Entendido
+    </button>
+  </div>
+</div>
 
 </div>
 
