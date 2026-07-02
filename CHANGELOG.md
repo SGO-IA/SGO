@@ -1,3 +1,10 @@
+# [0.41.0](https://github.com/SGO-IA/SGO/compare/v0.40.0...v0.41.0) (2026-07-02)
+
+
+### Features
+
+* Merge pull request [#74](https://github.com/SGO-IA/SGO/issues/74) from SGO-IA/aprendiz ([ac13e83](https://github.com/SGO-IA/SGO/commit/ac13e8337d8b538c25bb1dfd293a1a0718ed3787))
+
 # [0.40.0](https://github.com/SGO-IA/SGO/compare/v0.39.0...v0.40.0) (2026-06-23)
 
 
